@@ -1127,6 +1127,10 @@ function renderValidator() {
         }).join('');
         bar.innerHTML = '<div class="validator-items">' + items + '</div>';
     }
+
+    // Enable/disable export button
+    var exportBtn = document.getElementById('export-btn');
+    if (exportBtn) exportBtn.disabled = !allDone;
 }
 
 // ============================================================
@@ -1761,6 +1765,5 @@ function generatePdf(canvas) {
 }
 
 document.getElementById('export-btn').addEventListener('click', showExportModal);
-document.getElementById('header-export-btn').addEventListener('click', showExportModal);
 
 document.addEventListener('DOMContentLoaded', init);
