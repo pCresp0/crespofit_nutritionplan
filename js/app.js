@@ -322,8 +322,16 @@ function calculateTDEE() {
 }
 
 function getRecommendedKcal(tdee, goal) {
-    // cut: ~15% deficit (Helms 2014, Iraki 2019) - moderado para preservar músculo
-    if (goal === 'cut') return Math.round((tdee * 0.85) / 100) * 100;
+    // Adjust deficit aggressiveness based on profile
+    var appetite = document.getElementById('calc-appetite') ? document.getElementById('calc-appetite').value : '';
+    var dietHist = document.getElementById('calc-diet-history') ? document.getElementById('calc-diet-history').value : '';
+    var conservative = (appetite === 'high') || (dietHist === 'yoyo') || (dietHist === 'tried');
+
+    if (goal === 'cut') {
+        // Conservative: 12% deficit; Normal: 18% deficit
+        var cutMult = conservative ? 0.88 : 0.82;
+        return Math.round((tdee * cutMult) / 100) * 100;
+    }
     if (goal === 'recomp') return Math.round((tdee * 0.95) / 100) * 100;
     if (goal === 'bulk') return Math.round((tdee * 1.15) / 100) * 100;
     return Math.round(tdee / 100) * 100;
@@ -700,6 +708,55 @@ function getDefaultTab() { var h = new Date().getHours(); return h<11?'breakfast
 // ============================================================
 var currentStep = 1;
 
+// Body fat silhouettes data: [label, bf% male, bf% female]
+var silhouetteData = {
+    male: [
+        { label: 'Muy definido', bf: 10, desc: '~8-12%', icon: '🏆' },
+        { label: 'Definido', bf: 15, desc: '~13-16%', icon: '💪' },
+        { label: 'Normal', bf: 20, desc: '~17-22%', icon: '👤' },
+        { label: 'Algo de grasa', bf: 26, desc: '~23-28%', icon: '🫄' },
+        { label: 'Sobrepeso', bf: 33, desc: '~29-35%+', icon: '⬤' }
+    ],
+    female: [
+        { label: 'Muy definida', bf: 18, desc: '~16-20%', icon: '🏆' },
+        { label: 'Definida', bf: 23, desc: '~21-25%', icon: '💪' },
+        { label: 'Normal', bf: 28, desc: '~26-30%', icon: '👤' },
+        { label: 'Algo de grasa', bf: 34, desc: '~31-36%', icon: '🫄' },
+        { label: 'Sobrepeso', bf: 40, desc: '~37-42%+', icon: '⬤' }
+    ]
+};
+
+function renderSilhouettes() {
+    var sex = document.getElementById('calc-sex').value;
+    var data = silhouetteData[sex] || silhouetteData.male;
+    var currentBf = document.getElementById('calc-bf').value;
+    var grid = document.getElementById('silhouette-grid');
+    if (!grid) return;
+
+    grid.innerHTML = data.map(function(item, idx) {
+        var selected = parseFloat(currentBf) === item.bf;
+        return '<div class="silhouette-card' + (selected ? ' selected' : '') + '" data-bf="' + item.bf + '">' +
+            '<div class="silhouette-icon">' + item.icon + '</div>' +
+            '<div class="silhouette-bar"><div class="silhouette-bar-fill" style="width:' + Math.min(100, item.bf * (sex === 'female' ? 2.2 : 2.8)) + '%"></div></div>' +
+            '<div class="silhouette-label">' + item.label + '</div>' +
+            '<div class="silhouette-pct">' + item.desc + '</div>' +
+        '</div>';
+    }).join('');
+}
+
+// Init silhouettes on load and sex change
+document.getElementById('calc-sex').addEventListener('change', function() {
+    renderSilhouettes();
+});
+
+document.getElementById('silhouette-grid').addEventListener('click', function(e) {
+    var card = e.target.closest('.silhouette-card');
+    if (!card) return;
+    document.querySelectorAll('.silhouette-card').forEach(function(c) { c.classList.remove('selected'); });
+    card.classList.add('selected');
+    document.getElementById('calc-bf').value = card.dataset.bf;
+});
+
 function showStep(n) {
     currentStep = n;
     document.querySelectorAll('.onboarding-step').forEach(function(s){s.classList.remove('active');});
@@ -747,7 +804,24 @@ function showGoalRecommendation() {
     document.querySelectorAll('.goal-card').forEach(function(c) { c.classList.remove('recommended'); });
 
     if (!recommended) {
-        recEl.style.display = 'none';
+        // If no BF selected, try to infer from experience + diet history
+        var exp = document.getElementById('calc-experience').value;
+        var dietHist = document.getElementById('calc-diet-history').value;
+        if (exp === 'none' || exp === 'beginner') {
+            if (dietHist === 'never' || dietHist === 'tried' || dietHist === 'yoyo') {
+                recommended = 'recomp';
+            }
+        }
+        if (!recommended) {
+            recEl.style.display = 'none';
+            return;
+        }
+        var recLabel = goalLabels[recommended];
+        var msg = 'Según tu perfil, te recomendamos: <strong>' + goalIcons[recommended] + ' ' + recLabel + '</strong>';
+        recEl.innerHTML = msg;
+        recEl.style.display = '';
+        var recCard = document.querySelector('.goal-card[data-goal="' + recommended + '"]');
+        if (recCard) recCard.classList.add('recommended');
         return;
     }
 
@@ -917,6 +991,41 @@ document.getElementById('next-3').addEventListener('click', function() {
             text: 'En déficit calórico, la proteína es tu mejor aliada para <strong>preservar masa muscular</strong>. ' +
                   'Se recomienda ingerir entre <strong>1.6-2.4g de proteína por kg</strong> de peso corporal al día ' +
                   '<em>(Jäger et al., ISSN 2017)</em>. Esta dieta ya está diseñada con alta proteína para proteger tu músculo.'
+        });
+    }
+
+    // Tip: high appetite
+    var appetite = document.getElementById('calc-appetite').value;
+    if (appetite === 'high' && (userGoal === 'cut' || userGoal === 'recomp')) {
+        tips.push({
+            icon: '🥦',
+            title: 'Control del hambre',
+            text: 'Con apetito alto, prioriza alimentos con <strong>alto volumen y baja densidad calórica</strong>: verduras, frutas, proteínas magras y legumbres. ' +
+                  'Beber agua antes de comer, incluir fibra y repartir la proteína en las 3 comidas ayuda a controlar la saciedad. ' +
+                  'Este plan incluye abundante verdura y proteína en cada comida precisamente para esto.'
+        });
+    }
+
+    // Tip: diet history (yoyo / tried before)
+    var dietHistory = document.getElementById('calc-diet-history').value;
+    if (dietHistory === 'yoyo' || dietHistory === 'tried') {
+        tips.push({
+            icon: '🔄',
+            title: 'Evita el efecto rebote',
+            text: 'Si antes no mantuviste la dieta o recuperaste peso, el problema no fuiste tú: probablemente el déficit era demasiado agresivo. ' +
+                  'Este plan usa un <strong>déficit moderado y sostenible</strong> que no genera ansiedad ni hambre excesiva. ' +
+                  'La clave es <strong>no tener prisa</strong>: perder 0.5-1% de peso corporal/semana es el rango óptimo para no perder músculo ni motivación.'
+        });
+    }
+
+    // Tip: beginner gains
+    var experience = document.getElementById('calc-experience').value;
+    if ((experience === 'none' || experience === 'beginner') && trains) {
+        tips.push({
+            icon: '🚀',
+            title: 'Ventaja de principiante',
+            text: 'Al empezar a entrenar fuerza, tu cuerpo tiene un gran potencial de <strong>ganancia muscular rápida</strong> ("newbie gains"). ' +
+                  'Incluso en déficit calórico puedes ganar músculo y perder grasa a la vez durante los primeros meses. Aprovéchalo al máximo.'
         });
     }
 
@@ -1685,7 +1794,7 @@ document.addEventListener('click', function(e) {
 function saveAllState() {
     try {
         var calcData = {};
-        ['calc-sex','calc-age','calc-height','calc-weight','calc-bf','calc-activity','calc-trains','calc-train-type','calc-train-days','calc-train-duration','calc-train-intensity','calc-steps'].forEach(function(id) {
+        ['calc-sex','calc-age','calc-height','calc-weight','calc-bf','calc-activity','calc-trains','calc-train-type','calc-train-days','calc-train-duration','calc-train-intensity','calc-steps','calc-experience','calc-diet-history','calc-appetite'].forEach(function(id) {
             var el = document.getElementById(id); if (el) calcData[id] = el.value;
         });
         calcData['calc-steps-unknown'] = document.getElementById('calc-steps-unknown').checked ? 'true' : 'false';
@@ -1768,6 +1877,7 @@ applyTheme(getTheme());
 // ============================================================
 function init() {
     var hasState = loadState();
+    renderSilhouettes();
     if (hasState) {
         document.getElementById('onboarding').style.display = 'none';
         document.getElementById('app-wrapper').style.display = '';

@@ -57,12 +57,45 @@
                     </div>
                     <div class="calc-row">
                         <div class="calc-field full-width">
-                            <label for="calc-bf">% Grasa corporal estimado <span class="label-optional">(opcional)</span></label>
-                            <div class="bf-input-wrapper">
-                                <input type="number" id="calc-bf" min="5" max="50" step="0.5" placeholder="Ej: 18">
-                                <span class="bf-unit">%</span>
-                            </div>
-                            <span class="calc-hint">Si no lo sabes, déjalo vacío. Se usará para recomendarte un objetivo.</span>
+                            <label>¿Cómo te ves? <span class="label-optional">(estima tu % grasa)</span></label>
+                            <p class="calc-hint silhouette-hint">Selecciona la silueta que más se parezca a tu cuerpo actual.</p>
+                            <div class="silhouette-grid" id="silhouette-grid"></div>
+                            <input type="hidden" id="calc-bf" value="">
+                        </div>
+                    </div>
+                    <div class="calc-row">
+                        <div class="calc-field full-width">
+                            <label for="calc-experience">¿Cuánto tiempo llevas entrenando?</label>
+                            <select id="calc-experience">
+                                <option value="">-- Selecciona --</option>
+                                <option value="none">Nunca he entrenado</option>
+                                <option value="beginner">Menos de 1 año</option>
+                                <option value="intermediate">1-3 años</option>
+                                <option value="advanced">Más de 3 años</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="calc-row">
+                        <div class="calc-field full-width">
+                            <label for="calc-diet-history">¿Has hecho dieta antes?</label>
+                            <select id="calc-diet-history">
+                                <option value="">-- Selecciona --</option>
+                                <option value="never">Nunca he hecho dieta</option>
+                                <option value="tried">Lo intenté pero no lo mantuve</option>
+                                <option value="success">Sí, con buenos resultados</option>
+                                <option value="yoyo">Sí, pero recuperé el peso (efecto rebote)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="calc-row">
+                        <div class="calc-field full-width">
+                            <label for="calc-appetite">¿Cómo es tu apetito normalmente?</label>
+                            <select id="calc-appetite">
+                                <option value="">-- Selecciona --</option>
+                                <option value="low">Bajo · Suelo comer poco</option>
+                                <option value="normal">Normal · Como lo justo</option>
+                                <option value="high">Alto · Siempre tengo hambre</option>
+                            </select>
                         </div>
                     </div>
                 </div>
