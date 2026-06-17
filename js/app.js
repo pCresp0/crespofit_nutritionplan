@@ -830,23 +830,118 @@ document.getElementById('next-3').addEventListener('click', function() {
     document.getElementById('ob-tdee').textContent = result.tdee;
     document.getElementById('ob-recommended').textContent = recommendedKcal;
 
+    var deficitAbs = result.tdee - recommendedKcal;
+    var surplusAbs = recommendedKcal - result.tdee;
+
     if (userGoal === 'cut') {
         document.getElementById('ob-goal-label').textContent = '🔥 Recomendado';
         document.getElementById('ob-rec-sub').textContent = 'kcal/día · Déficit del ~20%';
-        document.getElementById('ob-explanation').innerHTML = 'Para <strong>perder grasa</strong> necesitas comer por debajo de tu gasto calórico. Te recomendamos un <strong>déficit moderado del 20%</strong> (~' + (result.tdee - recommendedKcal) + ' kcal menos/día) para preservar masa muscular y no pasar hambre.';
+        document.getElementById('ob-explanation').innerHTML =
+            'Para <strong>perder grasa</strong> necesitas un <strong>déficit calórico</strong>: ingerir menos calorías de las que gastas. ' +
+            'Te recomendamos un <strong>déficit moderado del 20%</strong> (~' + deficitAbs + ' kcal/día menos). ' +
+            'La evidencia científica muestra que déficits del 15-25% son óptimos para perder grasa preservando masa muscular ' +
+            '<em>(Helms et al., 2014; Trexler et al., 2014)</em>. ' +
+            'Déficits más agresivos aumentan la pérdida de músculo y reducen la adherencia.';
     } else if (userGoal === 'recomp') {
         document.getElementById('ob-goal-label').textContent = '🔄 Recomendado';
         document.getElementById('ob-rec-sub').textContent = 'kcal/día · Déficit mínimo ~5%';
-        document.getElementById('ob-explanation').innerHTML = 'La <strong>recomposición corporal</strong> busca ganar músculo y perder grasa a la vez. Se consigue con un <strong>déficit mínimo (~5%)</strong>, alta proteína (1.6-2.2g/kg) y entrenamiento de fuerza. Es más lento que un bulk+cut, pero mejora la composición corporal sin fases extremas.';
+        document.getElementById('ob-explanation').innerHTML =
+            'La <strong>recomposición corporal</strong> busca ganar músculo y perder grasa a la vez. ' +
+            'Se consigue con un <strong>déficit mínimo (~5%)</strong>, alta proteína (1.6-2.2g/kg) y entrenamiento de fuerza. ' +
+            'Estudios demuestran que personas con experiencia intermedia pueden lograrlo con alta adherencia al entrenamiento ' +
+            '<em>(Barakat et al., 2020)</em>. Es un proceso más lento que bulk+cut pero mejora la composición corporal sin fases extremas.';
     } else if (userGoal === 'bulk') {
         document.getElementById('ob-goal-label').textContent = '💪 Recomendado';
         document.getElementById('ob-rec-sub').textContent = 'kcal/día · Superávit del ~15%';
-        document.getElementById('ob-explanation').innerHTML = 'Para <strong>ganar masa muscular</strong> necesitas comer por encima de tu gasto. Te recomendamos un <strong>superávit moderado del 15%</strong> (~' + (recommendedKcal - result.tdee) + ' kcal más/día) para maximizar ganancia muscular con mínima grasa.';
+        document.getElementById('ob-explanation').innerHTML =
+            'Para <strong>ganar masa muscular</strong> necesitas un <strong>superávit calórico</strong>: comer por encima de tu gasto. ' +
+            'Te recomendamos un <strong>superávit moderado del 15%</strong> (~' + surplusAbs + ' kcal/día más). ' +
+            'Un superávit controlado maximiza la síntesis proteica minimizando la ganancia de grasa ' +
+            '<em>(Slater et al., 2019)</em>. Superávits excesivos no aceleran la ganancia muscular, solo acumulan más grasa.';
     } else {
         document.getElementById('ob-goal-label').textContent = '⚖️ Recomendado';
         document.getElementById('ob-rec-sub').textContent = 'kcal/día · Mantenimiento';
-        document.getElementById('ob-explanation').innerHTML = 'Para <strong>mantener tu peso</strong> actual, come a tu nivel de gasto calórico. Tu composición corporal se mantendrá estable.';
+        document.getElementById('ob-explanation').innerHTML =
+            'Para <strong>mantener tu peso</strong>, come a tu nivel de gasto calórico (TDEE). ' +
+            'Tu composición corporal se mantendrá estable. Si entrenas con intensidad suficiente, ' +
+            'incluso a mantenimiento puedes mejorar ligeramente la relación músculo/grasa.';
     }
+
+    // ---- Contextual tips based on training / steps ----
+    var trains = document.getElementById('calc-trains').value === 'yes';
+    var trainType = trains ? document.getElementById('calc-train-type').value : null;
+    var stepsVal = parseInt(document.getElementById('calc-steps').value);
+    var stepsUnknown = document.getElementById('calc-steps-unknown').checked;
+    var lowSteps = stepsUnknown || !stepsVal || stepsVal < 8000;
+    var isStrength = trainType === 'strength' || trainType === 'mixed';
+
+    var tips = [];
+
+    // Tip: strength training
+    if (!trains) {
+        tips.push({
+            icon: '🏋️',
+            title: 'Empieza a entrenar fuerza',
+            text: 'El entrenamiento de fuerza es el <strong>estímulo más importante</strong> para mantener y ganar masa muscular, ' +
+                  'especialmente en déficit calórico. Sin él, parte del peso perdido será músculo. ' +
+                  'La OMS recomienda mínimo <strong>2 días/semana</strong> de ejercicio de fuerza. ' +
+                  'Si nunca has entrenado, es el mejor momento para empezar: ganarás músculo incluso perdiendo grasa.'
+        });
+    } else if (!isStrength) {
+        tips.push({
+            icon: '🏋️',
+            title: 'Añade entrenamiento de fuerza',
+            text: 'Tu entreno actual (' + document.getElementById('calc-train-type').selectedOptions[0].text + ') es genial para la salud cardiovascular, ' +
+                  'pero para <strong>preservar músculo</strong> (o ganarlo) es muy recomendable añadir al menos <strong>2 sesiones de fuerza/semana</strong>. ' +
+                  'La combinación de fuerza + cardio da los mejores resultados para la composición corporal.'
+        });
+    }
+
+    // Tip: walking / NEAT
+    if (lowSteps) {
+        tips.push({
+            icon: '🚶',
+            title: 'Camina al menos 10.000 pasos/día',
+            text: 'Caminar es la forma más fácil y sostenible de aumentar tu gasto calórico diario (NEAT). ' +
+                  '<strong>10.000 pasos/día</strong> pueden suponer ~300-500 kcal extra sin estrés articular ni fatiga. ' +
+                  'La evidencia muestra que un NEAT alto mejora la pérdida de grasa, la sensibilidad a la insulina y la salud cardiovascular ' +
+                  '<em>(Villablanca et al., 2015)</em>. Intenta caminar al trabajo, usar escaleras o pasear después de comer.'
+        });
+    }
+
+    // Tip: protein
+    if (userGoal === 'cut' || userGoal === 'recomp') {
+        tips.push({
+            icon: '🥩',
+            title: 'Proteína alta: clave en déficit',
+            text: 'En déficit calórico, la proteína es tu mejor aliada para <strong>preservar masa muscular</strong>. ' +
+                  'Se recomienda ingerir entre <strong>1.6-2.4g de proteína por kg</strong> de peso corporal al día ' +
+                  '<em>(Jäger et al., ISSN 2017)</em>. Esta dieta ya está diseñada con alta proteína para proteger tu músculo.'
+        });
+    }
+
+    // Tip: adherence / patience
+    tips.push({
+        icon: '📅',
+        title: 'La constancia es lo que funciona',
+        text: 'No existe la dieta perfecta, solo la que puedes <strong>mantener a largo plazo</strong>. ' +
+              'Los cambios se ven en semanas, no en días. Pésate siempre en las mismas condiciones (mañana, en ayunas) ' +
+              'y compara <strong>medias semanales</strong>, no el día a día. ' +
+              'Si algún día te sales del plan, simplemente retómalo al día siguiente.'
+    });
+
+    var tipsHTML = tips.map(function(tip) {
+        return '<div class="ob-tip-card">' +
+            '<span class="ob-tip-icon">' + tip.icon + '</span>' +
+            '<div class="ob-tip-content">' +
+                '<strong class="ob-tip-title">' + tip.title + '</strong>' +
+                '<p class="ob-tip-text">' + tip.text + '</p>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+
+    document.getElementById('ob-tips').innerHTML =
+        '<h3 class="ob-tips-heading">💡 Recomendaciones para ti</h3>' + tipsHTML;
 
     showStep(4);
 });

@@ -2909,6 +2909,65 @@ body {
     border: 1px solid var(--disclaimer-border);
 }
 
+.ob-explanation em {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+/* Onboarding tips */
+.ob-tips {
+    margin-top: 14px;
+}
+
+.ob-tips-heading {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text);
+}
+
+.ob-tip-card {
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: var(--radius-xs);
+    background: var(--ob-result-bg);
+    border: 1px solid var(--border);
+}
+
+.ob-tip-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 2px;
+}
+
+.ob-tip-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.ob-tip-title {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.ob-tip-text {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+}
+
+.ob-tip-text em {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
 /* Progress dots */
 .onboarding-progress {
     display: flex;
