@@ -770,7 +770,12 @@ var macroTooltips = {
                 '<h4>Recomendación para tu objetivo</h4>' +
                 '<p class="macro-tip-rec"><strong>' + rec.range + ' g/kg' + rangeGrams + '</strong></p>' +
                 '<p>' + rec.detail + '</p>' +
-                '<p class="macro-tip-source">📚 Morton et al. 2018, Helms et al. 2014, ISSN Position Stand 2017</p>';
+                '<p class="macro-tip-source">📚 Estudios</p>' +
+                '<ul class="macro-tip-links">' +
+                '<li><a href="https://bjsm.bmj.com/content/52/6/376" target="_blank" rel="noopener">Morton et al. 2018 – Protein &amp; muscle mass (BJSM)</a></li>' +
+                '<li><a href="https://jissn.biomedcentral.com/articles/10.1186/1550-2783-11-20" target="_blank" rel="noopener">Helms et al. 2014 – Natural bodybuilding (JISSN)</a></li>' +
+                '<li><a href="https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0177-8" target="_blank" rel="noopener">Jäger et al. 2017 – ISSN Protein Position Stand</a></li>' +
+                '</ul>';
         }
     },
     carbs: {
@@ -791,7 +796,11 @@ var macroTooltips = {
                 '<h4>Recomendación para tu objetivo</h4>' +
                 '<p class="macro-tip-rec"><strong>' + rec.range + ' g/kg' + rangeGrams + '</strong></p>' +
                 '<p>' + rec.detail + '</p>' +
-                '<p class="macro-tip-source">📚 Thomas et al. 2016 (ACSM), Kerksick et al. 2017 (ISSN)</p>';
+                '<p class="macro-tip-source">📚 Estudios</p>' +
+                '<ul class="macro-tip-links">' +
+                '<li><a href="https://pubmed.ncbi.nlm.nih.gov/26891166/" target="_blank" rel="noopener">Thomas et al. 2016 – ACSM Nutrition &amp; Performance</a></li>' +
+                '<li><a href="https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0189-4" target="_blank" rel="noopener">Kerksick et al. 2017 – ISSN Nutrient Timing</a></li>' +
+                '</ul>';
         }
     },
     fat: {
@@ -812,7 +821,12 @@ var macroTooltips = {
                 '<h4>Recomendación para tu objetivo</h4>' +
                 '<p class="macro-tip-rec"><strong>' + rec.range + ' g/kg' + rangeGrams + '</strong></p>' +
                 '<p>' + rec.detail + '</p>' +
-                '<p class="macro-tip-source">📚 Volek et al. 2015, ISSN Position Stand 2017, Hector & Phillips 2018</p>';
+                '<p class="macro-tip-source">📚 Estudios</p>' +
+                '<ul class="macro-tip-links">' +
+                '<li><a href="https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0177-8" target="_blank" rel="noopener">Jäger et al. 2017 – ISSN Position Stand</a></li>' +
+                '<li><a href="https://pubmed.ncbi.nlm.nih.gov/29182451/" target="_blank" rel="noopener">Hector &amp; Phillips 2018 – Protein &amp; fat loss (IJSNEM)</a></li>' +
+                '<li><a href="https://pubmed.ncbi.nlm.nih.gov/25550171/" target="_blank" rel="noopener">Volek et al. 2015 – Dietary fat &amp; performance</a></li>' +
+                '</ul>';
         }
     }
 };

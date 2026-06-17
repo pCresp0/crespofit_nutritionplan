@@ -1224,6 +1224,30 @@ body {
     font-size: 0.75rem;
     opacity: 0.6;
     margin-top: 12px;
+    margin-bottom: 4px;
+}
+
+.macro-tip-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.macro-tip-links li {
+    padding: 4px 0;
+    font-size: 0.73rem;
+}
+
+.macro-tip-links a {
+    color: var(--accent);
+    text-decoration: none;
+    opacity: 0.85;
+    transition: opacity 0.15s ease;
+}
+
+.macro-tip-links a:hover {
+    opacity: 1;
+    text-decoration: underline;
 }
 
 .macro-tip-table {
