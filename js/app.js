@@ -789,7 +789,7 @@ document.getElementById('breakfast-grid').addEventListener('click', function(e) 
     var card = e.target.closest('.breakfast-card'); if (!card) return;
     var idx = parseInt(card.dataset.index);
     selections.breakfast = selections.breakfast === idx ? null : idx;
-    renderBreakfast(); renderNutritionSummary(); renderValidator(); saveAllState();
+    renderAll(); saveAllState();
 });
 
 document.addEventListener('click', function(e) {
@@ -797,9 +797,7 @@ document.addEventListener('click', function(e) {
     var meal = row.dataset.meal, type = row.dataset.type, idx = parseInt(row.dataset.index);
     var key = meal==='lunch'?(type==='carb'?'lunchCarb':'lunchProtein'):(type==='carb'?'dinnerCarb':'dinnerProtein');
     selections[key] = selections[key]===idx?null:idx;
-    if (meal==='lunch') renderMealTable('lunch-tables',lunchCarbs,lunchProteins,selections.lunchCarb,selections.lunchProtein,'lunch');
-    else renderMealTable('dinner-tables',dinnerCarbs,dinnerProteins,selections.dinnerCarb,selections.dinnerProtein,'dinner');
-    renderNutritionSummary(); renderValidator(); saveAllState();
+    renderAll(); saveAllState();
 });
 
 document.querySelectorAll('[data-toggle]').forEach(function(h) {
