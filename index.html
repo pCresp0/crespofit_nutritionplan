@@ -222,7 +222,7 @@
     <div class="app-wrapper" id="app-wrapper" style="display:none;">
         <header class="header">
             <button class="trainer-toggle" id="trainer-toggle" aria-label="Ver plan del entrenador">📋</button>
-            <button class="header-export-btn" id="header-export-btn" aria-label="Exportar dieta como imagen">📤</button>
+            <button class="header-export-btn" id="header-export-btn" aria-label="Exportar dieta">📤</button>
             <button class="theme-toggle" id="theme-toggle-app" aria-label="Cambiar tema">🌙</button>
             <div class="header-content">
                 <h1>Mi Plan Nutricional</h1>
@@ -326,7 +326,20 @@
 
             <!-- EXPORT BUTTON -->
             <div class="export-section">
-                <button class="export-btn" id="export-btn">📤 Exportar mi dieta como imagen</button>
+                <button class="export-btn" id="export-btn">📤 Exportar mi dieta</button>
+            </div>
+
+            <!-- EXPORT FORMAT MODAL -->
+            <div class="export-modal-overlay" id="export-modal" style="display:none">
+                <div class="export-modal">
+                    <div class="export-modal-title">Exportar dieta</div>
+                    <p class="export-modal-desc">¿En qué formato quieres exportar?</p>
+                    <div class="export-modal-options">
+                        <button class="export-option-btn" id="export-as-png">🖼️ Imagen (PNG)</button>
+                        <button class="export-option-btn" id="export-as-pdf">📄 Documento (PDF)</button>
+                    </div>
+                    <button class="export-modal-cancel" id="export-modal-cancel">Cancelar</button>
+                </div>
             </div>
 
             <!-- DISCLAIMER -->

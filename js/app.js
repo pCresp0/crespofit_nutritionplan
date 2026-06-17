@@ -1171,9 +1171,33 @@ document.addEventListener('click', function(e) {
 });
 
 // ============================================================
-// EXPORT DIET AS IMAGE
+// EXPORT DIET AS IMAGE / PDF
 // ============================================================
-function exportDietImage() {
+
+function showExportModal() {
+    document.getElementById('export-modal').style.display = '';
+}
+
+function hideExportModal() {
+    document.getElementById('export-modal').style.display = 'none';
+}
+
+document.getElementById('export-modal-cancel').addEventListener('click', hideExportModal);
+document.getElementById('export-modal').addEventListener('click', function(e) {
+    if (e.target === this) hideExportModal();
+});
+
+document.getElementById('export-as-png').addEventListener('click', function() {
+    hideExportModal();
+    exportDiet('png');
+});
+
+document.getElementById('export-as-pdf').addEventListener('click', function() {
+    hideExportModal();
+    exportDiet('pdf');
+});
+
+function buildExportCanvas() {
     var ratio = getRatio();
     var macroData = calculateSelectedMacros();
     var macros = macroData.total;
@@ -1192,41 +1216,55 @@ function exportDietImage() {
     var proteinColor = '#6366F1';
     var carbsColor = '#F59E0B';
     var fatColor = '#EF4444';
-    var greenColor = '#10B981';
 
     var W = 1080;
     var pad = 40;
     var contentW = W - pad * 2;
-    var lineH = 32;
 
     // Pre-calculate height
     var y = 0;
     y += 100; // header
-    y += 20; // gap
+    y += 28; // gap after header
     // profile card
-    y += 60 + 5 * 36 + 30; // title + 5 rows + padding
-    y += 24; // gap
+    var profileRowCount = 4; // sex, age, height, weight
+    var bf = document.getElementById('calc-bf').value;
+    if (bf) profileRowCount++;
+    if (userGoal) profileRowCount++;
+    if (userTdee) profileRowCount++;
+    profileRowCount++; // kcal
+    y += 52 + profileRowCount * 36 + 24;
+    y += 24;
     // breakfast
     if (selections.breakfast !== null) {
         var bOpt = breakfastOptions[selections.breakfast];
-        y += 52 + bOpt.items.length * 34 + 24;
+        y += 56 + bOpt.items.length * 34 + 24;
     }
-    y += 24; // gap
+    y += 24;
     // lunch
-    y += 52 + 3 * 34 + 24; // title + carb + protein + extras + padding
-    y += 24;
+    if (selections.lunchCarb !== null || selections.lunchProtein !== null) {
+        var lunchItemCount = 1; // extras row
+        if (selections.lunchCarb !== null) lunchItemCount++;
+        if (selections.lunchProtein !== null) lunchItemCount++;
+        y += 56 + lunchItemCount * 34 + 24;
+        y += 24;
+    }
     // dinner
-    y += 52 + 3 * 34 + 24;
-    y += 24;
+    if (selections.dinnerCarb !== null || selections.dinnerProtein !== null) {
+        var dinnerItemCount = 1;
+        if (selections.dinnerCarb !== null) dinnerItemCount++;
+        if (selections.dinnerProtein !== null) dinnerItemCount++;
+        y += 56 + dinnerItemCount * 34 + 24;
+        y += 24;
+    }
     // supplements
-    y += 52 + supplements.length * 36 + 24;
+    y += 56 + supplements.length * 36 + 24;
     y += 24;
-    // macros section
-    y += 52 + 250 + 24;
+    // macros section (new cleaner layout)
+    y += 260;
     y += 24;
     // footer
-    y += 60;
-    y += 40; // bottom padding
+    y += 50;
+    y += 40;
 
     var H = Math.max(y, 900);
 
@@ -1260,13 +1298,6 @@ function exportDietImage() {
         ctx.fill();
     }
 
-    function drawSectionTitle(text, yPos) {
-        ctx.fillStyle = accent;
-        ctx.font = 'bold 26px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-        ctx.fillText(text, pad, yPos);
-        return yPos + 40;
-    }
-
     function drawText(text, x, yPos, color, font) {
         ctx.fillStyle = color || textWhite;
         ctx.font = font || '20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
@@ -1292,16 +1323,14 @@ function exportDietImage() {
     ctx.fillText(dateStr, W - pad, 52);
     ctx.textAlign = 'left';
 
-    var curY = 110;
+    var curY = 118;
 
     // ---- PROFILE CARD ----
     var sex = document.getElementById('calc-sex').value;
     var age = document.getElementById('calc-age').value;
     var height = document.getElementById('calc-height').value;
     var weight = document.getElementById('calc-weight').value;
-    var bf = document.getElementById('calc-bf').value;
     var sexLabel = sex === 'male' ? 'Hombre' : 'Mujer';
-    var sexIcon = sex === 'male' ? 'M' : 'F';
 
     var profileRows = [];
     profileRows.push(['Sexo', sexLabel]);
@@ -1320,7 +1349,7 @@ function exportDietImage() {
     ctx.font = 'bold 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.fillText('Tu Perfil', pad + 20, curY + 34);
 
-    var pY = curY + 60;
+    var pY = curY + 64;
     profileRows.forEach(function(row) {
         drawText(row[0], pad + 20, pY, textMuted, '18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
         ctx.textAlign = 'right';
@@ -1332,13 +1361,13 @@ function exportDietImage() {
 
     // ---- MEALS ----
     function drawMealSection(title, items, startY) {
-        var sectionH = 52 + items.length * 34 + 20;
+        var sectionH = 56 + items.length * 34 + 20;
         fillCard(pad, startY, contentW, sectionH);
         ctx.fillStyle = accent;
         ctx.font = 'bold 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         ctx.fillText(title, pad + 20, startY + 34);
 
-        var iY = startY + 60;
+        var iY = startY + 64;
         items.forEach(function(item) {
             drawText(item.name, pad + 24, iY, textLight, '18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
             if (item.amount) {
@@ -1401,53 +1430,34 @@ function exportDietImage() {
     });
     curY = drawMealSection('Suplementacion', suppItems, curY);
 
-    // ---- MACROS SECTION ----
-    var macroSectionH = 280;
+    // ---- MACROS SECTION (improved layout) ----
+    var macroSectionH = 240;
     fillCard(pad, curY, contentW, macroSectionH);
+
+    // Title
     ctx.fillStyle = accent;
     ctx.font = 'bold 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.fillText('Macronutrientes', pad + 20, curY + 34);
 
-    // Kcal display
+    // Total kcal - right aligned in header area
     ctx.fillStyle = textWhite;
-    ctx.font = 'bold 48px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(kcal + ' kcal', W / 2, curY + 85);
+    ctx.font = 'bold 28px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(kcal + ' kcal', W - pad - 20, curY + 36);
     ctx.textAlign = 'left';
 
     // Stacked bar
     var barX = pad + 20;
-    var barY = curY + 105;
+    var barY = curY + 60;
     var barW = contentW - 40;
-    var barH = 20;
+    var barH = 24;
     var totalG = p + c + f;
     var pPct = totalG > 0 ? p / totalG : 0;
     var cPct = totalG > 0 ? c / totalG : 0;
     var fPct = totalG > 0 ? f / totalG : 0;
 
-    // Bar background
-    drawRoundRect(barX, barY, barW, barH, 10);
-    ctx.fillStyle = '#374151';
-    ctx.fill();
-
-    // Protein segment
-    if (pPct > 0) {
-        drawRoundRect(barX, barY, barW * pPct, barH, pPct === 1 ? 10 : 0);
-        ctx.fillStyle = proteinColor;
-        ctx.fillRect(barX, barY, barW * pPct, barH);
-    }
-    // Carbs segment
-    if (cPct > 0) {
-        ctx.fillStyle = carbsColor;
-        ctx.fillRect(barX + barW * pPct, barY, barW * cPct, barH);
-    }
-    // Fat segment
-    if (fPct > 0) {
-        ctx.fillStyle = fatColor;
-        ctx.fillRect(barX + barW * (pPct + cPct), barY, barW * fPct, barH);
-    }
-    // Round the full bar
-    drawRoundRect(barX, barY, barW, barH, 10);
+    // Rounded stacked bar
+    drawRoundRect(barX, barY, barW, barH, 12);
     ctx.save();
     ctx.clip();
     if (pPct > 0) { ctx.fillStyle = proteinColor; ctx.fillRect(barX, barY, barW * pPct, barH); }
@@ -1455,86 +1465,50 @@ function exportDietImage() {
     if (fPct > 0) { ctx.fillStyle = fatColor; ctx.fillRect(barX + barW * (pPct + cPct), barY, barW * fPct, barH); }
     ctx.restore();
 
-    // Macro labels below bar
-    var macroY = barY + 50;
-    var colW = contentW / 3;
+    // 3 Macro cards below bar
+    var cardGap = 20;
+    var cardW = (contentW - 40 - cardGap * 2) / 3;
+    var cardH = 110;
+    var cardY = barY + barH + 24;
+    var cardStartX = pad + 20;
 
-    // Protein
-    ctx.fillStyle = proteinColor;
-    ctx.fillRect(pad + 20, macroY - 12, 14, 14);
-    drawText('Proteinas', pad + 42, macroY, textLight, '18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
-    drawText(p + 'g', pad + 42, macroY + 28, textWhite, 'bold 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
-    drawText(Math.round(pPct * 100) + '%', pad + 42 + 70, macroY + 28, textMuted, '18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
+    var macroCards = [
+        { label: 'Proteinas', grams: p, pct: Math.round(pPct * 100), color: proteinColor },
+        { label: 'Carbohidratos', grams: c, pct: Math.round(cPct * 100), color: carbsColor },
+        { label: 'Grasas', grams: f, pct: Math.round(fPct * 100), color: fatColor }
+    ];
 
-    // Carbs
-    var cx = pad + colW + 20;
-    ctx.fillStyle = carbsColor;
-    ctx.fillRect(cx, macroY - 12, 14, 14);
-    drawText('Carbohidratos', cx + 22, macroY, textLight, '18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
-    drawText(c + 'g', cx + 22, macroY + 28, textWhite, 'bold 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
-    drawText(Math.round(cPct * 100) + '%', cx + 22 + 70, macroY + 28, textMuted, '18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
+    macroCards.forEach(function(mc, i) {
+        var cx = cardStartX + i * (cardW + cardGap);
 
-    // Fat
-    var fx = pad + colW * 2 + 20;
-    ctx.fillStyle = fatColor;
-    ctx.fillRect(fx, macroY - 12, 14, 14);
-    drawText('Grasas', fx + 22, macroY, textLight, '18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
-    drawText(f + 'g', fx + 22, macroY + 28, textWhite, 'bold 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
-    drawText(Math.round(fPct * 100) + '%', fx + 22 + 70, macroY + 28, textMuted, '18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
+        // Card background
+        drawRoundRect(cx, cardY, cardW, cardH, 10);
+        ctx.fillStyle = '#1B1F2E';
+        ctx.fill();
 
-    // Donut chart
-    var donutCX = W / 2;
-    var donutCY = macroY + 110;
-    var donutR = 55;
-    var donutW2 = 16;
+        // Color accent bar at top of card
+        drawRoundRect(cx, cardY, cardW, 5, 0);
+        ctx.fillStyle = mc.color;
+        ctx.fill();
+        // Fix top corners
+        drawRoundRect(cx, cardY, cardW, cardH, 10);
+        ctx.save();
+        ctx.clip();
+        ctx.fillStyle = mc.color;
+        ctx.fillRect(cx, cardY, cardW, 5);
+        ctx.restore();
 
-    // Background ring
-    ctx.beginPath();
-    ctx.arc(donutCX, donutCY, donutR, 0, Math.PI * 2);
-    ctx.strokeStyle = '#374151';
-    ctx.lineWidth = donutW2;
-    ctx.stroke();
+        // Label
+        ctx.textAlign = 'center';
+        drawText(mc.label, cx + cardW / 2, cardY + 34, textMuted, '16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
 
-    // Protein arc
-    var startAngle = -Math.PI / 2;
-    if (pPct > 0) {
-        ctx.beginPath();
-        ctx.arc(donutCX, donutCY, donutR, startAngle, startAngle + Math.PI * 2 * pPct);
-        ctx.strokeStyle = proteinColor;
-        ctx.lineWidth = donutW2;
-        ctx.lineCap = 'butt';
-        ctx.stroke();
-    }
-    startAngle += Math.PI * 2 * pPct;
+        // Grams
+        drawText(mc.grams + 'g', cx + cardW / 2, cardY + 68, textWhite, 'bold 30px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
 
-    // Carbs arc
-    if (cPct > 0) {
-        ctx.beginPath();
-        ctx.arc(donutCX, donutCY, donutR, startAngle, startAngle + Math.PI * 2 * cPct);
-        ctx.strokeStyle = carbsColor;
-        ctx.lineWidth = donutW2;
-        ctx.stroke();
-    }
-    startAngle += Math.PI * 2 * cPct;
-
-    // Fat arc
-    if (fPct > 0) {
-        ctx.beginPath();
-        ctx.arc(donutCX, donutCY, donutR, startAngle, startAngle + Math.PI * 2 * fPct);
-        ctx.strokeStyle = fatColor;
-        ctx.lineWidth = donutW2;
-        ctx.stroke();
-    }
-
-    // Center text
-    ctx.fillStyle = textWhite;
-    ctx.font = 'bold 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(kcal, donutCX, donutCY + 2);
-    ctx.font = '13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    ctx.fillStyle = textMuted;
-    ctx.fillText('kcal', donutCX, donutCY + 18);
-    ctx.textAlign = 'left';
+        // Percentage
+        drawText(mc.pct + '%', cx + cardW / 2, cardY + 94, textMuted, '18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
+        ctx.textAlign = 'left';
+    });
 
     curY += macroSectionH + 24;
 
@@ -1542,7 +1516,7 @@ function exportDietImage() {
     ctx.fillStyle = textMuted;
     ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Generado con Mi Plan Nutricional  -  pcresp0.github.io/dieta_gym_PCB', W / 2, curY + 16);
+    ctx.fillText('Generado con Mi Plan Nutricional  \u2022  pcresp0.github.io/dieta_gym_PCB', W / 2, curY + 16);
     ctx.textAlign = 'left';
 
     // Trim canvas to actual height
@@ -1553,20 +1527,64 @@ function exportDietImage() {
     var tCtx = trimmed.getContext('2d');
     tCtx.drawImage(canvas, 0, 0);
 
-    // Download
-    trimmed.toBlob(function(blob) {
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = 'mi-plan-nutricional.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
-    }, 'image/png');
+    return trimmed;
 }
 
-document.getElementById('export-btn').addEventListener('click', exportDietImage);
-document.getElementById('header-export-btn').addEventListener('click', exportDietImage);
+function exportDiet(format) {
+    var canvas = buildExportCanvas();
+
+    if (format === 'pdf') {
+        exportAsPdf(canvas);
+    } else {
+        // PNG download
+        canvas.toBlob(function(blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'mi-plan-nutricional.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
+        }, 'image/png');
+    }
+}
+
+function exportAsPdf(canvas) {
+    // Use canvas as a full-page image in a PDF via jsPDF
+    var script = document.getElementById('jspdf-script');
+    if (!script) {
+        script = document.createElement('script');
+        script.id = 'jspdf-script';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        script.onload = function() { generatePdf(canvas); };
+        document.head.appendChild(script);
+    } else {
+        generatePdf(canvas);
+    }
+}
+
+function generatePdf(canvas) {
+    var jsPDF = window.jspdf.jsPDF;
+    var imgData = canvas.toDataURL('image/png');
+    var cW = canvas.width;
+    var cH = canvas.height;
+
+    // A4 width in mm, scale canvas proportionally
+    var pageW = 210;
+    var pageH = 297;
+    var imgW = pageW - 20; // 10mm margin each side
+    var imgH = (cH / cW) * imgW;
+
+    // If image is taller than one page, use a single long page
+    var pdfH = Math.max(pageH, imgH + 20);
+
+    var doc = new jsPDF({ unit: 'mm', format: [pageW, pdfH] });
+    doc.addImage(imgData, 'PNG', 10, 10, imgW, imgH);
+    doc.save('mi-plan-nutricional.pdf');
+}
+
+document.getElementById('export-btn').addEventListener('click', showExportModal);
+document.getElementById('header-export-btn').addEventListener('click', showExportModal);
 
 document.addEventListener('DOMContentLoaded', init);
