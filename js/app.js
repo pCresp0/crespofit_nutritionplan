@@ -188,14 +188,14 @@ function renderMealTable(containerId, carbsData, proteinsData, carbSelection, pr
         const unit = item.unit || 'g';
         let row = '<tr class="' + (isSelected ? 'selected' : '') + '" data-meal="' + mealType + '" data-type="carb" data-index="' + idx + '">' +
             '<td>' + item.name + '</td>' +
-            '<td>' + scaled + unit + '</td>' +
+            '<td>' + scaled + ' ' + unit + '</td>' +
             '</tr>';
 
         if (item.altName) {
             const altScaled = scaleAmount(item.altBase, ratio);
             row += '<tr class="sub-row ' + (isSelected ? 'selected' : '') + '" data-meal="' + mealType + '" data-type="carb" data-index="' + idx + '">' +
                 '<td>' + item.altName + '</td>' +
-                '<td>' + altScaled + unit + '</td>' +
+                '<td>' + altScaled + ' ' + unit + '</td>' +
                 '</tr>';
         }
         return row;
@@ -207,28 +207,22 @@ function renderMealTable(containerId, carbsData, proteinsData, carbSelection, pr
         const unit = item.unit || 'g';
         return '<tr class="' + (isSelected ? 'selected' : '') + '" data-meal="' + mealType + '" data-type="protein" data-index="' + idx + '">' +
             '<td>' + item.name + '</td>' +
-            '<td>' + scaled + unit + '</td>' +
+            '<td>' + scaled + ' ' + unit + '</td>' +
             '</tr>';
     }).join('');
 
-    const noteText = mealType === 'lunch' || mealType === 'dinner'
-        ? '**Escurrir muy bien las latas de aceite de oliva'
-        : '';
-
     container.innerHTML =
         '<div class="meal-table-wrapper">' +
-            '<div class="meal-table-header carbs">Hidratos de Carbono</div>' +
+            '<div class="meal-table-header carbs">🌾 Hidratos de Carbono</div>' +
             '<table class="meal-table">' +
-                '<thead><tr><th>Alimento</th><th>Gramos</th></tr></thead>' +
                 '<tbody>' + carbsRows + '</tbody>' +
             '</table>' +
         '</div>' +
         '<div class="meal-table-wrapper">' +
-            '<div class="meal-table-header protein">Proteínas</div>' +
+            '<div class="meal-table-header protein">🥩 Proteínas</div>' +
             '<table class="meal-table">' +
-                '<thead><tr><th>Alimento</th><th>Gramos</th></tr></thead>' +
                 '<tbody>' + proteinRows +
-                    '<tr class="note-row"><td colspan="2">' + noteText + '</td></tr>' +
+                    '<tr class="note-row"><td colspan="2">Escurrir bien las latas de aceite de oliva</td></tr>' +
                 '</tbody>' +
             '</table>' +
         '</div>';
