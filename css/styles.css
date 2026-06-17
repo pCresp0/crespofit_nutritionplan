@@ -3140,27 +3140,39 @@ body {
 .goal-card.selected {
     border-color: var(--primary);
     background: var(--selected-bg);
-    box-shadow: 0 0 0 1px var(--primary);
+    box-shadow: 0 0 0 2px var(--primary);
+    transform: translateY(-1px);
 }
 
 .goal-card.recommended {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent), 0 0 12px rgba(212, 160, 23, 0.15);
+    border-color: var(--border-hover);
 }
 
-.goal-card.recommended::after {
-    content: '★ Recomendado';
+.goal-card.recommended::before {
+    content: '★ RECOMENDADO';
     position: absolute;
     top: -9px;
     left: 14px;
+    background: var(--text-muted);
+    color: var(--card-bg);
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.85;
+}
+
+.goal-card.recommended.selected::before {
     background: var(--accent);
     color: #000;
-    font-size: 0.65rem;
-    font-weight: 800;
-    padding: 2px 10px;
-    border-radius: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+    opacity: 1;
+}
+
+.goal-card.recommended.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent);
 }
 
 .goal-recommendation {
