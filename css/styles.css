@@ -317,7 +317,7 @@ body {
 .main {
     max-width: var(--max-width);
     margin: 0 auto;
-    padding: 0 16px 16px;
+    padding: 16px 16px 16px;
 }
 
 /* ========== MAIN TABS NAV ========== */
