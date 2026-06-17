@@ -659,9 +659,13 @@ document.addEventListener('click', function(e) {
     if (extrasBtn) {
         e.preventDefault(); e.stopPropagation();
         document.getElementById('tooltip-title').textContent = 'Base obligatoria por comida';
-        document.getElementById('tooltip-body').innerHTML = '<p><strong>Verduras (~200g):</strong> Fibra, micronutrientes y volumen saciante con m\u00ednimas calor\u00edas.</p>' +
-            '<p><strong>Aceite de oliva virgen extra (5ml):</strong> Grasas saludables esenciales para absorción de vitaminas liposolubles y síntesis hormonal.</p>' +
-            '<p><strong>1 fruta:</strong> Aporta vitaminas, antioxidantes y carbohidratos de bajo IG para recuperación.</p>';
+        document.getElementById('tooltip-body').innerHTML =
+            '<ul class="tooltip-list">' +
+            '<li><strong>Verduras (~200g):</strong> Fibra, micronutrientes y volumen saciante con mínimas calorías.</li>' +
+            '<li><strong>Aceite de oliva virgen extra (5ml):</strong> El oleocantal del AOVE inhibe COX-1 y COX-2 como el ibuprofeno, reduciendo inflamación y agujetas (DOMS). Dosis mínima eficaz: 30-45ml/día (Beauchamp et al.).</li>' +
+            '<li><strong>1 fruta:</strong> Aporta vitaminas, antioxidantes y carbohidratos de bajo IG para recuperación.</li>' +
+            '<li><strong>Grasas nunca &lt;20% del TDEE</strong> para mantener síntesis hormonal (testosterona) y salud inmunitaria (ISSN 2017).</li>' +
+            '</ul>';
         document.getElementById('tooltip-overlay').style.display = '';
         return;
     }

@@ -1618,6 +1618,26 @@ body {
     margin-bottom: 4px;
 }
 
+.tooltip-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.tooltip-list li {
+    position: relative;
+    padding: 10px 12px 10px 22px;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--accent);
+    background: rgba(212, 160, 23, 0.04);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    line-height: 1.5;
+}
+
+.tooltip-list li:last-child {
+    margin-bottom: 0;
+}
+
 /* Calculator results */
 .calc-results {
     margin-top: 20px;
