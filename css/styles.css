@@ -1973,25 +1973,32 @@ body {
 
 /* ========== RECONFIGURE BUTTON ========== */
 .reconfigure-btn {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    background: transparent;
-    border: 1.5px dashed var(--border);
-    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
     color: var(--text-muted);
     font-family: inherit;
-    font-size: 0.84rem;
+    font-size: 0.76rem;
     font-weight: 600;
     cursor: pointer;
     transition: all var(--transition);
-    margin-bottom: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
 }
 
 .reconfigure-btn:hover {
     border-color: var(--primary);
     color: var(--primary-dark);
     background: var(--primary-bg);
+    box-shadow: var(--shadow);
+}
+
+.reconfigure-btn:active {
+    transform: scale(0.97);
 }
 
 /* ========== RESPONSIVE ONBOARDING ========== */
