@@ -146,8 +146,7 @@ function calculateSelectedMacros() {
         var item = data[idx]; var g = scaleAmount(item.base, ratio);
         t.kcal += item.n[0]*g/100; t.protein += item.n[1]*g/100; t.carbs += item.n[2]*g/100; t.fat += item.n[3]*g/100;
     }
-    function addExtras(hasAny) {
-        if (!hasAny) return;
+    function addExtras() {
         var vg = scaleAmount(200, ratio); var om = scaleAmount(5, ratio);
         t.kcal += extrasNutr.verduras[0]*vg/100; t.protein += extrasNutr.verduras[1]*vg/100; t.carbs += extrasNutr.verduras[2]*vg/100; t.fat += extrasNutr.verduras[3]*vg/100;
         t.kcal += extrasNutr.aceite[0]*om/100; t.fat += extrasNutr.aceite[3]*om/100;
@@ -155,10 +154,11 @@ function calculateSelectedMacros() {
     }
 
     addFood(lunchCarbs, selections.lunchCarb); addFood(lunchProteins, selections.lunchProtein);
-    addExtras(selections.lunchCarb !== null || selections.lunchProtein !== null);
+    addExtras();
     addFood(dinnerCarbs, selections.dinnerCarb); addFood(dinnerProteins, selections.dinnerProtein);
-    addExtras(selections.dinnerCarb !== null || selections.dinnerProtein !== null);
-    return has ? t : null;
+    addExtras();
+    has = true;
+    return t;
 }
 
 // ============================================================
