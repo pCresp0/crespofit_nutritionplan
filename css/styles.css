@@ -51,7 +51,7 @@ body {
     --fat-accent: #5B9BD5;
 
     /* Component-specific */
-    --header-bg: linear-gradient(145deg, #B8860B 0%, #A67C00 50%, #8A6500 100%);
+    --header-bg: linear-gradient(145deg, #7A5A10 0%, #6B4E08 50%, #5A4005 100%);
     --header-shadow: 0 4px 20px rgba(0,0,0,0.18);
     --tabs-bg: #EDEAE3;
     --tab-active-bg: var(--card-bg);
@@ -126,7 +126,7 @@ body {
     --protein-accent: #F08AA8;
     --fat-accent: #80BCF0;
 
-    --header-bg: linear-gradient(145deg, #1E2235 0%, #222640 50%, #252A45 100%);
+    --header-bg: linear-gradient(145deg, #10132A 0%, #141830 50%, #161B38 100%);
     --header-shadow: 0 4px 20px rgba(10,12,30,0.5);
     --tabs-bg: #1E2232;
     --tab-active-bg: var(--card-bg);
@@ -187,6 +187,7 @@ body {
     top: 0;
     z-index: 100;
     box-shadow: var(--header-shadow);
+    border-bottom: 2px solid var(--accent);
     transition: padding 0.3s ease;
 }
 
