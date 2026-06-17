@@ -1000,39 +1000,10 @@ function renderTrainerContent() {
     document.getElementById('trainer-content').innerHTML = html;
 }
 
-// Long-press on h1 title to enter trainer mode
-(function() {
-    var timer = null;
-    var h1 = null;
-
-    function setup() {
-        h1 = document.querySelector('.header-content h1');
-        if (!h1) return;
-
-        h1.addEventListener('touchstart', function(e) {
-            timer = setTimeout(function() {
-                enterTrainerMode();
-            }, 1200);
-        });
-        h1.addEventListener('touchend', function() { clearTimeout(timer); });
-        h1.addEventListener('touchmove', function() { clearTimeout(timer); });
-
-        // Desktop: mousedown
-        h1.addEventListener('mousedown', function(e) {
-            timer = setTimeout(function() {
-                enterTrainerMode();
-            }, 1200);
-        });
-        h1.addEventListener('mouseup', function() { clearTimeout(timer); });
-        h1.addEventListener('mouseleave', function() { clearTimeout(timer); });
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setup);
-    } else {
-        setup();
-    }
-})();
+// Trainer toggle button
+document.getElementById('trainer-toggle').addEventListener('click', function() {
+    enterTrainerMode();
+});
 
 // Exit trainer mode button
 document.addEventListener('click', function(e) {
