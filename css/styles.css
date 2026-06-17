@@ -1182,6 +1182,128 @@ body {
     opacity: 1;
 }
 
+/* Footer about button */
+.footer-about-btn {
+    display: inline-block;
+    margin: 8px 0;
+    padding: 6px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.footer-about-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--accent);
+}
+
+/* About modal */
+.about-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.about-modal {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    max-width: 600px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.about-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--card-bg);
+    z-index: 1;
+}
+
+.about-modal-header h2 {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.about-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+}
+
+.about-close:hover {
+    color: var(--text-primary);
+}
+
+.about-modal-body {
+    padding: 20px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.about-modal-body h3 {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin: 18px 0 8px;
+}
+
+.about-modal-body h3:first-child {
+    margin-top: 0;
+}
+
+.about-modal-body p {
+    margin: 0 0 10px;
+}
+
+.about-modal-body ul {
+    padding-left: 20px;
+    margin: 6px 0 12px;
+}
+
+.about-modal-body li {
+    margin-bottom: 4px;
+}
+
+.about-modal-body code {
+    background: rgba(255,255,255,0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.about-modal-body a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.about-modal-body a:hover {
+    text-decoration: underline;
+}
+
 /* ========== CALCULATOR ========== */
 .calc-container {
     padding: 16px 20px 20px;

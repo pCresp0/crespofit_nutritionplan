@@ -790,6 +790,13 @@ document.addEventListener('click', function(e) {
     if (e.target.id === 'trainer-exit-btn' || e.target.closest('#trainer-exit-btn')) {
         exitTrainerMode();
     }
+    // About modal
+    if (e.target.id === 'footer-about-btn' || e.target.closest('#footer-about-btn')) {
+        document.getElementById('about-overlay').style.display = '';
+    }
+    if (e.target.id === 'about-overlay' || e.target.id === 'about-close' || e.target.closest('#about-close')) {
+        document.getElementById('about-overlay').style.display = 'none';
+    }
 });
 
 document.addEventListener('DOMContentLoaded', init);

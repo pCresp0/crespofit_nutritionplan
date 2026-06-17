@@ -321,12 +321,59 @@
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
                     </a>
                 </div>
+                <button class="footer-about-btn" id="footer-about-btn">Sobre la web</button>
                 <p class="footer-copy">&copy; 2026 &middot; Pablo Crespo</p>
                 <div class="footer-visits">
                     <img src="https://hits.sh/pcresp0.github.io/dieta_gym_PCB.svg?label=visitas&color=6B7280&labelColor=374151" alt="Contador de visitas">
                 </div>
             </div>
         </footer>
+    </div>
+
+    <!-- ABOUT MODAL -->
+    <div class="about-overlay" id="about-overlay" style="display:none;">
+        <div class="about-modal">
+            <div class="about-modal-header">
+                <h2>Sobre esta web</h2>
+                <button class="about-close" id="about-close">&times;</button>
+            </div>
+            <div class="about-modal-body">
+                <h3>🎯 Qué es</h3>
+                <p>Una herramienta de planificación nutricional que ajusta automáticamente las cantidades de alimentos según tus calorías objetivo. Basada en un plan real de un entrenador personal certificado.</p>
+
+                <h3>🏗️ Cómo está hecha</h3>
+                <p><strong>HTML + CSS + JavaScript puro</strong> — sin React, sin Angular, sin ningún framework. Una sola página que funciona completamente en tu navegador sin necesidad de servidor.</p>
+                <ul>
+                    <li><strong>~350 líneas de HTML</strong> — estructura semántica con onboarding, app y modales</li>
+                    <li><strong>~2500 líneas de CSS</strong> — diseño responsive, tema oscuro/claro, variables CSS</li>
+                    <li><strong>~800 líneas de JavaScript</strong> — datos, lógica de escalado, renderizado y persistencia</li>
+                </ul>
+
+                <h3>📐 Arquitectura</h3>
+                <p>Single Page Application (SPA) estática. Todo se ejecuta en el navegador:</p>
+                <ul>
+                    <li>Los datos nutricionales están definidos como arrays de objetos en JS</li>
+                    <li>Las cantidades se escalan con un ratio simple: <code>kcal_elegidas / 2500</code></li>
+                    <li>Cada cambio dispara un re-render selectivo de las secciones afectadas</li>
+                    <li>El estado se persiste en <code>localStorage</code> (selecciones, datos TDEE, tema)</li>
+                </ul>
+
+                <h3>🧮 Calculadora TDEE</h3>
+                <p>Usa la fórmula de <strong>Mifflin-St Jeor</strong> (la más precisa para población general según la ADA) para calcular tu gasto calórico. Después aplica un factor de actividad diaria y le suma las calorías estimadas del entreno.</p>
+
+                <h3>🔬 Base científica</h3>
+                <p>Las dosis de suplementación están basadas en:</p>
+                <ul>
+                    <li><strong>ISSN Position Stands</strong> — la referencia en nutrición deportiva</li>
+                    <li><strong>Jäger et al. 2017</strong> — creatina monohidrato</li>
+                    <li><strong>Meta-análisis 2024</strong> — omega-3 (EPA+DHA) y recuperación</li>
+                    <li><strong>Dominguez et al. 2025</strong> — magnesio y rendimiento</li>
+                </ul>
+
+                <h3>🌐 Hosting</h3>
+                <p>Alojada gratuitamente en <strong>GitHub Pages</strong>. El código fuente es público en <a href="https://github.com/pCresp0/dieta_gym_PCB" target="_blank" rel="noopener">GitHub</a>.</p>
+            </div>
+        </div>
     </div>
 
     <!-- SELECTION VALIDATOR BAR -->
