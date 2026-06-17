@@ -46,9 +46,9 @@ var EXTRAS_OIL_ML = 15; // 1 cucharada sopera AOVE por comida (oleocantal antiin
 
 var supplements = [
     {icon:'💪',title:'Creatina monohidrato',desc:'5g/día (todos los días, entrenes o no)',tip:'La ISSN recomienda 3-5g/día crónicos para mantener saturación intramuscular. Mejora resíntesis de ATP y fuerza. No es necesaria fase de carga (Jäger et al. 2017).'},
-    {icon:'🐟',title:'Omega 3 (EPA+DHA)',desc:'2g EPA+DHA/día (≥4 cápsulas concentrado)',tip:'Dosis de 2-3g/día EPA+DHA atenúan DOMS y reducen inflamación. Una cápsula estándar 1000mg solo aporta ~300mg EPA+DHA; se necesitan 4-6 cápsulas concentradas (ISSN 2024).'},
-    {icon:'🧲',title:'Magnesio (citrato/bisglicinato)',desc:'400mg antes de dormir',tip:'Cofactor del ATP. Formas orgánicas (citrato, bisglicinato) tienen alta biodisponibilidad vs óxido. Mejora calidad del sueño profundo y reduce lactato (Dominguez et al. 2025).'},
-    {icon:'⚡',title:'Zinc',desc:'15mg/día antes de dormir',tip:'Apoyo inmunitario. 8-15mg/día es seguro. >100mg/día es tóxico y baja HDL. El ZMA NO ha demostrado elevar testosterona en personas sin deficiencias (ISSN).'},
+    {icon:'🐟',title:'Omega 3 (ESN Omega-3)',desc:'3 cápsulas/día → 1200mg EPA + 900mg DHA',tip:'Cada porción (3 caps) aporta 1200mg EPA + 900mg DHA en forma triglicérido natural. Analizado para metales pesados. Dosis de 2-3g/día EPA+DHA atenúan DOMS y reducen inflamación (ISSN 2024).'},
+    {icon:'🧲',title:'Magnesio (ESN Magnesium Complex)',desc:'3 cápsulas/día antes de dormir (complejo 4-en-1)',tip:'Complejo 4-en-1 de alta biodisponibilidad. Porción = 3 cápsulas. Cofactor del ATP, mejora calidad del sueño profundo y reduce lactato. Formas orgánicas superiores a óxido (Dominguez et al. 2025).'},
+    {icon:'⚡',title:'Zinc (ESN Zinc)',desc:'1 cápsula/día → 25mg zinc antes de dormir',tip:'25mg de zinc de alta biodisponibilidad por cápsula. Apoyo inmunitario y recuperación. Dentro del rango seguro (8-40mg/día). >100mg/día es tóxico. No tomar con calcio o hierro (ISSN).'},
     {icon:'😴',title:'Melatonina',desc:'6-10mg pre-sueño',tip:'Mejora sprint anaeróbico al día siguiente, acelera recuperación y reduce marcadores de daño muscular (CK, LDH). Sin efecto si se toma pre-ejercicio (Guo et al. 2026).'}
 ];
 
