@@ -1554,5 +1554,6 @@ function exportDietImage() {
 }
 
 document.getElementById('export-btn').addEventListener('click', exportDietImage);
+document.getElementById('header-export-btn').addEventListener('click', exportDietImage);
 
 document.addEventListener('DOMContentLoaded', init);
