@@ -47,8 +47,8 @@ var EXTRAS_OIL_ML = 5; // 5ml aceite oliva por comida (según entrenador)
 var supplements = [
     {icon:'💪',title:'Creatina',desc:'8g todos los días',tip:'8g/día crónicos para mantener saturación intramuscular. Mejora resíntesis de ATP y fuerza. No es necesaria fase de carga.'},
     {icon:'🐟',title:'Omega 3',desc:'2 pastillas/día (1 desayuno + 1 comida)',tip:'Dosis de 2-3g/día EPA+DHA atenúan DOMS y reducen inflamación (ISSN 2024).'},
-    {icon:'🧲',title:'Magnesio',desc:'2 pastillas antes de dormir',tip:'Cofactor del ATP, mejora calidad del sueño profundo y reduce lactato.'},
-    {icon:'⚡',title:'Zinc',desc:'2 pastillas antes de dormir',tip:'Apoyo inmunitario, recuperación muscular y mantenimiento hormonal.'},
+    {icon:'🧲',title:'Magnesio',desc:'2 pastillas antes de dormir (300mg)',tip:'300mg/día (2×150mg cáps. ESN). Cofactor del ATP, mejora calidad del sueño profundo y reduce lactato.'},
+    {icon:'⚡',title:'Zinc',desc:'2 pastillas antes de dormir (30mg)',tip:'30mg/día (2×15mg cáps. ESN). Apoyo inmunitario, recuperación muscular y mantenimiento hormonal.'},
     {icon:'😴',title:'Melatonina',desc:'Opcional, para favorecer el descanso',tip:'Mejora sprint anaeróbico al día siguiente, acelera recuperación y reduce marcadores de daño muscular.'}
 ];
 
@@ -1578,7 +1578,7 @@ var mealSupplements = {
     breakfast: [{icon:'💪',title:'Creatina',desc:'8g'},{icon:'🐟',title:'Omega 3',desc:'1 pastilla'}],
     lunch: [{icon:'🐟',title:'Omega 3',desc:'1 pastilla'}],
     dinner: [],
-    sleep: [{icon:'🧲',title:'Magnesio',desc:'2 pastillas'},{icon:'⚡',title:'Zinc',desc:'2 pastillas'},{icon:'😴',title:'Melatonina',desc:'Opcional'}]
+    sleep: [{icon:'🧲',title:'Magnesio',desc:'2 pastillas (300mg)'},{icon:'⚡',title:'Zinc',desc:'2 pastillas (30mg)'},{icon:'😴',title:'Melatonina',desc:'Opcional'}]
 };
 
 function buildMealSummaryHTML(selObj, ratio, isTrainer) {
