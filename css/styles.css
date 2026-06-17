@@ -277,16 +277,56 @@ body {
 }
 
 /* Range slider */
+.kcal-slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 340px;
+    margin-top: 4px;
+}
+
+.kcal-range-label {
+    font-size: 0.65rem;
+    opacity: 0.5;
+    font-weight: 600;
+    min-width: 30px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.kcal-slider-track {
+    position: relative;
+    flex: 1;
+}
+
 #kcal-range {
     width: 100%;
-    max-width: 300px;
     height: 5px;
     -webkit-appearance: none;
     appearance: none;
     background: rgba(255,255,255,0.25);
     border-radius: 3px;
     outline: none;
-    margin-top: 4px;
+}
+
+.kcal-rec-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 16px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 2px;
+    pointer-events: none;
+    transition: left 0.3s ease;
+}
+
+.kcal-rec-label {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    margin-top: 2px;
+    font-weight: 500;
 }
 
 #kcal-range::-webkit-slider-thumb {

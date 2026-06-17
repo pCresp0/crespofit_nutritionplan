@@ -224,7 +224,15 @@
                         </div>
                         <button class="kcal-btn" id="kcal-plus" aria-label="Aumentar calorías">+</button>
                     </div>
-                    <input type="range" id="kcal-range" min="1500" max="3500" step="100" value="2500" aria-label="Selector de calorías">
+                    <div class="kcal-slider-wrapper">
+                        <span class="kcal-range-label" id="kcal-min-label">1500</span>
+                        <div class="kcal-slider-track">
+                            <input type="range" id="kcal-range" min="1500" max="3500" step="100" value="2500" aria-label="Selector de calorías">
+                            <div class="kcal-rec-marker" id="kcal-rec-marker" title="Recomendado"></div>
+                        </div>
+                        <span class="kcal-range-label" id="kcal-max-label">3500</span>
+                    </div>
+                    <div class="kcal-rec-label" id="kcal-rec-label"></div>
                 </div>
                 <!-- Warning banner -->
                 <div class="kcal-warning" id="kcal-warning" style="display:none;"></div>

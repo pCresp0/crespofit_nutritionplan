@@ -427,7 +427,7 @@ document.getElementById('start-plan').addEventListener('click', function() {
     document.getElementById('onboarding').style.display = 'none';
     document.getElementById('app-wrapper').style.display = '';
     document.getElementById('kcal-display').textContent = currentKcal;
-    document.getElementById('kcal-range').value = currentKcal;
+    updateSliderRange();
     renderAll();
     activateTab(getDefaultTab());
     saveAllState();
@@ -443,8 +443,40 @@ document.getElementById('reconfigure-btn').addEventListener('click', function() 
 // ============================================================
 // KCAL CONTROLS
 // ============================================================
+function getSliderMin() {
+    return Math.max(1200, Math.round((recommendedKcal - 1000) / 100) * 100);
+}
+function getSliderMax() {
+    return Math.round((recommendedKcal + 1000) / 100) * 100;
+}
+
+function updateSliderRange() {
+    var slider = document.getElementById('kcal-range');
+    var minVal = getSliderMin();
+    var maxVal = getSliderMax();
+    slider.min = minVal;
+    slider.max = maxVal;
+    slider.value = currentKcal;
+    document.getElementById('kcal-min-label').textContent = minVal;
+    document.getElementById('kcal-max-label').textContent = maxVal;
+    // Position recommended marker
+    var marker = document.getElementById('kcal-rec-marker');
+    var recLabel = document.getElementById('kcal-rec-label');
+    if (recommendedKcal && userGoal) {
+        var pct = ((recommendedKcal - minVal) / (maxVal - minVal)) * 100;
+        marker.style.left = pct + '%';
+        marker.style.display = '';
+        recLabel.textContent = '▲ Recomendado: ' + recommendedKcal + ' kcal';
+    } else {
+        marker.style.display = 'none';
+        recLabel.textContent = '';
+    }
+}
+
 function updateKcal(value) {
-    currentKcal = Math.max(1500, Math.min(3500, value));
+    var minVal = getSliderMin();
+    var maxVal = getSliderMax();
+    currentKcal = Math.max(minVal, Math.min(maxVal, value));
     document.getElementById('kcal-display').textContent = currentKcal;
     document.getElementById('kcal-range').value = currentKcal;
     renderAll();
@@ -584,8 +616,11 @@ function loadState() {
         if (!saved) return false;
         var data = JSON.parse(saved);
         if (!data.goal || !data.tdee) return false;
-        if (data.kcal >= 1500 && data.kcal <= 3500) currentKcal = data.kcal;
         recommendedKcal = data.recommended || 2500;
+        var minVal = Math.max(1200, Math.round((recommendedKcal - 1000) / 100) * 100);
+        var maxVal = Math.round((recommendedKcal + 1000) / 100) * 100;
+        if (data.kcal >= minVal && data.kcal <= maxVal) currentKcal = data.kcal;
+        else currentKcal = recommendedKcal;
         userGoal = data.goal;
         userTdee = data.tdee;
         if (data.selections) {
@@ -640,7 +675,7 @@ function init() {
         document.getElementById('onboarding').style.display = 'none';
         document.getElementById('app-wrapper').style.display = '';
         document.getElementById('kcal-display').textContent = currentKcal;
-        document.getElementById('kcal-range').value = currentKcal;
+        updateSliderRange();
         renderAll();
         activateTab(getDefaultTab());
     } else {
