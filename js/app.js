@@ -1318,6 +1318,7 @@ document.getElementById('start-plan').addEventListener('click', function() {
     document.getElementById('onboarding').style.display = 'none';
     document.getElementById('app-wrapper').style.display = '';
     document.getElementById('kcal-display').textContent = currentKcal;
+    window.scrollTo(0, 0);
     updateSliderRange();
     renderAll();
     activateTab(getDefaultTab());

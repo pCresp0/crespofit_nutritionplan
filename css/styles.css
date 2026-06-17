@@ -1629,6 +1629,26 @@ body {
     flex-wrap: wrap;
 }
 
+.diet-btn-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.diet-btn-info {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    cursor: help;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    line-height: 1;
+}
+
+.diet-btn-info:hover {
+    opacity: 1;
+    color: var(--accent);
+}
+
 .random-diet-btn {
     display: inline-flex;
     align-items: center;
