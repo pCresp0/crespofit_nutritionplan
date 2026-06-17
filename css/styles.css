@@ -1594,22 +1594,22 @@ body {
 }
 
 .export-section {
-    text-align: center;
-    margin-bottom: 16px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: center;
     gap: 10px;
+    margin-bottom: 16px;
 }
 
 .export-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 14px 32px;
+    padding: 14px 28px;
     background: linear-gradient(135deg, var(--accent), #D4920A);
     color: #1A1510;
-    font-size: 1rem;
+    font-size: 0.92rem;
     font-weight: 700;
     border: none;
     border-radius: var(--radius);
@@ -1638,17 +1638,23 @@ body {
 .share-whatsapp-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 28px;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
     background: #25D366;
-    color: #fff;
-    font-size: 0.92rem;
-    font-weight: 700;
     border: none;
-    border-radius: var(--radius);
+    border-radius: 50%;
     cursor: pointer;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
     box-shadow: 0 4px 14px rgba(37, 211, 102, 0.25);
+    flex-shrink: 0;
+}
+
+.share-whatsapp-btn img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
 }
 
 .share-whatsapp-btn:hover {
