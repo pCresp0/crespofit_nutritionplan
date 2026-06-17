@@ -801,10 +801,10 @@ function validateStep1() {
     var age = document.getElementById('calc-age').value;
     var h = document.getElementById('calc-height').value;
     var w = document.getElementById('calc-weight').value;
-    return age && h && w && parseFloat(age) >= 18 && parseFloat(h) > 0 && parseFloat(w) > 0;
+    return age && h && w && parseFloat(age) >= 18 && parseFloat(age) <= 99 && parseFloat(h) > 0 && parseFloat(w) > 0;
 }
 
-// Age under 18 warning
+// Age warnings
 document.getElementById('calc-age').addEventListener('input', function() {
     var hint = document.getElementById('age-hint');
     var val = parseInt(this.value);
@@ -812,9 +812,17 @@ document.getElementById('calc-age').addEventListener('input', function() {
         hint.innerHTML = '⚠️ Para menores de 18 años, el cuerpo está en pleno desarrollo y las necesidades nutricionales son diferentes. ' +
             'Te recomendamos consultar con un médico o nutricionista especializado en adolescentes antes de seguir cualquier plan de alimentación.';
         hint.classList.add('age-warning');
+        hint.classList.remove('age-elder');
+    } else if (val && val > 99) {
+        hint.innerHTML = '🎉 ¡' + val + ' años! Enhorabuena, de verdad — llegar hasta aquí es un logro increíble y dice mucho de ti. ' +
+            'Ninguna app de nutrición puede mejorar lo que tus años de vida ya demuestran. ' +
+            'Sigue disfrutando de la vida como hasta ahora y hazle caso a tu médico, que es quien mejor te conoce. ' +
+            '¡Eres una inspiración! 💪';
+        hint.classList.remove('age-warning');
+        hint.classList.add('age-elder');
     } else {
         hint.textContent = '';
-        hint.classList.remove('age-warning');
+        hint.classList.remove('age-warning', 'age-elder');
     }
     estimateBodyFatFromBMI();
 });
@@ -977,6 +985,10 @@ document.getElementById('next-1').addEventListener('click', function() {
     var age = parseInt(document.getElementById('calc-age').value);
     if (age && age < 18) {
         alert('Este plan está diseñado para adultos (18+). Si eres menor de 18, tu cuerpo aún está en desarrollo y tus necesidades nutricionales son diferentes. Consulta con un médico o nutricionista antes de seguir cualquier dieta.');
+        return;
+    }
+    if (age && age > 99) {
+        alert('¡' + age + ' años! Eres un ejemplo de vida. Sinceramente, no necesitas ninguna app — lo que has hecho hasta ahora te ha funcionado de maravilla. Sigue disfrutando y haciéndole caso a tu médico. ¡Larga vida! 🎉');
         return;
     }
     if (!validateStep1()) { alert('Rellena todos los campos: edad, altura y peso.'); return; }

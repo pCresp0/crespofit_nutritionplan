@@ -2378,6 +2378,16 @@ body {
     margin-top: 8px;
 }
 
+.calc-hint.age-elder {
+    color: #1e8449;
+    font-size: 0.7rem;
+    padding: 8px 10px;
+    background: rgba(30, 132, 73, 0.06);
+    border-radius: 6px;
+    border-left: 3px solid #1e8449;
+    margin-top: 8px;
+}
+
 .calc-hint.steps-joke {
     color: #6c3483;
     font-size: 0.72rem;
