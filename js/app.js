@@ -123,6 +123,20 @@ function getRatio() {
     return (currentKcal - EXTRAS_FIXED_KCAL * NUM_EXTRA_MEALS) / scaleBase;
 }
 
+// Per-selection ratio for weekly plan (all slots filled)
+function getRatioForSel(sel) {
+    var t = 0;
+    t += breakfastOptions[sel.breakfast].macros[0];
+    t += lunchCarbs[sel.lunchCarb].n[0] * lunchCarbs[sel.lunchCarb].base / 100;
+    t += lunchProteins[sel.lunchProtein].n[0] * lunchProteins[sel.lunchProtein].base / 100;
+    t += EXTRAS_SCALED_BASE;
+    t += dinnerCarbs[sel.dinnerCarb].n[0] * dinnerCarbs[sel.dinnerCarb].base / 100;
+    t += dinnerProteins[sel.dinnerProtein].n[0] * dinnerProteins[sel.dinnerProtein].base / 100;
+    t += EXTRAS_SCALED_BASE;
+    if (t <= 0) return 1;
+    return (currentKcal - EXTRAS_FIXED_KCAL * NUM_EXTRA_MEALS) / t;
+}
+
 function scaleAmount(base, ratio) {
     if (base === null || base === undefined) return null;
     var scaled = base * (ratio !== undefined ? ratio : getRatio());
@@ -933,7 +947,7 @@ function generateWeeklyPlan() {
 }
 
 function calcDayMacros(sel) {
-    var ratio = getRatio();
+    var ratio = getRatioForSel(sel);
     var t = { kcal: 0, protein: 0, carbs: 0, fat: 0 };
 
     // Breakfast
@@ -964,7 +978,6 @@ function calcDayMacros(sel) {
 }
 
 function buildWeeklyExportCanvas(plan) {
-    var ratio = getRatio();
     var bg = '#1B1F2E';
     var cardBg = '#242838';
     var accent = '#F0B840';
@@ -1144,16 +1157,17 @@ function buildWeeklyExportCanvas(plan) {
         ctx.fillStyle = textMuted;
         ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         ctx.fillText('🍲 Almuerzo', pad + 20, mealY);
-        var lcScaled = scaleAmount(lc.base, ratio);
-        var lpScaled = scaleAmount(lp.base, ratio);
+        var dayRatio = getRatioForSel(sel);
+        var lcScaled = scaleAmount(lc.base, dayRatio);
+        var lpScaled = scaleAmount(lp.base, dayRatio);
         ctx.fillStyle = textLight;
         ctx.font = '16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         ctx.fillText(lc.name + ' (' + lcScaled + 'g)  +  ' + lp.name + ' (' + lpScaled + (lp.unit || 'g') + ')', pad + 150, mealY);
 
         mealY += 32;
         // Extras
-        var vegG = scaleAmount(200, ratio);
-        var oilMl = scaleAmount(EXTRAS_OIL_ML, ratio);
+        var vegG = scaleAmount(200, dayRatio);
+        var oilMl = scaleAmount(EXTRAS_OIL_ML, dayRatio);
         ctx.fillStyle = textMuted;
         ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         ctx.fillText('+ ' + vegG + 'g verduras · ' + oilMl + 'ml aceite · 1 fruta (por comida)', pad + 150, mealY);
@@ -1163,8 +1177,8 @@ function buildWeeklyExportCanvas(plan) {
         ctx.fillStyle = textMuted;
         ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         ctx.fillText('🌙 Cena', pad + 20, mealY);
-        var dcScaled = scaleAmount(dc.base, ratio);
-        var dpScaled = scaleAmount(dp.base, ratio);
+        var dcScaled = scaleAmount(dc.base, dayRatio);
+        var dpScaled = scaleAmount(dp.base, dayRatio);
         ctx.fillStyle = textLight;
         ctx.font = '16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         ctx.fillText(dc.name + ' (' + dcScaled + 'g)  +  ' + dp.name + ' (' + dpScaled + (dp.unit || 'g') + ')', pad + 150, mealY);
