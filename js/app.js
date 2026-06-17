@@ -42,22 +42,15 @@ var dinnerProteins = [
 ];
 
 var extrasNutr = { verduras:[25,2,4,0.3], aceite:[900,0,0,100], fruta:[80,0.5,20,0.2] };
+var EXTRAS_OIL_ML = 15; // 1 cucharada sopera AOVE por comida (oleocantal antiinflamatorio)
 
 var supplements = [
-    {icon:'💪',title:'Creatina',desc:null},
-    {icon:'🐟',title:'Omega 3',desc:'2 pastillas (1 desayuno + 1 comida)'},
-    {icon:'🧲',title:'Magnesio',desc:'1 pastilla antes de dormir'},
-    {icon:'⚡',title:'Zinc',desc:'1 pastilla antes de dormir'},
-    {icon:'😴',title:'Melatonina',desc:'Opcional, para favorecer el descanso'}
+    {icon:'💪',title:'Creatina monohidrato',desc:'5g/día (todos los días, entrenes o no)',tip:'La ISSN recomienda 3-5g/día crónicos para mantener saturación intramuscular. Mejora resíntesis de ATP y fuerza. No es necesaria fase de carga (Jäger et al. 2017).'},
+    {icon:'🐟',title:'Omega 3 (EPA+DHA)',desc:'2g EPA+DHA/día (≥4 cápsulas concentrado)',tip:'Dosis de 2-3g/día EPA+DHA atenúan DOMS y reducen inflamación. Una cápsula estándar 1000mg solo aporta ~300mg EPA+DHA; se necesitan 4-6 cápsulas concentradas (ISSN 2024).'},
+    {icon:'🧲',title:'Magnesio (citrato/bisglicinato)',desc:'400mg antes de dormir',tip:'Cofactor del ATP. Formas orgánicas (citrato, bisglicinato) tienen alta biodisponibilidad vs óxido. Mejora calidad del sueño profundo y reduce lactato (Dominguez et al. 2025).'},
+    {icon:'⚡',title:'Zinc',desc:'15mg/día antes de dormir',tip:'Apoyo inmunitario. 8-15mg/día es seguro. >100mg/día es tóxico y baja HDL. El ZMA NO ha demostrado elevar testosterona en personas sin deficiencias (ISSN).'},
+    {icon:'😴',title:'Melatonina',desc:'6-10mg pre-sueño',tip:'Mejora sprint anaeróbico al día siguiente, acelera recuperación y reduce marcadores de daño muscular (CK, LDH). Sin efecto si se toma pre-ejercicio (Guo et al. 2026).'}
 ];
-
-function getCreatineDose() {
-    var el = document.getElementById('calc-weight');
-    var w = el ? parseFloat(el.value) : 0;
-    if (!w || w < 40) return 5;
-    var dose = w / 10;
-    return (dose % 1 > 0.5) ? Math.ceil(dose) : Math.floor(dose);
-}
 
 var goalLabels = { cut:'Perder grasa', maintain:'Mantener peso', bulk:'Ganar masa muscular' };
 var goalIcons = { cut:'🔥', maintain:'⚖️', bulk:'💪' };
@@ -147,7 +140,7 @@ function calculateSelectedMacros() {
         t.kcal += item.n[0]*g/100; t.protein += item.n[1]*g/100; t.carbs += item.n[2]*g/100; t.fat += item.n[3]*g/100;
     }
     function addExtras() {
-        var vg = scaleAmount(200, ratio); var om = scaleAmount(5, ratio);
+        var vg = scaleAmount(200, ratio); var om = scaleAmount(EXTRAS_OIL_ML, ratio);
         t.kcal += extrasNutr.verduras[0]*vg/100; t.protein += extrasNutr.verduras[1]*vg/100; t.carbs += extrasNutr.verduras[2]*vg/100; t.fat += extrasNutr.verduras[3]*vg/100;
         t.kcal += extrasNutr.aceite[0]*om/100; t.fat += extrasNutr.aceite[3]*om/100;
         t.kcal += extrasNutr.fruta[0]; t.protein += extrasNutr.fruta[1]; t.carbs += extrasNutr.fruta[2]; t.fat += extrasNutr.fruta[3];
@@ -198,16 +191,14 @@ function renderMealTable(cid, cd, pd, cs, ps, mt) {
 }
 
 function renderSupplements() {
-    var creatineDose = getCreatineDose();
     document.getElementById('supplements-list').innerHTML = supplements.map(function(s) {
-        var desc = s.desc;
-        if (s.title === 'Creatina') desc = creatineDose + 'g todos los días';
-        return '<div class="supplement-card"><span class="supplement-icon">'+s.icon+'</span><div class="supplement-text"><strong>'+s.title+'</strong>'+desc+'</div></div>';
+        var tipHtml = s.tip ? '<button class="supp-tooltip-btn" data-supptip="'+s.title+'">?</button>' : '';
+        return '<div class="supplement-card"><span class="supplement-icon">'+s.icon+'</span><div class="supplement-text"><strong>'+s.title+'</strong>'+s.desc+tipHtml+'</div></div>';
     }).join('');
 }
 
 function updateExtras() {
-    var ratio = getRatio(); var vg = scaleAmount(200,ratio); var ol = scaleAmount(5,ratio);
+    var ratio = getRatio(); var vg = scaleAmount(200,ratio); var ol = scaleAmount(EXTRAS_OIL_ML,ratio);
     document.querySelectorAll('.scaled-veg-lunch,.scaled-veg-dinner').forEach(function(e){e.textContent=vg;});
     document.querySelectorAll('.scaled-oil-lunch,.scaled-oil-dinner').forEach(function(e){e.textContent=ol;});
 }
@@ -495,6 +486,31 @@ function showTabToast(msg) {
 document.addEventListener('click', function(e) {
     var trigger = e.target.closest('.tooltip-trigger');
     if (trigger) { e.preventDefault(); e.stopPropagation(); var d = tooltipData[trigger.dataset.tooltip]; if(d){document.getElementById('tooltip-title').textContent=d.title;document.getElementById('tooltip-body').innerHTML=d.body;document.getElementById('tooltip-overlay').style.display='';} return; }
+    // Supplement tooltip
+    var suppBtn = e.target.closest('.supp-tooltip-btn');
+    if (suppBtn) {
+        e.preventDefault(); e.stopPropagation();
+        var name = suppBtn.dataset.supptip;
+        var supp = supplements.find(function(s){ return s.title === name; });
+        if (supp && supp.tip) {
+            document.getElementById('tooltip-title').textContent = supp.title;
+            document.getElementById('tooltip-body').innerHTML = '<p>'+supp.tip+'</p>';
+            document.getElementById('tooltip-overlay').style.display = '';
+        }
+        return;
+    }
+    // Extras tooltip
+    var extrasBtn = e.target.closest('.extras-tooltip-btn');
+    if (extrasBtn) {
+        e.preventDefault(); e.stopPropagation();
+        document.getElementById('tooltip-title').textContent = 'Base obligatoria por comida';
+        document.getElementById('tooltip-body').innerHTML = '<p><strong>Verduras (~200g):</strong> Fibra, micronutrientes y volumen saciante con m\u00ednimas calor\u00edas.</p>' +
+            '<p><strong>Aceite de oliva virgen extra (15ml = 1 cuchara sopera):</strong> El oleocantal del AOVE inhibe COX-1 y COX-2 como el ibuprofeno, reduciendo inflamaci\u00f3n y agujetas (DOMS). Dosis m\u00ednima eficaz: 30-45ml/d\u00eda (Beauchamp et al.).</p>' +
+            '<p><strong>1 fruta:</strong> Aporta vitaminas, antioxidantes y carbohidratos de bajo IG para recuperaci\u00f3n.</p>' +
+            '<p><strong>Grasas nunca &lt;20% del TDEE</strong> para mantener s\u00edntesis hormonal (testosterona) y salud inmunitaria (ISSN 2017).</p>';
+        document.getElementById('tooltip-overlay').style.display = '';
+        return;
+    }
     if (e.target.id==='tooltip-overlay'){document.getElementById('tooltip-overlay').style.display='none';return;}
     if (e.target.id==='tooltip-close'||e.target.closest('#tooltip-close')){document.getElementById('tooltip-overlay').style.display='none';return;}
 });
