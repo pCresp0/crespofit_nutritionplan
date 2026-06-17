@@ -265,7 +265,7 @@ function renderAll() {
     renderBreakfast();
     renderMealTable('lunch-tables',lunchCarbs,lunchProteins,selections.lunchCarb,selections.lunchProtein,'lunch');
     renderMealTable('dinner-tables',dinnerCarbs,dinnerProteins,selections.dinnerCarb,selections.dinnerProtein,'dinner');
-    renderSupplements(); updateExtras(); renderNutritionSummary(); renderInfoBanner(); updateKcalWarning();
+    renderSupplements(); updateExtras(); renderNutritionSummary(); renderInfoBanner(); updateKcalWarning(); renderValidator();
 }
 
 // ============================================================
@@ -407,7 +407,7 @@ document.getElementById('breakfast-grid').addEventListener('click', function(e) 
     var card = e.target.closest('.breakfast-card'); if (!card) return;
     var idx = parseInt(card.dataset.index);
     selections.breakfast = selections.breakfast === idx ? null : idx;
-    renderBreakfast(); renderNutritionSummary(); saveAllState();
+    renderBreakfast(); renderNutritionSummary(); renderValidator(); saveAllState();
 });
 
 document.addEventListener('click', function(e) {
@@ -417,7 +417,7 @@ document.addEventListener('click', function(e) {
     selections[key] = selections[key]===idx?null:idx;
     if (meal==='lunch') renderMealTable('lunch-tables',lunchCarbs,lunchProteins,selections.lunchCarb,selections.lunchProtein,'lunch');
     else renderMealTable('dinner-tables',dinnerCarbs,dinnerProteins,selections.dinnerCarb,selections.dinnerProtein,'dinner');
-    renderNutritionSummary(); saveAllState();
+    renderNutritionSummary(); renderValidator(); saveAllState();
 });
 
 document.querySelectorAll('[data-toggle]').forEach(function(h) {
@@ -530,6 +530,50 @@ function init() {
         document.getElementById('onboarding').style.display = '';
         document.getElementById('app-wrapper').style.display = 'none';
         showStep(1);
+    }
+}
+
+// ============================================================
+// SELECTION VALIDATOR BAR
+// ============================================================
+function renderValidator() {
+    var bar = document.getElementById('selection-validator');
+    if (!bar) return;
+
+    var checks = [
+        { key: 'breakfast', label: 'Desayuno', done: selections.breakfast !== null },
+        { key: 'lunchCarb', label: 'Almuerzo HC', done: selections.lunchCarb !== null },
+        { key: 'lunchProtein', label: 'Almuerzo Prot', done: selections.lunchProtein !== null },
+        { key: 'dinnerCarb', label: 'Cena HC', done: selections.dinnerCarb !== null },
+        { key: 'dinnerProtein', label: 'Cena Prot', done: selections.dinnerProtein !== null }
+    ];
+
+    var allDone = checks.every(function(c) { return c.done; });
+    var noneDone = checks.every(function(c) { return !c.done; });
+
+    if (noneDone) {
+        bar.classList.add('hidden');
+        return;
+    }
+
+    bar.classList.remove('hidden');
+
+    if (allDone) {
+        bar.classList.add('complete');
+        var macros = calculateSelectedMacros();
+        var kcal = macros ? Math.round(macros.kcal) : currentKcal;
+        bar.innerHTML = '<div class="validator-complete">' +
+            '<span>✅ Plan completo</span>' +
+            '<span class="vc-kcal">— ' + kcal + ' kcal</span>' +
+            '</div>';
+    } else {
+        bar.classList.remove('complete');
+        var items = checks.map(function(c) {
+            var cls = c.done ? 'validator-item done' : 'validator-item missing';
+            var icon = c.done ? '✓' : '○';
+            return '<span class="' + cls + '"><span class="vi-icon">' + icon + '</span>' + c.label + '</span>';
+        }).join('');
+        bar.innerHTML = '<div class="validator-items">' + items + '</div>';
     }
 }
 
