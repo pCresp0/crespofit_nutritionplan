@@ -328,33 +328,65 @@ function updateKcalWarning() {
     if (absDiff <= 200) { w.style.display = 'none'; return; }
 
     w.style.display = '';
+    var goalName = goalLabels[userGoal];
+    var severe = absDiff >= 400;
+    var resetBtn = '<button class="kcal-warning-reset" onclick="updateKcal(recommendedKcal)">Volver a ' + recommendedKcal + ' kcal</button>';
+
     if (userGoal === 'cut') {
-        if (diff > 200) {
-            w.className = 'kcal-warning warn-danger';
-            w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por encima</strong> de lo recomendado para perder grasa. Podrías no estar en déficit.';
+        if (diff > 0) {
+            w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
+            if (severe) {
+                w.innerHTML = '🚫 <strong>'+currentKcal+' kcal NO es adecuado para '+goalName+'.</strong> Estás '+absDiff+' kcal por encima de las '+recommendedKcal+' recomendadas. A este nivel probablemente <strong>no estés en déficit calórico</strong> y no perderás grasa. Podrías incluso ganar peso. ' + resetBtn;
+            } else {
+                w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por encima</strong> de lo recomendado para '+goalName+'. Podrías no estar en déficit suficiente.';
+            }
         } else {
-            w.className = 'kcal-warning warn-info';
-            w.innerHTML = 'ℹ️ Estás <strong>'+absDiff+' kcal por debajo</strong>. Un déficit tan agresivo puede afectar al rendimiento y a la masa muscular.';
+            w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
+            if (severe) {
+                w.innerHTML = '🚫 <strong>'+currentKcal+' kcal es un déficit extremo.</strong> Estás '+absDiff+' kcal por debajo de las '+recommendedKcal+' recomendadas. Un déficit mayor al 25-30% <strong>aumenta la pérdida de masa muscular</strong>, baja el metabolismo, reduce el rendimiento y puede causar problemas hormonales. ' + resetBtn;
+            } else {
+                w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por debajo</strong>. Un déficit tan agresivo puede afectar al rendimiento y a la masa muscular.';
+            }
         }
     } else if (userGoal === 'recomp') {
-        if (diff > 200) {
-            w.className = 'kcal-warning warn-info';
-            w.innerHTML = 'ℹ️ Estás <strong>'+absDiff+' kcal por encima</strong> de lo recomendado para recomposición. Podrías acumular algo de grasa.';
-        } else if (diff < -200) {
-            w.className = 'kcal-warning warn-info';
-            w.innerHTML = 'ℹ️ Estás <strong>'+absDiff+' kcal por debajo</strong>. Un déficit mayor puede dificultar ganar músculo.';
+        if (diff > 0) {
+            w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
+            if (severe) {
+                w.innerHTML = '🚫 <strong>'+currentKcal+' kcal NO es adecuado para '+goalName+'.</strong> Estás '+absDiff+' kcal por encima de las '+recommendedKcal+' recomendadas. La recomposición requiere un ligero déficit (~5%). Con un superávit así <strong>acumularás grasa sin ganar músculo extra</strong>. Si quieres comer tanto, cambia a volumen. ' + resetBtn;
+            } else {
+                w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por encima</strong> de lo recomendado para '+goalName+'. Podrías acumular algo de grasa.';
+            }
+        } else {
+            w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
+            if (severe) {
+                w.innerHTML = '🚫 <strong>'+currentKcal+' kcal NO es adecuado para '+goalName+'.</strong> Estás '+absDiff+' kcal por debajo de las '+recommendedKcal+' recomendadas. Con un déficit tan grande <strong>perderás músculo además de grasa</strong> y no lograrás recomposición. Mejor elige "Perder grasa" si quieres un déficit agresivo. ' + resetBtn;
+            } else {
+                w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por debajo</strong>. Un déficit mayor puede dificultar ganar músculo.';
+            }
         }
     } else if (userGoal === 'bulk') {
-        if (diff < -200) {
-            w.className = 'kcal-warning warn-danger';
-            w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por debajo</strong> de lo recomendado para ganar masa. Podrías no estar en superávit.';
+        if (diff < 0) {
+            w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
+            if (severe) {
+                w.innerHTML = '🚫 <strong>'+currentKcal+' kcal NO es adecuado para '+goalName+'.</strong> Estás '+absDiff+' kcal por debajo de las '+recommendedKcal+' recomendadas. A este nivel <strong>no estás en superávit</strong>, así que no ganarás masa muscular. Podrías incluso perder peso. ' + resetBtn;
+            } else {
+                w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por debajo</strong> de lo recomendado para '+goalName+'. Podrías no estar en superávit.';
+            }
         } else {
-            w.className = 'kcal-warning warn-info';
-            w.innerHTML = 'ℹ️ Estás <strong>'+absDiff+' kcal por encima</strong>. Un superávit tan alto puede generar más grasa que músculo.';
+            w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
+            if (severe) {
+                w.innerHTML = '🚫 <strong>'+currentKcal+' kcal es un superávit excesivo.</strong> Estás '+absDiff+' kcal por encima de las '+recommendedKcal+' recomendadas. Un superávit mayor al 20% <strong>genera más grasa que músculo</strong>. El exceso de calorías no acelera la ganancia muscular, solo la ganancia de grasa. ' + resetBtn;
+            } else {
+                w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por encima</strong>. Un superávit tan alto puede generar más grasa que músculo.';
+            }
         }
-    } else {
-        w.className = 'kcal-warning warn-info';
-        w.innerHTML = 'ℹ️ Estás <strong>'+absDiff+' kcal '+(diff>0?'por encima':'por debajo')+'</strong> del mantenimiento.'+(diff>0?' Ganarás peso.':' Perderás peso.');
+    } else { // maintain
+        w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
+        if (severe) {
+            w.innerHTML = '🚫 <strong>'+currentKcal+' kcal NO es mantenimiento.</strong> Estás '+absDiff+' kcal '+(diff>0?'por encima':'por debajo')+' de las '+recommendedKcal+' recomendadas. '+(diff>0?'Con ese exceso <strong>ganarás peso</strong>. Si es lo que buscas, cambia a "Ganar masa muscular" para hacerlo de forma óptima.':'Con ese déficit <strong>perderás peso</strong>. Si es lo que buscas, cambia a "Perder grasa" para hacerlo preservando músculo.')+' ' + resetBtn;
+        } else {
+            w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal '+(diff>0?'por encima':'por debajo')+'</strong> del mantenimiento.'+(diff>0?' Ganarás peso.':' Perderás peso.');
+        }
     }
 }
 

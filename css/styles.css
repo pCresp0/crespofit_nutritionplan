@@ -2666,8 +2666,11 @@ body {
 }
 
 .kcal-warning.warn-danger {
-    background: rgba(239,83,80,0.15);
+    background: rgba(239,83,80,0.2);
     color: #FFCDD2;
+    border: 1px solid rgba(239,83,80,0.4);
+    padding: 12px 16px;
+    font-size: 0.82rem;
 }
 
 .kcal-warning.warn-info {
@@ -2677,6 +2680,24 @@ body {
 
 .kcal-warning strong {
     font-weight: 700;
+}
+
+.kcal-warning-reset {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: var(--radius-xs);
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.kcal-warning-reset:hover {
+    background: rgba(255,255,255,0.25);
 }
 
 /* ========== RECONFIGURE BUTTON ========== */
