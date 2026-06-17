@@ -1074,6 +1074,13 @@ function renderValidator() {
 // TRAINER MODE (hidden, long-press on title)
 // ============================================================
 var trainerModeActive = false;
+var trainerSelections = {
+    breakfast: null,
+    lunchCarb: null,
+    lunchProtein: null,
+    dinnerCarb: null,
+    dinnerProtein: null
+};
 
 function enterTrainerMode() {
     trainerModeActive = true;
@@ -1090,13 +1097,86 @@ function exitTrainerMode() {
     document.getElementById('trainer-mode').style.display = 'none';
 }
 
+function calculateTrainerMacros() {
+    var t = { kcal: 0, protein: 0, carbs: 0, fat: 0 };
+    var has = false;
+
+    if (trainerSelections.breakfast !== null) {
+        has = true;
+        var m = breakfastOptions[trainerSelections.breakfast].macros;
+        t.kcal += m[0]; t.protein += m[1]; t.carbs += m[2]; t.fat += m[3];
+    }
+
+    function addFood(data, idx) {
+        if (idx === null) return;
+        has = true;
+        var item = data[idx];
+        var g = item.base; // base grams (2500 kcal)
+        t.kcal += item.n[0]*g/100; t.protein += item.n[1]*g/100; t.carbs += item.n[2]*g/100; t.fat += item.n[3]*g/100;
+    }
+    function addExtras() {
+        t.kcal += extrasNutr.verduras[0]*200/100; t.protein += extrasNutr.verduras[1]*200/100; t.carbs += extrasNutr.verduras[2]*200/100; t.fat += extrasNutr.verduras[3]*200/100;
+        t.kcal += extrasNutr.aceite[0]*EXTRAS_OIL_ML/100; t.fat += extrasNutr.aceite[3]*EXTRAS_OIL_ML/100;
+        t.kcal += extrasNutr.fruta[0]; t.protein += extrasNutr.fruta[1]; t.carbs += extrasNutr.fruta[2]; t.fat += extrasNutr.fruta[3];
+    }
+
+    addFood(lunchCarbs, trainerSelections.lunchCarb); addFood(lunchProteins, trainerSelections.lunchProtein);
+    if (trainerSelections.lunchCarb !== null || trainerSelections.lunchProtein !== null) addExtras();
+    addFood(dinnerCarbs, trainerSelections.dinnerCarb); addFood(dinnerProteins, trainerSelections.dinnerProtein);
+    if (trainerSelections.dinnerCarb !== null || trainerSelections.dinnerProtein !== null) addExtras();
+
+    return has ? t : null;
+}
+
+function renderTrainerNutrition() {
+    var container = document.getElementById('trainer-nutrition');
+    var macros = calculateTrainerMacros();
+    if (!macros) { container.innerHTML = ''; return; }
+
+    var kcal = Math.round(macros.kcal), p = Math.round(macros.protein), c = Math.round(macros.carbs), f = Math.round(macros.fat);
+    var tg = p + c + f;
+    var pp = tg>0 ? Math.round(p/tg*100) : 0, cp = tg>0 ? Math.round(c/tg*100) : 0, fp = tg>0 ? 100-pp-cp : 0;
+    var pKcal = p*4, cKcal = c*4, fKcal = f*9, fromM = pKcal+cKcal+fKcal;
+    var pKp = fromM>0 ? Math.round(pKcal/fromM*100) : 0;
+    var cKp = fromM>0 ? Math.round(cKcal/fromM*100) : 0;
+    var fKp = fromM>0 ? 100-pKp-cKp : 0;
+
+    var bodyWeight = parseFloat(document.getElementById('calc-weight').value) || 0;
+    var pPerKg = bodyWeight > 0 ? (p/bodyWeight).toFixed(1) : '--';
+    var cPerKg = bodyWeight > 0 ? (c/bodyWeight).toFixed(1) : '--';
+    var fPerKg = bodyWeight > 0 ? (f/bodyWeight).toFixed(1) : '--';
+
+    var meals = [];
+    if (trainerSelections.breakfast !== null) meals.push('Desayuno');
+    if (trainerSelections.lunchCarb !== null || trainerSelections.lunchProtein !== null) meals.push('Almuerzo');
+    if (trainerSelections.dinnerCarb !== null || trainerSelections.dinnerProtein !== null) meals.push('Cena');
+    var complete = trainerSelections.breakfast !== null && trainerSelections.lunchCarb !== null && trainerSelections.lunchProtein !== null && trainerSelections.dinnerCarb !== null && trainerSelections.dinnerProtein !== null;
+
+    container.innerHTML =
+        '<div class="nutrition-header"><h3>\ud83d\udcca Resumen Nutricional</h3><span class="nutrition-meals">'+meals.join(' + ')+(complete?'':' \u00b7 Incompleto')+'</span></div>' +
+        '<div class="nutrition-body">' +
+            '<div class="nutrition-kcal-row"><span class="nutrition-kcal-number">'+kcal+'</span><span class="nutrition-kcal-unit">kcal</span></div>' +
+            '<div class="nutrition-stacked-bar">' +
+                '<div class="stacked-seg stacked-protein" style="width:'+pKp+'%"></div>' +
+                '<div class="stacked-seg stacked-carbs" style="width:'+cKp+'%"></div>' +
+                '<div class="stacked-seg stacked-fat" style="width:'+fKp+'%"></div>' +
+            '</div>' +
+            '<div class="nutrition-macro-cards">' +
+                renderMacroCard('Prote\u00ednas','protein',p,pp,pKp,pPerKg) +
+                renderMacroCard('Carbos','carbs',c,cp,cKp,cPerKg) +
+                renderMacroCard('Grasas','fat',f,fp,fKp,fPerKg) +
+            '</div>' +
+        '</div>';
+}
+
 function renderTrainerContent() {
     var html = '';
 
     // Desayunos
-    html += '<div class="trainer-section"><h3>☀️ Desayunos (elige 1)</h3>';
-    breakfastOptions.forEach(function(opt) {
-        html += '<div class="trainer-card"><div class="trainer-card-title">' + opt.name + '</div><ul>';
+    html += '<div class="trainer-section"><h3>\u2600\ufe0f Desayunos (elige 1)</h3>';
+    breakfastOptions.forEach(function(opt, idx) {
+        var sel = trainerSelections.breakfast === idx ? ' trainer-card-selected' : '';
+        html += '<div class="trainer-card'+sel+'" data-trainer-type="breakfast" data-trainer-index="'+idx+'"><div class="trainer-card-title">' + opt.name + '</div><ul>';
         opt.items.forEach(function(item) {
             var line = item.text;
             if (item.amount !== null) line += ': <strong>' + item.amount + (item.unit || 'g') + '</strong>';
@@ -1111,50 +1191,86 @@ function renderTrainerContent() {
     html += '</div>';
 
     // Almuerzo
-    html += '<div class="trainer-section"><h3>🍲 Almuerzo</h3>';
-    html += '<div class="trainer-subsection"><h4>🌾 Hidratos (elige 1)</h4><table class="trainer-table"><tbody>';
-    lunchCarbs.forEach(function(item) {
-        html += '<tr><td>' + item.name + '</td><td><strong>' + item.base + (item.unit || 'g') + '</strong></td></tr>';
-        if (item.altName) html += '<tr class="trainer-alt"><td>' + item.altName + '</td><td><strong>' + item.altBase + (item.unit || 'g') + '</strong></td></tr>';
+    html += '<div class="trainer-section"><h3>\ud83c\udf72 Almuerzo</h3>';
+    html += '<div class="trainer-subsection"><h4>\ud83c\udf3e Hidratos (elige 1)</h4><table class="trainer-table"><tbody>';
+    lunchCarbs.forEach(function(item, idx) {
+        var sel = trainerSelections.lunchCarb === idx ? ' class="trainer-row-selected"' : '';
+        html += '<tr'+sel+' data-trainer-meal="lunch" data-trainer-type="carb" data-trainer-index="'+idx+'"><td>' + item.name + '</td><td><strong>' + item.base + (item.unit || 'g') + '</strong></td></tr>';
+        if (item.altName) {
+            var altSel = trainerSelections.lunchCarb === idx ? ' class="trainer-alt trainer-row-selected"' : ' class="trainer-alt"';
+            html += '<tr'+altSel+' data-trainer-meal="lunch" data-trainer-type="carb" data-trainer-index="'+idx+'"><td>' + item.altName + '</td><td><strong>' + item.altBase + (item.unit || 'g') + '</strong></td></tr>';
+        }
     });
     html += '</tbody></table></div>';
-    html += '<div class="trainer-subsection"><h4>🥩 Proteínas (elige 1)</h4><table class="trainer-table"><tbody>';
-    lunchProteins.forEach(function(item) {
-        html += '<tr><td>' + item.name + '</td><td><strong>' + item.base + (item.unit || 'g') + '</strong></td></tr>';
+    html += '<div class="trainer-subsection"><h4>\ud83e\udd69 Prote\u00ednas (elige 1)</h4><table class="trainer-table"><tbody>';
+    lunchProteins.forEach(function(item, idx) {
+        var sel = trainerSelections.lunchProtein === idx ? ' class="trainer-row-selected"' : '';
+        html += '<tr'+sel+' data-trainer-meal="lunch" data-trainer-type="protein" data-trainer-index="'+idx+'"><td>' + item.name + '</td><td><strong>' + item.base + (item.unit || 'g') + '</strong></td></tr>';
     });
     html += '</tbody></table></div>';
-    html += '<div class="trainer-extras">+ ~200g verduras | 5ml AOVE | 1 fruta</div>';
+    html += '<div class="trainer-extras">+ ~200g verduras | '+EXTRAS_OIL_ML+'ml AOVE | 1 fruta</div>';
     html += '</div>';
 
     // Cena
-    html += '<div class="trainer-section"><h3>🌙 Cena</h3>';
-    html += '<div class="trainer-subsection"><h4>🌾 Hidratos (elige 1)</h4><table class="trainer-table"><tbody>';
-    dinnerCarbs.forEach(function(item) {
-        html += '<tr><td>' + item.name + '</td><td><strong>' + item.base + (item.unit || 'g') + '</strong></td></tr>';
-        if (item.altName) html += '<tr class="trainer-alt"><td>' + item.altName + '</td><td><strong>' + item.altBase + (item.unit || 'g') + '</strong></td></tr>';
+    html += '<div class="trainer-section"><h3>\ud83c\udf19 Cena</h3>';
+    html += '<div class="trainer-subsection"><h4>\ud83c\udf3e Hidratos (elige 1)</h4><table class="trainer-table"><tbody>';
+    dinnerCarbs.forEach(function(item, idx) {
+        var sel = trainerSelections.dinnerCarb === idx ? ' class="trainer-row-selected"' : '';
+        html += '<tr'+sel+' data-trainer-meal="dinner" data-trainer-type="carb" data-trainer-index="'+idx+'"><td>' + item.name + '</td><td><strong>' + item.base + (item.unit || 'g') + '</strong></td></tr>';
+        if (item.altName) {
+            var altSel = trainerSelections.dinnerCarb === idx ? ' class="trainer-alt trainer-row-selected"' : ' class="trainer-alt"';
+            html += '<tr'+altSel+' data-trainer-meal="dinner" data-trainer-type="carb" data-trainer-index="'+idx+'"><td>' + item.altName + '</td><td><strong>' + item.altBase + (item.unit || 'g') + '</strong></td></tr>';
+        }
     });
     html += '</tbody></table></div>';
-    html += '<div class="trainer-subsection"><h4>🥩 Proteínas (elige 1)</h4><table class="trainer-table"><tbody>';
-    dinnerProteins.forEach(function(item) {
-        html += '<tr><td>' + item.name + '</td><td><strong>' + item.base + (item.unit || 'g') + '</strong></td></tr>';
+    html += '<div class="trainer-subsection"><h4>\ud83e\udd69 Prote\u00ednas (elige 1)</h4><table class="trainer-table"><tbody>';
+    dinnerProteins.forEach(function(item, idx) {
+        var sel = trainerSelections.dinnerProtein === idx ? ' class="trainer-row-selected"' : '';
+        html += '<tr'+sel+' data-trainer-meal="dinner" data-trainer-type="protein" data-trainer-index="'+idx+'"><td>' + item.name + '</td><td><strong>' + item.base + (item.unit || 'g') + '</strong></td></tr>';
     });
     html += '</tbody></table></div>';
-    html += '<div class="trainer-extras">+ ~200g verduras | 5ml AOVE | 1 fruta</div>';
+    html += '<div class="trainer-extras">+ ~200g verduras | '+EXTRAS_OIL_ML+'ml AOVE | 1 fruta</div>';
     html += '</div>';
 
     // Suplementos
-    html += '<div class="trainer-section"><h3>💊 Suplementación</h3><div class="trainer-supps">';
+    html += '<div class="trainer-section"><h3>\ud83d\udc8a Suplementaci\u00f3n</h3><div class="trainer-supps">';
     supplements.forEach(function(s) {
-        html += '<div class="trainer-supp">' + s.icon + ' <strong>' + s.title + '</strong> — ' + s.desc + '</div>';
+        html += '<div class="trainer-supp">' + s.icon + ' <strong>' + s.title + '</strong> \u2014 ' + s.desc + '</div>';
     });
     html += '</div></div>';
 
     document.getElementById('trainer-content').innerHTML = html;
+    renderTrainerNutrition();
 }
 
 // Trainer toggle button
 document.getElementById('trainer-toggle').addEventListener('click', function() {
     enterTrainerMode();
+});
+
+// Trainer selection clicks
+document.addEventListener('click', function(e) {
+    // Breakfast cards
+    var card = e.target.closest('[data-trainer-type="breakfast"]');
+    if (card) {
+        var idx = parseInt(card.dataset.trainerIndex);
+        trainerSelections.breakfast = trainerSelections.breakfast === idx ? null : idx;
+        renderTrainerContent();
+        return;
+    }
+    // Meal table rows
+    var row = e.target.closest('tr[data-trainer-meal]');
+    if (row) {
+        var meal = row.dataset.trainerMeal;
+        var type = row.dataset.trainerType;
+        var idx2 = parseInt(row.dataset.trainerIndex);
+        var key = meal === 'lunch'
+            ? (type === 'carb' ? 'lunchCarb' : 'lunchProtein')
+            : (type === 'carb' ? 'dinnerCarb' : 'dinnerProtein');
+        trainerSelections[key] = trainerSelections[key] === idx2 ? null : idx2;
+        renderTrainerContent();
+        return;
+    }
 });
 
 // Exit trainer mode button

@@ -3079,6 +3079,53 @@ body {
     color: var(--text-primary);
 }
 
+/* Trainer selections */
+.trainer-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.trainer-card:hover {
+    border-color: var(--accent);
+    background: rgba(240,184,64,0.04);
+}
+
+.trainer-card-selected {
+    border-color: var(--accent) !important;
+    background: rgba(240,184,64,0.08) !important;
+    box-shadow: 0 0 0 1px var(--accent);
+}
+
+.trainer-card-selected .trainer-card-title {
+    color: var(--accent);
+}
+
+.trainer-table tr[data-trainer-meal] {
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.trainer-table tr[data-trainer-meal]:hover {
+    background: rgba(240,184,64,0.06);
+}
+
+.trainer-row-selected {
+    background: rgba(240,184,64,0.1) !important;
+}
+
+.trainer-row-selected td {
+    color: var(--text-primary) !important;
+}
+
+.trainer-row-selected td:last-child {
+    color: var(--accent) !important;
+}
+
+.trainer-nutrition {
+    margin-top: 24px;
+    animation: tabFadeIn 0.25s ease;
+}
+
 /* ========== RESPONSIVE ONBOARDING ========== */
 @media (max-width: 640px) {
     .onboarding {
