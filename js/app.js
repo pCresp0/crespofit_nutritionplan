@@ -8,7 +8,7 @@ var breakfastOptions = [
       items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:55,unit:'g'},{text:'Queso fresco batido',amount:500,unit:'g'},{text:'Yogur 2% + proteína',amount:200,unit:'g',extra:'+ {10}g prot',extraBase:10,isAlt:true},{text:'Frutos secos / crema de cacahuete',amount:25,unit:'g'}]},
     { id:'tostadas', name:'Tostadas', macros:[470,28,52,17],
       items:[{text:'Pan integral trigo/espelta/centeno',amount:120,unit:'g'},{text:'Lomo',amount:50,unit:'g',extra:'+ {30}g queso semi/havarti light',extraBase:30},{text:'Guacamole o aguacate',amount:40,unit:'g'}]},
-    { id:'cereales-leche', name:'Cereales con leche y proteína', macros:[430,33,50,13],
+    { id:'cereales-leche', name:'Cereales con leche y proteína', macros:[500,33,52,17],
       items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:45,unit:'g'},{text:'Leche semidesnatada (un vaso)',amount:200,unit:'ml'},{text:'Whey protein',amount:25,unit:'g'},{text:'Frutos secos / crema de cacahuete',amount:25,unit:'g'}]},
     { id:'tortitas', name:'Tortitas de avena', macros:[340,22,30,16],
       items:[{text:'Harina de avena / copos de avena',amount:45,unit:'g'},{text:'2 Huevos + claras',amount:100,unit:'g'},{text:'Frutos secos / crema de cacahuete',amount:10,unit:'g'}]},
@@ -26,7 +26,7 @@ var lunchCarbs = [
 ];
 var lunchProteins = [
     {name:'Pollo',base:200,n:[110,23,0,1.5]},{name:'Pescado blanco',base:250,n:[82,18,0,0.8]},{name:'Salmón',base:125,n:[208,20,0,13]},
-    {name:'Pavo',base:220,n:[105,24,0,1]},{name:'Hamburguesa de pollo',base:180,n:[150,17,4,7]},{name:'Huevo (2 completos) + claras',base:100,unit:'ml claras',n:[85,11,0.7,4]},
+    {name:'Pavo',base:220,n:[105,24,0,1]},{name:'Hamburguesa de pollo',base:180,n:[150,17,4,7]},{name:'Huevo (2 completos) + claras',base:100,unit:'ml claras',n:[196,24,1.5,10]},
     {name:'Lomo adobado',base:200,n:[150,20,1,7]},{name:'Ternera',base:160,n:[155,22,0,7]}
 ];
 var dinnerCarbs = [
@@ -37,7 +37,7 @@ var dinnerCarbs = [
 ];
 var dinnerProteins = [
     {name:'Pollo',base:200,n:[110,23,0,1.5]},{name:'Pescado blanco',base:250,n:[82,18,0,0.8]},{name:'Salmón',base:125,n:[208,20,0,13]},
-    {name:'Pavo',base:220,n:[105,24,0,1]},{name:'Hamburguesa de pollo',base:180,n:[150,17,4,7]},{name:'Huevo (2 yemas) + claras',base:100,unit:'ml claras',n:[85,11,0.7,4]},
+    {name:'Pavo',base:220,n:[105,24,0,1]},{name:'Hamburguesa de pollo',base:180,n:[150,17,4,7]},{name:'Huevo (2 yemas) + claras',base:100,unit:'ml claras',n:[196,24,1.5,10]},
     {name:'Lomo adobado',base:200,n:[150,20,1,7]},{name:'Ternera',base:160,n:[155,22,0,7]}
 ];
 
@@ -97,7 +97,7 @@ function getExportFileName(prefix) {
 // ============================================================
 
 // Reference kcal per slot (averages at base amounts) for unselected slots
-var REF_SLOT_KCAL = { breakfast:455, lunchCarb:480, lunchProtein:227, dinnerCarb:370, dinnerProtein:252 };
+var REF_SLOT_KCAL = { breakfast:467, lunchCarb:480, lunchProtein:241, dinnerCarb:370, dinnerProtein:241 };
 // Extras: verduras + aceite scale with ratio; fruta is fixed (1 piece per meal)
 var EXTRAS_SCALED_BASE = extrasNutr.verduras[0]*200/100 + extrasNutr.aceite[0]*EXTRAS_OIL_ML/100; // ~95
 var EXTRAS_FIXED_KCAL = extrasNutr.fruta[0]; // 80 per meal, not scaled
