@@ -113,16 +113,28 @@ function calculateTDEE() {
     var af = parseFloat(document.getElementById('calc-activity').value);
     if (!af) return null;
     var neat = bmr * af;
-    var extra = 0;
+
+    // Steps calorie bonus (~0.04 kcal per step, adjusted by weight)
+    var stepsExtra = 0;
+    var stepsUnknown = document.getElementById('calc-steps-unknown');
+    var stepsInput = document.getElementById('calc-steps');
+    if (stepsUnknown && !stepsUnknown.checked && stepsInput && stepsInput.value) {
+        var steps = parseInt(stepsInput.value);
+        var w = parseFloat(document.getElementById('calc-weight').value) || 70;
+        // ~0.04 kcal/step for 70kg person, scale by weight
+        stepsExtra = steps * 0.04 * (w / 70);
+    }
+
+    var trainExtra = 0;
     if (document.getElementById('calc-trains').value === 'yes') {
         var type = document.getElementById('calc-train-type').value;
         var days = parseInt(document.getElementById('calc-train-days').value);
         var dur = parseInt(document.getElementById('calc-train-duration').value);
         var int_ = document.getElementById('calc-train-intensity').value;
         var idx = int_ === 'low' ? 0 : int_ === 'medium' ? 1 : 2;
-        extra = (trainBurnPerMin[type][idx] * dur * days) / 7;
+        trainExtra = (trainBurnPerMin[type][idx] * dur * days) / 7;
     }
-    return { bmr:Math.round(bmr), neat:Math.round(neat), tdee:Math.round(neat+extra) };
+    return { bmr:Math.round(bmr), neat:Math.round(neat), stepsKcal:Math.round(stepsExtra), tdee:Math.round(neat+trainExtra+stepsExtra) };
 }
 
 function getRecommendedKcal(tdee, goal) {
@@ -557,6 +569,31 @@ document.getElementById('calc-trains').addEventListener('change', function() {
     if (this.value === 'yes') { details.classList.remove('hidden'); } else { details.classList.add('hidden'); }
 });
 
+// Steps unknown toggle
+document.getElementById('calc-steps-unknown').addEventListener('change', function() {
+    var stepsInput = document.getElementById('calc-steps');
+    var hint = document.getElementById('steps-hint');
+    if (this.checked) {
+        stepsInput.disabled = true;
+        stepsInput.value = '';
+        hint.textContent = 'No pasa nada, se calculará sin pasos.';
+    } else {
+        stepsInput.disabled = false;
+        hint.textContent = '';
+        stepsInput.focus();
+    }
+});
+
+// Steps hint
+document.getElementById('calc-steps').addEventListener('input', function() {
+    var hint = document.getElementById('steps-hint');
+    var v = parseInt(this.value);
+    if (!v || v <= 0) { hint.textContent = ''; return; }
+    var w = parseFloat(document.getElementById('calc-weight').value) || 70;
+    var kcal = Math.round(v * 0.04 * (w / 70));
+    hint.textContent = '~' + kcal + ' kcal extra al día por caminar';
+});
+
 // Step navigation
 document.getElementById('next-1').addEventListener('click', function() {
     if (!validateStep1()) { alert('Rellena todos los campos: edad, altura y peso.'); return; }
@@ -905,9 +942,10 @@ document.addEventListener('click', function(e) {
 function saveAllState() {
     try {
         var calcData = {};
-        ['calc-sex','calc-age','calc-height','calc-weight','calc-bf','calc-activity','calc-trains','calc-train-type','calc-train-days','calc-train-duration','calc-train-intensity'].forEach(function(id) {
+        ['calc-sex','calc-age','calc-height','calc-weight','calc-bf','calc-activity','calc-trains','calc-train-type','calc-train-days','calc-train-duration','calc-train-intensity','calc-steps'].forEach(function(id) {
             var el = document.getElementById(id); if (el) calcData[id] = el.value;
         });
+        calcData['calc-steps-unknown'] = document.getElementById('calc-steps-unknown').checked ? 'true' : 'false';
         localStorage.setItem('dietAppV2', JSON.stringify({
             kcal: currentKcal,
             recommended: recommendedKcal,
@@ -938,8 +976,15 @@ function loadState() {
         }
         if (data.calc) {
             Object.keys(data.calc).forEach(function(id) {
+                if (id === 'calc-steps-unknown') return; // handle below
                 var el = document.getElementById(id); if (el && data.calc[id]) el.value = data.calc[id];
             });
+            // Restore steps unknown checkbox
+            if (data.calc['calc-steps-unknown'] === 'true') {
+                document.getElementById('calc-steps-unknown').checked = true;
+                document.getElementById('calc-steps').disabled = true;
+                document.getElementById('steps-hint').textContent = 'No pasa nada, se calculará sin pasos.';
+            }
         }
         return true;
     } catch(e) { return false; }

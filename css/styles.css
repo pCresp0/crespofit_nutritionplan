@@ -1918,9 +1918,38 @@ body {
 .calc-hint {
     display: block;
     font-size: 0.72rem;
-    color: var(--text-muted);
+    color: var(--accent);
     margin-top: 4px;
     line-height: 1.4;
+    min-height: 1em;
+}
+
+.steps-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.steps-input-wrapper input[type="number"] {
+    flex: 1;
+}
+
+.steps-unknown-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.steps-unknown-label input[type="checkbox"] {
+    accent-color: var(--accent);
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
 }
 
 .calc-training-details {

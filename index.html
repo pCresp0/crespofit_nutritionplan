@@ -86,6 +86,16 @@
                         </div>
                     </div>
                     <div class="calc-row">
+                        <div class="calc-field full-width">
+                            <label for="calc-steps">Media de pasos al día</label>
+                            <div class="steps-input-wrapper">
+                                <input type="number" id="calc-steps" placeholder="Ej: 8000" min="0" max="50000" step="500">
+                                <label class="steps-unknown-label"><input type="checkbox" id="calc-steps-unknown"> No lo sé</label>
+                            </div>
+                            <span class="calc-hint" id="steps-hint"></span>
+                        </div>
+                    </div>
+                    <div class="calc-row">
                         <div class="calc-field">
                             <label for="calc-trains">¿Entrenas?</label>
                             <select id="calc-trains">
