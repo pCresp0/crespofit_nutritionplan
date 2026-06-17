@@ -2422,7 +2422,10 @@ function buildWhatsAppText() {
 
     var text = '🍽️ *MI PLAN NUTRICIONAL*\n';
     text += goalIcon + ' Objetivo: *' + goalName + '*\n';
-    text += '📊 *' + totalKcal + ' kcal* · P:' + p + 'g · C:' + c + 'g · G:' + f + 'g\n';
+    text += '📊 *' + totalKcal + ' kcal*\n';
+    text += '  • Proteínas: ' + p + 'g\n';
+    text += '  • Carbohidratos: ' + c + 'g\n';
+    text += '  • Grasas: ' + f + 'g\n';
     text += '\n━━━━━━━━━━━━━━━━━━━━\n\n';
 
     text += getBreakfastText() + '\n\n';
@@ -2435,6 +2438,31 @@ function buildWhatsAppText() {
     text += '  • 🐟 Omega 3: 2 pastillas/día\n';
     text += '  • 🧲 Magnesio: 300mg antes de dormir\n';
     text += '  • ⚡ Zinc: 30mg antes de dormir\n';
+
+    // Recommendations summary
+    text += '\n━━━━━━━━━━━━━━━━━━━━\n\n';
+    text += '💡 *RECOMENDACIONES*\n';
+    var trains = document.getElementById('calc-trains') && document.getElementById('calc-trains').value === 'yes';
+    var stepsEl = document.getElementById('calc-steps');
+    var stepsUnknown = document.getElementById('calc-steps-unknown');
+    var lowSteps = (!stepsEl || !stepsEl.value || parseInt(stepsEl.value) < 8000) || (stepsUnknown && stepsUnknown.checked);
+
+    if (!trains) {
+        text += '  • 🏋️ Empieza a entrenar fuerza: mínimo 2 días/semana para preservar músculo\n';
+    }
+    if (lowSteps) {
+        text += '  • 🚶 Camina al menos 8.000-10.000 pasos/día: quema ~300-500 kcal extra sin esfuerzo\n';
+    }
+    if (userGoal === 'cut' || userGoal === 'recomp') {
+        text += '  • 🥩 Prioriza proteína alta (1.6-2.4g/kg): clave para no perder músculo en déficit\n';
+    }
+    var alcoholEl = document.getElementById('calc-alcohol');
+    if (alcoholEl && alcoholEl.value !== 'none') {
+        text += '  • 🍺 Reduce el alcohol: inhibe la quema de grasa y la síntesis muscular\n';
+    }
+    text += '  • 📅 Constancia > perfección: la mejor dieta es la que puedes mantener en el tiempo\n';
+    text += '  • 🥦 Incluye verduras en cada comida para saciarte con pocas calorías\n';
+
     text += '\n━━━━━━━━━━━━━━━━━━━━\n\n';
     text += '¿Qué te parece esta dieta? 💪\n';
     text += 'Hecha con 👉 https://pcresp0.github.io/dieta_gym_PCB/';
