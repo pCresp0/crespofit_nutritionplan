@@ -190,6 +190,7 @@ body {
 }
 
 .header-content {
+    position: relative;
     max-width: var(--max-width);
     margin: 0 auto;
     text-align: center;
@@ -1442,6 +1443,13 @@ body {
         padding: 14px 14px 18px;
     }
 
+    .reconfigure-btn {
+        font-size: 0.65rem;
+        padding: 5px 9px;
+        top: 10px;
+        left: 10px;
+    }
+
     .header h1 {
         font-size: 1.1rem;
         margin-bottom: 10px;
@@ -1973,28 +1981,30 @@ body {
 
 /* ========== RECONFIGURE BUTTON ========== */
 .reconfigure-btn {
+    position: absolute;
+    top: 12px;
+    left: 12px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 7px 14px;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
+    gap: 5px;
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
     border-radius: 20px;
-    color: var(--text-muted);
+    color: rgba(255,255,255,0.8);
     font-family: inherit;
-    font-size: 0.76rem;
+    font-size: 0.7rem;
     font-weight: 600;
     cursor: pointer;
     transition: all var(--transition);
-    margin-bottom: 12px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: none;
+    z-index: 10;
 }
 
 .reconfigure-btn:hover {
-    border-color: var(--primary);
-    color: var(--primary-dark);
-    background: var(--primary-bg);
-    box-shadow: var(--shadow);
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.4);
+    color: #fff;
 }
 
 .reconfigure-btn:active {
