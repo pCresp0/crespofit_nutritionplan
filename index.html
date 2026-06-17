@@ -132,12 +132,12 @@
                         <div class="calc-field">
                             <label for="calc-trains">¿Entrenas?</label>
                             <select id="calc-trains">
-                                <option value="no">No</option>
-                                <option value="yes" selected>Sí</option>
+                                <option value="no" selected>No</option>
+                                <option value="yes">Sí</option>
                             </select>
                         </div>
                     </div>
-                    <div class="calc-training-details" id="calc-training-details">
+                    <div class="calc-training-details hidden" id="calc-training-details">
                         <div class="calc-row">
                             <div class="calc-field">
                                 <label for="calc-train-type">Tipo de entreno</label>
@@ -187,6 +187,18 @@
                                     <option value="high">Alta</option>
                                 </select>
                             </div>
+                        </div>
+                    </div>
+                    <div class="calc-row">
+                        <div class="calc-field full-width">
+                            <label for="calc-alcohol">¿Consumes alcohol habitualmente?</label>
+                            <select id="calc-alcohol">
+                                <option value="none" selected>No bebo alcohol</option>
+                                <option value="occasional">Ocasional · 1-2 días/semana, 1-2 bebidas</option>
+                                <option value="moderate">Moderado · 3-4 días/semana</option>
+                                <option value="frequent">Frecuente · 5+ días/semana</option>
+                            </select>
+                            <span class="calc-hint" id="alcohol-hint"></span>
                         </div>
                     </div>
                 </div>
@@ -270,28 +282,13 @@
             <div class="header-content">
                 <h1>Mi Plan Nutricional</h1>
                 <button class="reconfigure-btn" id="reconfigure-btn" aria-label="Planificar nueva dieta">⚙️ Nueva dieta</button>
-                <div class="kcal-selector">
-                    <label for="kcal-range">Calorías diarias</label>
-                    <div class="kcal-controls">
-                        <button class="kcal-btn" id="kcal-minus" aria-label="Reducir calorías">−</button>
-                        <div class="kcal-value">
-                            <span class="kcal-number" id="kcal-display">2500</span>
-                            <span class="kcal-unit">kcal</span>
-                        </div>
-                        <button class="kcal-btn" id="kcal-plus" aria-label="Aumentar calorías">+</button>
+                <div class="kcal-fixed">
+                    <div class="kcal-value">
+                        <span class="kcal-number" id="kcal-display">2500</span>
+                        <span class="kcal-unit">kcal/día</span>
                     </div>
-                    <div class="kcal-slider-wrapper">
-                        <span class="kcal-range-label" id="kcal-min-label">1500</span>
-                        <div class="kcal-slider-track">
-                            <input type="range" id="kcal-range" min="1500" max="3500" step="100" value="2500" aria-label="Selector de calorías">
-                            <div class="kcal-rec-marker" id="kcal-rec-marker" title="Recomendado"></div>
-                        </div>
-                        <span class="kcal-range-label" id="kcal-max-label">3500</span>
-                    </div>
-                    <div class="kcal-rec-label" id="kcal-rec-label"></div>
+                    <span class="kcal-fixed-sub" id="kcal-fixed-sub">Calculadas para tu objetivo</span>
                 </div>
-                <!-- Warning banner -->
-                <div class="kcal-warning" id="kcal-warning" style="display:none;"></div>
             </div>
         </header>
 
@@ -409,9 +406,38 @@
             </div>
 
             <!-- DISCLAIMER -->
-            <div class="disclaimer">
-                <span class="disclaimer-icon">⚠️</span>
-                <p>Esta herramienta es <strong>orientativa</strong>. Las cantidades y macros son <strong>estimaciones</strong>. Consulta siempre con un <strong class="disclaimer-highlight">médico y/o nutricionista</strong> antes de modificar tu alimentación.</p>
+            <div class="disclaimer" id="disclaimer-section">
+                <div class="disclaimer-header" data-toggle="disclaimer-details">
+                    <span class="disclaimer-icon">📋</span>
+                    <strong>Información importante sobre tu plan</strong>
+                    <span class="disclaimer-toggle">▼</span>
+                </div>
+                <div class="disclaimer-body" id="disclaimer-details-body">
+                    <div class="disclaimer-block">
+                        <h4>🍽️ La mejor dieta es la que puedes mantener</h4>
+                        <p>La adherencia es el <strong>factor #1</strong> que predice el éxito de una dieta <em>(Dansinger et al., JAMA 2005)</em>. Las dietas demasiado restrictivas aumentan el hambre, la ansiedad y la probabilidad de atracones <em>(Polivy & Herman, 1985)</em>. Este plan usa un déficit moderado y alimentos reales que puedes comer a largo plazo sin sufrimiento.</p>
+                    </div>
+                    <div class="disclaimer-block">
+                        <h4>🚶 Caminar: tu mejor aliado</h4>
+                        <p>Caminar es la forma de ejercicio más segura y sostenible para cualquier edad. Una meta-análisis de 15 estudios demostró que cada <strong>2.000 pasos/día adicionales</strong> reducen la mortalidad por todas las causas un 8-11% <em>(Paluch et al., Lancet 2022)</em>. No necesitas correr ni levantar pesas para mejorar tu salud: solo caminar más de lo que lo haces ahora ya marca una diferencia significativa.</p>
+                    </div>
+                    <div class="disclaimer-block" id="disclaimer-alcohol"></div>
+                    <div class="disclaimer-block">
+                        <h4>🔬 Base científica de este plan</h4>
+                        <p>Las recomendaciones se basan en:</p>
+                        <ul class="disclaimer-refs">
+                            <li><strong>Déficit 15-20%:</strong> Óptimo para perder grasa preservando músculo <em>(Helms et al., 2014; Iraki et al., 2019)</em></li>
+                            <li><strong>Proteína 1.6-2.4 g/kg:</strong> Rango para preservar masa muscular en déficit <em>(Jäger et al., ISSN 2017)</em></li>
+                            <li><strong>Entrenamiento de fuerza:</strong> Estímulo imprescindible para retener músculo <em>(Morton et al., 2018)</em></li>
+                            <li><strong>Fórmula Mifflin-St Jeor:</strong> La más precisa para población general <em>(Frankenfield et al., 2005)</em></li>
+                            <li><strong>NEAT y pasos:</strong> El gasto por actividad no-ejercicio es el componente más variable del TDEE <em>(Levine et al., 2006)</em></li>
+                        </ul>
+                    </div>
+                    <div class="disclaimer-block disclaimer-warning">
+                        <h4>⚠️ Aviso</h4>
+                        <p>Esta herramienta es <strong>orientativa</strong>. Las cantidades y macros son <strong>estimaciones</strong>. Consulta siempre con un <strong>médico y/o nutricionista</strong> antes de modificar tu alimentación, especialmente si tienes patologías, tomas medicación o estás embarazada.</p>
+                    </div>
+                </div>
             </div>
         </main>
 

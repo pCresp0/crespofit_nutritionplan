@@ -212,6 +212,39 @@ body {
     transition: gap 0.3s ease;
 }
 
+.kcal-fixed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 0 4px;
+}
+
+.kcal-fixed .kcal-value {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+.kcal-fixed .kcal-number {
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.kcal-fixed .kcal-unit {
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0.75;
+}
+
+.kcal-fixed-sub {
+    font-size: 0.72rem;
+    opacity: 0.7;
+    font-weight: 500;
+}
+
 .kcal-selector label {
     font-size: 0.75rem;
     opacity: 0.7;
@@ -1720,20 +1753,115 @@ body {
 
 /* ========== DISCLAIMER ========== */
 .disclaimer {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 13px 16px;
+    padding: 0;
     background: var(--disclaimer-bg);
     border: 1px solid var(--disclaimer-border);
     border-radius: var(--radius-sm);
     margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.disclaimer-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.disclaimer-header:hover {
+    background: rgba(0,0,0,0.03);
+}
+
+.disclaimer-header strong {
+    flex: 1;
+    font-size: 0.82rem;
+    color: var(--text-primary);
+}
+
+.disclaimer-toggle {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s;
 }
 
 .disclaimer-icon {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     flex-shrink: 0;
-    margin-top: 0;
+}
+
+.disclaimer-body {
+    padding: 0 16px 16px;
+    transition: max-height 0.3s ease;
+}
+
+.disclaimer-body.collapsed {
+    display: none;
+}
+
+.disclaimer-block {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--disclaimer-border);
+}
+
+.disclaimer-block:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.disclaimer-block h4 {
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    margin: 0 0 6px;
+}
+
+.disclaimer-block p {
+    font-size: 0.74rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0 0 6px;
+}
+
+.disclaimer-block em {
+    font-size: 0.68rem;
+    color: var(--text-muted, var(--text-secondary));
+    opacity: 0.8;
+}
+
+.disclaimer-refs {
+    list-style: none;
+    padding: 0;
+    margin: 6px 0 0;
+}
+
+.disclaimer-refs li {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding: 3px 0 3px 14px;
+    position: relative;
+}
+
+.disclaimer-refs li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+}
+
+.disclaimer-refs li em {
+    font-size: 0.66rem;
+}
+
+.disclaimer-warning {
+    background: rgba(255, 152, 0, 0.06);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px !important;
+    border: 1px solid rgba(255, 152, 0, 0.15) !important;
+    border-bottom: 1px solid rgba(255, 152, 0, 0.15) !important;
 }
 
 .disclaimer p {

@@ -327,14 +327,35 @@ function getRecommendedKcal(tdee, goal) {
     var dietHist = document.getElementById('calc-diet-history') ? document.getElementById('calc-diet-history').value : '';
     var conservative = (appetite === 'high') || (dietHist === 'yoyo') || (dietHist === 'tried');
 
+    var kcal;
     if (goal === 'cut') {
         // Conservative: 12% deficit; Normal: 18% deficit
         var cutMult = conservative ? 0.88 : 0.82;
-        return Math.round((tdee * cutMult) / 100) * 100;
+        kcal = tdee * cutMult;
+    } else if (goal === 'recomp') {
+        kcal = tdee * 0.95;
+    } else if (goal === 'bulk') {
+        kcal = tdee * 1.15;
+    } else {
+        kcal = tdee;
     }
-    if (goal === 'recomp') return Math.round((tdee * 0.95) / 100) * 100;
-    if (goal === 'bulk') return Math.round((tdee * 1.15) / 100) * 100;
-    return Math.round(tdee / 100) * 100;
+
+    // Subtract estimated alcohol calories from food budget
+    // Average drink: ~150 kcal (beer/wine/mixed)
+    var alcoholKcal = getAlcoholKcalPerDay();
+    kcal = kcal - alcoholKcal;
+
+    return Math.round(kcal / 100) * 100;
+}
+
+// Estimated daily kcal from alcohol based on user's reported consumption
+function getAlcoholKcalPerDay() {
+    var alcohol = document.getElementById('calc-alcohol') ? document.getElementById('calc-alcohol').value : 'none';
+    // ~150 kcal per standard drink (beer 330ml, wine 150ml, or mixed)
+    if (alcohol === 'occasional') return Math.round((1.5 * 150 * 1.5) / 7); // ~1.5 drinks × 1.5 days/week
+    if (alcohol === 'moderate') return Math.round((2 * 150 * 3.5) / 7);     // ~2 drinks × 3.5 days/week
+    if (alcohol === 'frequent') return Math.round((2.5 * 150 * 5.5) / 7);   // ~2.5 drinks × 5.5 days/week
+    return 0;
 }
 
 // ============================================================
@@ -534,76 +555,6 @@ function showGoalPicker() {
     });
 }
 
-function updateKcalWarning() {
-    var w = document.getElementById('kcal-warning');
-    if (!userGoal || !recommendedKcal) { w.style.display = 'none'; return; }
-    var diff = currentKcal - recommendedKcal;
-    var absDiff = Math.abs(diff);
-    if (absDiff <= 200) { w.style.display = 'none'; return; }
-
-    w.style.display = '';
-    var goalName = goalLabels[userGoal];
-    var severe = absDiff >= 400;
-    var resetBtn = '<button class="kcal-warning-reset" onclick="updateKcal(recommendedKcal)">Volver a ' + recommendedKcal + ' kcal</button>';
-
-    if (userGoal === 'cut') {
-        if (diff > 0) {
-            w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
-            if (severe) {
-                w.innerHTML = '🚫 <strong>'+currentKcal+' kcal NO es adecuado para '+goalName+'.</strong> Estás '+absDiff+' kcal por encima de las '+recommendedKcal+' recomendadas. A este nivel probablemente <strong>no estés en déficit calórico</strong> y no perderás grasa. Podrías incluso ganar peso. ' + resetBtn;
-            } else {
-                w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por encima</strong> de lo recomendado para '+goalName+'. Podrías no estar en déficit suficiente.';
-            }
-        } else {
-            w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
-            if (severe) {
-                w.innerHTML = '🚫 <strong>'+currentKcal+' kcal es un déficit extremo.</strong> Estás '+absDiff+' kcal por debajo de las '+recommendedKcal+' recomendadas. Un déficit mayor al 25-30% <strong>aumenta la pérdida de masa muscular</strong>, baja el metabolismo, reduce el rendimiento y puede causar problemas hormonales. ' + resetBtn;
-            } else {
-                w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por debajo</strong>. Un déficit tan agresivo puede afectar al rendimiento y a la masa muscular.';
-            }
-        }
-    } else if (userGoal === 'recomp') {
-        if (diff > 0) {
-            w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
-            if (severe) {
-                w.innerHTML = '🚫 <strong>'+currentKcal+' kcal NO es adecuado para '+goalName+'.</strong> Estás '+absDiff+' kcal por encima de las '+recommendedKcal+' recomendadas. La recomposición requiere un ligero déficit (~5%). Con un superávit así <strong>acumularás grasa sin ganar músculo extra</strong>. Si quieres comer tanto, cambia a volumen. ' + resetBtn;
-            } else {
-                w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por encima</strong> de lo recomendado para '+goalName+'. Podrías acumular algo de grasa.';
-            }
-        } else {
-            w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
-            if (severe) {
-                w.innerHTML = '🚫 <strong>'+currentKcal+' kcal NO es adecuado para '+goalName+'.</strong> Estás '+absDiff+' kcal por debajo de las '+recommendedKcal+' recomendadas. Con un déficit tan grande <strong>perderás músculo además de grasa</strong> y no lograrás recomposición. Mejor elige "Perder grasa" si quieres un déficit agresivo. ' + resetBtn;
-            } else {
-                w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por debajo</strong>. Un déficit mayor puede dificultar ganar músculo.';
-            }
-        }
-    } else if (userGoal === 'bulk') {
-        if (diff < 0) {
-            w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
-            if (severe) {
-                w.innerHTML = '🚫 <strong>'+currentKcal+' kcal NO es adecuado para '+goalName+'.</strong> Estás '+absDiff+' kcal por debajo de las '+recommendedKcal+' recomendadas. A este nivel <strong>no estás en superávit</strong>, así que no ganarás masa muscular. Podrías incluso perder peso. ' + resetBtn;
-            } else {
-                w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por debajo</strong> de lo recomendado para '+goalName+'. Podrías no estar en superávit.';
-            }
-        } else {
-            w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
-            if (severe) {
-                w.innerHTML = '🚫 <strong>'+currentKcal+' kcal es un superávit excesivo.</strong> Estás '+absDiff+' kcal por encima de las '+recommendedKcal+' recomendadas. Un superávit mayor al 20% <strong>genera más grasa que músculo</strong>. El exceso de calorías no acelera la ganancia muscular, solo la ganancia de grasa. ' + resetBtn;
-            } else {
-                w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal por encima</strong>. Un superávit tan alto puede generar más grasa que músculo.';
-            }
-        }
-    } else { // maintain
-        w.className = 'kcal-warning ' + (severe ? 'warn-danger' : 'warn-info');
-        if (severe) {
-            w.innerHTML = '🚫 <strong>'+currentKcal+' kcal NO es mantenimiento.</strong> Estás '+absDiff+' kcal '+(diff>0?'por encima':'por debajo')+' de las '+recommendedKcal+' recomendadas. '+(diff>0?'Con ese exceso <strong>ganarás peso</strong>. Si es lo que buscas, cambia a "Ganar masa muscular" para hacerlo de forma óptima.':'Con ese déficit <strong>perderás peso</strong>. Si es lo que buscas, cambia a "Perder grasa" para hacerlo preservando músculo.')+' ' + resetBtn;
-        } else {
-            w.innerHTML = '⚠️ Estás <strong>'+absDiff+' kcal '+(diff>0?'por encima':'por debajo')+'</strong> del mantenimiento.'+(diff>0?' Ganarás peso.':' Perderás peso.');
-        }
-    }
-}
-
 function renderNutritionSummary() {
     var container = document.getElementById('nutrition-summary');
     var data = calculateSelectedMacros();
@@ -679,7 +630,7 @@ function renderAll() {
     renderBreakfast();
     renderMealTable('lunch-tables',lunchCarbs,lunchProteins,selections.lunchCarb,selections.lunchProtein,'lunch');
     renderMealTable('dinner-tables',dinnerCarbs,dinnerProteins,selections.dinnerCarb,selections.dinnerProtein,'dinner');
-    renderSupplements(); updateExtras(); renderNutritionSummary(); renderInfoBanner(); updateKcalWarning(); renderValidator(); renderDietSummary();
+    renderSupplements(); updateExtras(); renderNutritionSummary(); renderInfoBanner(); renderValidator(); renderDietSummary();
 }
 
 // ============================================================
@@ -975,11 +926,12 @@ document.getElementById('next-3').addEventListener('click', function() {
     if (lowSteps) {
         tips.push({
             icon: '🚶',
-            title: 'Camina al menos 10.000 pasos/día',
+            title: 'Camina más: la herramienta más infravalorada',
             text: 'Caminar es la forma más fácil y sostenible de aumentar tu gasto calórico diario (NEAT). ' +
+                  'Una meta-análisis de 15 estudios (<em>Paluch et al., Lancet 2022</em>) demuestra que cada ' +
+                  '<strong>2.000 pasos/día adicionales</strong> reducen la mortalidad un 8-11%. ' +
                   '<strong>10.000 pasos/día</strong> pueden suponer ~300-500 kcal extra sin estrés articular ni fatiga. ' +
-                  'La evidencia muestra que un NEAT alto mejora la pérdida de grasa, la sensibilidad a la insulina y la salud cardiovascular ' +
-                  '<em>(Villablanca et al., 2015)</em>. Intenta caminar al trabajo, usar escaleras o pasear después de comer.'
+                  'Intenta caminar al trabajo, usar escaleras o pasear 15-20 min después de comer (esto además mejora la glucosa postprandial).'
         });
     }
 
@@ -1029,6 +981,44 @@ document.getElementById('next-3').addEventListener('click', function() {
         });
     }
 
+    // Tip: alcohol
+    var alcoholLevel = document.getElementById('calc-alcohol') ? document.getElementById('calc-alcohol').value : 'none';
+    if (alcoholLevel !== 'none') {
+        var alcoholDailyKcal = getAlcoholKcalPerDay();
+        var tipText = '';
+        if (alcoholLevel === 'occasional') {
+            tipText = 'Tu consumo es <strong>bajo-moderado</strong>. Aun así, el alcohol aporta ~' + alcoholDailyKcal + ' kcal/día de media ' +
+                      'que este plan ya descuenta de tu presupuesto calórico de comida. El alcohol <strong>inhibe la oxidación de grasas</strong> temporalmente ' +
+                      '<em>(Suter et al., 1992)</em> y reduce la síntesis proteica muscular un 24-37% ' +
+                      '<em>(Parr et al., 2014)</em>. Si puedes reducirlo, mejor; si no, es preferible concentrarlo en 1-2 días sin entrenamiento.';
+        } else {
+            tipText = 'Tu consumo es <strong>' + (alcoholLevel === 'moderate' ? 'moderado' : 'frecuente') + '</strong>, lo que supone ~<strong>' + alcoholDailyKcal + ' kcal/día</strong> extra de media. ' +
+                      'Hemos ajustado tu presupuesto de comida para compensar esas calorías. Pero el impacto va más allá de las calorías: ' +
+                      'el alcohol <strong>inhibe la quema de grasa</strong> durante horas <em>(Suter et al., 1992)</em>, ' +
+                      'reduce la <strong>síntesis proteica muscular</strong> un 24-37% <em>(Parr et al., 2014)</em>, ' +
+                      'y empeora la calidad del sueño (que es clave para la recuperación). ' +
+                      'Reducir a ≤2 días/semana con ≤2 bebidas por ocasión mejoraría significativamente tus resultados.';
+        }
+        tips.push({
+            icon: '🍺',
+            title: 'Sobre el alcohol',
+            text: tipText
+        });
+    }
+
+    // Tip: walking (age-adapted)
+    var ageVal = parseInt(document.getElementById('calc-age').value) || 30;
+    if (lowSteps && ageVal >= 60) {
+        tips.push({
+            icon: '🌳',
+            title: 'Caminar es tu ejercicio estrella',
+            text: 'A partir de los 60, caminar es la actividad con <strong>mejor relación beneficio/riesgo</strong>. ' +
+                  'No necesitas 10.000 pasos: a partir de <strong>6.000-8.000 pasos/día</strong> ya se observan reducciones significativas ' +
+                  'en mortalidad por todas las causas <em>(Paluch et al., Lancet 2022)</em>. ' +
+                  'Empieza con paseos cortos (15-20 min) y ve aumentando gradualmente. Pasear después de comer además mejora la glucosa postprandial.'
+        });
+    }
+
     // Tip: adherence / patience
     tips.push({
         icon: '📅',
@@ -1057,6 +1047,47 @@ document.getElementById('next-3').addEventListener('click', function() {
 
 document.getElementById('back-4').addEventListener('click', function() { showStep(3); });
 
+// ---- Disclaimer ----
+function populateDisclaimer() {
+    // Fill alcohol disclaimer block if applicable
+    var alcoholEl = document.getElementById('disclaimer-alcohol');
+    if (alcoholEl) {
+        var alcohol = document.getElementById('calc-alcohol') ? document.getElementById('calc-alcohol').value : 'none';
+        if (alcohol !== 'none') {
+            var dailyKcal = getAlcoholKcalPerDay();
+            alcoholEl.innerHTML = '<h4>🍺 Alcohol y composición corporal</h4>' +
+                '<p>Tu consumo de alcohol supone aproximadamente <strong>~' + dailyKcal + ' kcal/día</strong> de media que hemos descontado de tu presupuesto de comida. ' +
+                'La evidencia científica muestra que:</p>' +
+                '<ul class="disclaimer-refs">' +
+                '<li>El alcohol <strong>inhibe la oxidación de grasas</strong> durante 4-8 horas tras su consumo <em>(Suter et al., Am J Clin Nutr 1992)</em></li>' +
+                '<li>Reduce la <strong>síntesis proteica muscular</strong> un 24-37% incluso con ingesta proteica adecuada <em>(Parr et al., PLoS ONE 2014)</em></li>' +
+                '<li>El mayor estudio global (GBD 2018, Lancet) concluye que el nivel de consumo que <strong>minimiza riesgos para la salud es cero</strong></li>' +
+                '<li>Si decides beber, limitar a <strong>≤2 bebidas, ≤2 días/semana</strong>, preferiblemente en días sin entrenamiento, minimiza el impacto</li>' +
+                '</ul>';
+        } else {
+            alcoholEl.style.display = 'none';
+        }
+    }
+}
+
+// Disclaimer toggle (expand/collapse)
+(function() {
+    var header = document.querySelector('.disclaimer-header[data-toggle="disclaimer-details"]');
+    if (header) {
+        header.addEventListener('click', function() {
+            var body = document.getElementById('disclaimer-details-body');
+            var toggle = header.querySelector('.disclaimer-toggle');
+            if (body.classList.contains('collapsed')) {
+                body.classList.remove('collapsed');
+                toggle.textContent = '▼';
+            } else {
+                body.classList.add('collapsed');
+                toggle.textContent = '▶';
+            }
+        });
+    }
+})();
+
 document.getElementById('start-plan').addEventListener('click', function() {
     currentKcal = recommendedKcal;
     document.getElementById('onboarding').style.display = 'none';
@@ -1065,6 +1096,7 @@ document.getElementById('start-plan').addEventListener('click', function() {
     updateSliderRange();
     renderAll();
     activateTab(getDefaultTab());
+    populateDisclaimer();
     saveAllState();
 });
 
@@ -1086,41 +1118,21 @@ function getSliderMax() {
 }
 
 function updateSliderRange() {
-    var slider = document.getElementById('kcal-range');
-    var minVal = getSliderMin();
-    var maxVal = getSliderMax();
-    slider.min = minVal;
-    slider.max = maxVal;
-    slider.value = currentKcal;
-    document.getElementById('kcal-min-label').textContent = minVal;
-    document.getElementById('kcal-max-label').textContent = maxVal;
-    // Position recommended marker
-    var marker = document.getElementById('kcal-rec-marker');
-    var recLabel = document.getElementById('kcal-rec-label');
-    if (recommendedKcal && userGoal) {
-        var pct = ((recommendedKcal - minVal) / (maxVal - minVal)) * 100;
-        marker.style.left = pct + '%';
-        marker.style.display = '';
-        recLabel.textContent = '▲ Recomendado: ' + recommendedKcal + ' kcal';
-    } else {
-        marker.style.display = 'none';
-        recLabel.textContent = '';
+    // No slider — kcal is fixed from onboarding. Just update display.
+    document.getElementById('kcal-display').textContent = currentKcal;
+    var sub = document.getElementById('kcal-fixed-sub');
+    if (sub && userGoal) {
+        var goalName = goalLabels[userGoal] || '';
+        sub.textContent = goalIcons[userGoal] + ' ' + goalName + ' · Recomendado: ' + recommendedKcal + ' kcal';
     }
 }
 
 function updateKcal(value) {
-    var minVal = getSliderMin();
-    var maxVal = getSliderMax();
-    currentKcal = Math.max(minVal, Math.min(maxVal, value));
+    currentKcal = Math.max(1200, Math.min(4000, value));
     document.getElementById('kcal-display').textContent = currentKcal;
-    document.getElementById('kcal-range').value = currentKcal;
     renderAll();
     saveAllState();
 }
-
-document.getElementById('kcal-range').addEventListener('input', function(e) { updateKcal(parseInt(e.target.value)); });
-document.getElementById('kcal-minus').addEventListener('click', function() { updateKcal(currentKcal - 100); });
-document.getElementById('kcal-plus').addEventListener('click', function() { updateKcal(currentKcal + 100); });
 
 // ============================================================
 // SELECTION HANDLERS
@@ -1794,7 +1806,7 @@ document.addEventListener('click', function(e) {
 function saveAllState() {
     try {
         var calcData = {};
-        ['calc-sex','calc-age','calc-height','calc-weight','calc-bf','calc-activity','calc-trains','calc-train-type','calc-train-days','calc-train-duration','calc-train-intensity','calc-steps','calc-experience','calc-diet-history','calc-appetite'].forEach(function(id) {
+        ['calc-sex','calc-age','calc-height','calc-weight','calc-bf','calc-activity','calc-trains','calc-train-type','calc-train-days','calc-train-duration','calc-train-intensity','calc-steps','calc-experience','calc-diet-history','calc-appetite','calc-alcohol'].forEach(function(id) {
             var el = document.getElementById(id); if (el) calcData[id] = el.value;
         });
         calcData['calc-steps-unknown'] = document.getElementById('calc-steps-unknown').checked ? 'true' : 'false';
@@ -1885,6 +1897,7 @@ function init() {
         updateSliderRange();
         renderAll();
         activateTab(getDefaultTab());
+        populateDisclaimer();
     } else {
         document.getElementById('onboarding').style.display = '';
         document.getElementById('app-wrapper').style.display = 'none';
