@@ -1740,7 +1740,7 @@ var macroTooltips = {
             var rangeGrams = w > 0 ? ' (' + Math.round(parseFloat(rec.range.split('–')[0]) * w) + '–' + Math.round(parseFloat(rec.range.split('–')[1].trim()) * w) + 'g)' : '';
             return '<p>Las proteínas son los <strong>bloques de construcción del músculo</strong>. Están formadas por aminoácidos que reparan y construyen tejido muscular, producen enzimas y hormonas, y mantienen el sistema inmunitario.</p>' +
                 '<p><strong>1g de proteína = 4 kcal</strong></p>' +
-                '<h4>Recomendación para tu objetivo</h4>' +
+                '<h4 class="macro-tip-heading">Recomendación para tu objetivo</h4>' +
                 '<p class="macro-tip-rec"><strong>' + rec.range + ' g/kg' + rangeGrams + '</strong></p>' +
                 '<p>' + rec.detail + '</p>' +
                 '<p class="macro-tip-source">📚 Estudios</p>' +
@@ -1766,7 +1766,7 @@ var macroTooltips = {
             var rangeGrams = w > 0 ? ' (' + Math.round(parseFloat(rec.range.split('–')[0]) * w) + '–' + Math.round(parseFloat(rec.range.split('–')[1].trim()) * w) + 'g)' : '';
             return '<p>Los carbohidratos son la <strong>fuente de energía principal</strong> del cuerpo, especialmente para ejercicio de alta intensidad. Se almacenan como glucógeno en músculos e hígado.</p>' +
                 '<p><strong>1g de carbohidrato = 4 kcal</strong></p>' +
-                '<h4>Recomendación para tu objetivo</h4>' +
+                '<h4 class="macro-tip-heading">Recomendación para tu objetivo</h4>' +
                 '<p class="macro-tip-rec"><strong>' + rec.range + ' g/kg' + rangeGrams + '</strong></p>' +
                 '<p>' + rec.detail + '</p>' +
                 '<p class="macro-tip-source">📚 Estudios</p>' +
@@ -1791,7 +1791,7 @@ var macroTooltips = {
             var rangeGrams = w > 0 ? ' (' + Math.round(parseFloat(rec.range.split('–')[0]) * w) + '–' + Math.round(parseFloat(rec.range.split('–')[1].trim()) * w) + 'g)' : '';
             return '<p>Las grasas son <strong>esenciales</strong> para la producción hormonal, absorción de vitaminas, salud celular y función cerebral. No deben eliminarse nunca de la dieta.</p>' +
                 '<p><strong>1g de grasa = 9 kcal</strong></p>' +
-                '<h4>Recomendación para tu objetivo</h4>' +
+                '<h4 class="macro-tip-heading">Recomendación para tu objetivo</h4>' +
                 '<p class="macro-tip-rec"><strong>' + rec.range + ' g/kg' + rangeGrams + '</strong></p>' +
                 '<p>' + rec.detail + '</p>' +
                 '<p class="macro-tip-source">📚 Estudios</p>' +

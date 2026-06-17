@@ -1201,16 +1201,27 @@ body {
 }
 
 /* Macro tooltip styles */
+.macro-tip-heading {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin: 20px 0 8px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.01em;
+}
+
 .macro-tip-rec {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     color: var(--accent);
-    margin: 6px 0;
+    margin: 4px 0 10px;
+    line-height: 1.3;
 }
 
 .macro-tip-source {
     font-size: 0.75rem;
     opacity: 0.6;
-    margin-top: 12px;
+    margin-top: 16px;
     margin-bottom: 4px;
 }
 
