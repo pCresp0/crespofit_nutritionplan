@@ -1209,9 +1209,10 @@ function renderValidator() {
 // DIET SUMMARY (shown when all meals selected)
 // ============================================================
 var mealSupplements = {
-    breakfast: ['Creatina', 'Omega 3'],
-    lunch: ['Omega 3'],
-    dinner: ['Magnesio y Zinc', 'Melatonina']
+    breakfast: [{icon:'💪',title:'Creatina',desc:'8g'},{icon:'🐟',title:'Omega 3',desc:'1 pastilla'}],
+    lunch: [{icon:'🐟',title:'Omega 3',desc:'1 pastilla'}],
+    dinner: [],
+    sleep: [{icon:'🧲',title:'Magnesio y Zinc',desc:'2 pastillas'},{icon:'😴',title:'Melatonina',desc:'Opcional'}]
 };
 
 function buildMealSummaryHTML(selObj, ratio, isTrainer) {
@@ -1266,11 +1267,9 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
     if (!complete) return '';
 
     function suppHTML(mealKey) {
-        var names = mealSupplements[mealKey] || [];
-        if (!names.length) return '';
-        var pills = names.map(function(name) {
-            var s = supplements.find(function(sup) { return sup.title === name; });
-            if (!s) return '';
+        var supps = mealSupplements[mealKey] || [];
+        if (!supps.length) return '';
+        var pills = supps.map(function(s) {
             return '<span class="summary-supp">' + s.icon + ' ' + s.title + ' — ' + s.desc + '</span>';
         }).join('');
         return '<div class="summary-supps">' + pills + '</div>';
@@ -1298,7 +1297,12 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
     html += '<div class="summary-meal">' +
         '<div class="summary-meal-header">🌙 Cena</div>' +
         '<ul class="summary-meal-items">' + dinnerItems.map(function(i){ return '<li>'+i+'</li>'; }).join('') + '</ul>' +
-        suppHTML('dinner') +
+        '</div>';
+
+    // Before sleep
+    html += '<div class="summary-meal summary-meal-sleep">' +
+        '<div class="summary-meal-header">😴 Antes de dormir</div>' +
+        suppHTML('sleep') +
         '</div>';
 
     html += '</div>';
