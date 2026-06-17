@@ -277,6 +277,7 @@ function updateKcal(value) {
     document.getElementById('kcal-display').textContent = currentKcal;
     document.getElementById('kcal-range').value = currentKcal;
     renderAll();
+    updateCalculatorResults();
     saveState();
 }
 
@@ -328,7 +329,9 @@ document.addEventListener('click', function(e) {
 
 // Section toggle
 document.querySelectorAll('[data-toggle]').forEach(header => {
-    header.addEventListener('click', function() {
+    header.addEventListener('click', function(e) {
+        // Don't toggle if clicking a tooltip trigger
+        if (e.target.closest('.tooltip-trigger')) return;
         const section = this.dataset.toggle;
         const body = document.getElementById(section + '-body') ||
                      document.getElementById(section + 's-body');
@@ -366,13 +369,243 @@ function loadState() {
 }
 
 // ============================================================
+// BMR / TDEE CALCULATOR
+// ============================================================
+
+// Tooltip content
+const tooltipData = {
+    activity: {
+        title: 'Factor de Actividad Diaria',
+        body: '<p>Este factor refleja tu gasto calórico por <strong>actividad diaria sin contar el entreno</strong> (NEAT: Non-Exercise Activity Thermogenesis).</p>' +
+            '<ul>' +
+            '<li><strong>Sedentario (×1.2):</strong> Trabajo de oficina/sentado, poca actividad fuera de casa.</li>' +
+            '<li><strong>Ligeramente activo (×1.375):</strong> Trabajo de oficina pero caminas al trabajo, haces recados, etc.</li>' +
+            '<li><strong>Moderadamente activo (×1.55):</strong> Trabajo de pie (hostelería, comercio, profesor) o caminas &gt;10.000 pasos/día.</li>' +
+            '<li><strong>Muy activo (×1.725):</strong> Trabajo físico (construcción, mudanzas) o estás en movimiento todo el día.</li>' +
+            '</ul>' +
+            '<p>Este multiplicador se aplica sobre la TMB para obtener las calorías que gastas sin ejercicio planificado.</p>'
+    },
+    bmr: {
+        title: 'Tasa Metabólica Basal (TMB)',
+        body: '<p>La <strong>TMB</strong> (o BMR en inglés) son las calorías que tu cuerpo necesita <strong>en reposo absoluto</strong> para mantener funciones vitales: respirar, bombear sangre, regular temperatura, etc.</p>' +
+            '<p>Se calcula con la <strong>fórmula de Mifflin-St Jeor</strong>, la más precisa actualmente:</p>' +
+            '<p><strong>Hombres:</strong><br><code>TMB = (10 × peso kg) + (6.25 × altura cm) − (5 × edad) + 5</code></p>' +
+            '<p><strong>Mujeres:</strong><br><code>TMB = (10 × peso kg) + (6.25 × altura cm) − (5 × edad) − 161</code></p>' +
+            '<p>Es el mínimo calórico que consume tu cuerpo, <strong>sin contar ninguna actividad</strong>.</p>'
+    },
+    neat: {
+        title: 'NEAT + Actividad Diaria',
+        body: '<p>El <strong>NEAT</strong> (Non-Exercise Activity Thermogenesis) es la energía gastada en actividades diarias que <strong>no son ejercicio planificado</strong>: caminar, estar de pie, gesticular, subir escaleras, etc.</p>' +
+            '<p>Se calcula multiplicando la TMB por el factor de actividad seleccionado:</p>' +
+            '<p><code>Calorías diarias = TMB × Factor de actividad</code></p>' +
+            '<p>Este valor representa las calorías que gastas en un día <strong>sin contar tus entrenamientos</strong>. Es útil para saber cuánto quemas en días de descanso.</p>'
+    },
+    tdee: {
+        title: 'Gasto Energético Total (TDEE)',
+        body: '<p>El <strong>TDEE</strong> (Total Daily Energy Expenditure) es el total de calorías que quemas al día <strong>incluyendo el ejercicio</strong>.</p>' +
+            '<p>Se calcula sumando al NEAT las calorías extras quemadas por el entrenamiento:</p>' +
+            '<p><code>TDEE = NEAT + (Calorías entreno × días/semana ÷ 7)</code></p>' +
+            '<p>Las calorías de entreno se estiman según:</p>' +
+            '<ul>' +
+            '<li><strong>Tipo de entreno:</strong> Fuerza (~5-8 kcal/min), Cardio (~8-12 kcal/min), HIIT (~9-14 kcal/min), Mixto (~7-11 kcal/min)</li>' +
+            '<li><strong>Duración e intensidad</strong> de la sesión</li>' +
+            '</ul>' +
+            '<p>Si tu dieta está <strong>por debajo del TDEE</strong>, estás en <strong>déficit calórico</strong> (perder grasa). Si está por encima, en <strong>superávit</strong> (ganar peso).</p>'
+    }
+};
+
+// Calorie burn per minute by training type and intensity [low, medium, high]
+const trainBurnPerMin = {
+    strength: [5, 6.5, 8],
+    cardio: [8, 10, 12],
+    hiit: [9, 11.5, 14],
+    mixed: [7, 9, 11]
+};
+
+function calculateBMR() {
+    const sex = document.getElementById('calc-sex').value;
+    const age = parseFloat(document.getElementById('calc-age').value);
+    const height = parseFloat(document.getElementById('calc-height').value);
+    const weight = parseFloat(document.getElementById('calc-weight').value);
+
+    if (!age || !height || !weight) return null;
+
+    // Mifflin-St Jeor
+    if (sex === 'male') {
+        return (10 * weight) + (6.25 * height) - (5 * age) + 5;
+    } else {
+        return (10 * weight) + (6.25 * height) - (5 * age) - 161;
+    }
+}
+
+function calculateTDEE() {
+    const bmr = calculateBMR();
+    if (!bmr) return null;
+
+    const activityFactor = parseFloat(document.getElementById('calc-activity').value);
+    if (!activityFactor) return null;
+
+    const neat = bmr * activityFactor;
+
+    const trains = document.getElementById('calc-trains').value === 'yes';
+    let trainingExtra = 0;
+
+    if (trains) {
+        const type = document.getElementById('calc-train-type').value;
+        const days = parseInt(document.getElementById('calc-train-days').value);
+        const duration = parseInt(document.getElementById('calc-train-duration').value);
+        const intensity = document.getElementById('calc-train-intensity').value;
+
+        const intensityIdx = intensity === 'low' ? 0 : intensity === 'medium' ? 1 : 2;
+        const burnPerMin = trainBurnPerMin[type][intensityIdx];
+        const sessionCals = burnPerMin * duration;
+        trainingExtra = (sessionCals * days) / 7;
+    }
+
+    return { bmr: Math.round(bmr), neat: Math.round(neat), tdee: Math.round(neat + trainingExtra) };
+}
+
+function updateCalculatorResults() {
+    const result = calculateTDEE();
+    const resultsDiv = document.getElementById('calc-results');
+
+    if (!result) {
+        resultsDiv.style.display = 'none';
+        return;
+    }
+
+    resultsDiv.style.display = '';
+    document.getElementById('result-bmr').textContent = result.bmr;
+    document.getElementById('result-neat').textContent = result.neat;
+    document.getElementById('result-tdee').textContent = result.tdee;
+
+    // Balance calculation
+    const diff = currentKcal - result.tdee;
+    const pct = diff / result.tdee * 100;
+
+    const marker = document.getElementById('balance-bar-marker');
+    // Map diff to position: -30% = 0%, 0% = 50%, +30% = 100%
+    const pos = Math.max(0, Math.min(100, 50 + (pct / 30 * 50)));
+    marker.style.left = pos + '%';
+
+    const verdict = document.getElementById('balance-verdict');
+    if (diff < -100) {
+        const absDiff = Math.abs(diff);
+        verdict.className = 'balance-verdict deficit';
+        verdict.innerHTML = '📉 <strong>Déficit de ' + absDiff + ' kcal/día</strong> (' + Math.abs(pct).toFixed(1) + '%) — Ideal para perder grasa';
+    } else if (diff > 100) {
+        verdict.className = 'balance-verdict surplus';
+        verdict.innerHTML = '📈 <strong>Superávit de +' + diff + ' kcal/día</strong> (+' + pct.toFixed(1) + '%) — Ganarás peso';
+    } else {
+        verdict.className = 'balance-verdict maintenance';
+        verdict.innerHTML = '⚖️ <strong>Mantenimiento</strong> (±' + Math.abs(diff) + ' kcal) — Peso estable';
+    }
+
+    saveCalcState();
+}
+
+// Toggle training details visibility
+function toggleTrainingDetails() {
+    const trains = document.getElementById('calc-trains').value === 'yes';
+    const details = document.getElementById('calc-training-details');
+    if (trains) {
+        details.classList.remove('hidden');
+    } else {
+        details.classList.add('hidden');
+    }
+    updateCalculatorResults();
+}
+
+// Tooltip handlers
+function openTooltip(key) {
+    const data = tooltipData[key];
+    if (!data) return;
+    document.getElementById('tooltip-title').textContent = data.title;
+    document.getElementById('tooltip-body').innerHTML = data.body;
+    document.getElementById('tooltip-overlay').style.display = '';
+}
+
+function closeTooltip() {
+    document.getElementById('tooltip-overlay').style.display = 'none';
+}
+
+// Calculator event listeners
+document.addEventListener('click', function(e) {
+    const trigger = e.target.closest('.tooltip-trigger');
+    if (trigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        openTooltip(trigger.dataset.tooltip);
+        return;
+    }
+
+    if (e.target.id === 'tooltip-overlay') {
+        closeTooltip();
+        return;
+    }
+
+    if (e.target.id === 'tooltip-close' || e.target.closest('#tooltip-close')) {
+        closeTooltip();
+        return;
+    }
+});
+
+['calc-sex', 'calc-age', 'calc-height', 'calc-weight', 'calc-activity',
+ 'calc-trains', 'calc-train-type', 'calc-train-days', 'calc-train-duration', 'calc-train-intensity'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener('change', function() {
+            if (id === 'calc-trains') {
+                toggleTrainingDetails();
+            } else {
+                updateCalculatorResults();
+            }
+        });
+        if (el.type === 'number') {
+            el.addEventListener('input', updateCalculatorResults);
+        }
+    }
+});
+
+// Save/load calculator state
+function saveCalcState() {
+    try {
+        const calcData = {};
+        ['calc-sex', 'calc-age', 'calc-height', 'calc-weight', 'calc-activity',
+         'calc-trains', 'calc-train-type', 'calc-train-days', 'calc-train-duration', 'calc-train-intensity'].forEach(function(id) {
+            const el = document.getElementById(id);
+            if (el) calcData[id] = el.value;
+        });
+        localStorage.setItem('dietAppCalc', JSON.stringify(calcData));
+    } catch (e) { /* ignore */ }
+}
+
+function loadCalcState() {
+    try {
+        const saved = localStorage.getItem('dietAppCalc');
+        if (saved) {
+            const data = JSON.parse(saved);
+            Object.keys(data).forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el && data[id]) {
+                    el.value = data[id];
+                }
+            });
+            toggleTrainingDetails();
+        }
+    } catch (e) { /* ignore */ }
+}
+
+// ============================================================
 // INIT
 // ============================================================
 function init() {
     loadState();
+    loadCalcState();
     document.getElementById('kcal-display').textContent = currentKcal;
     document.getElementById('kcal-range').value = currentKcal;
     renderAll();
+    updateCalculatorResults();
 }
 
 document.addEventListener('DOMContentLoaded', init);

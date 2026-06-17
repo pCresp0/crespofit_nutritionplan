@@ -49,6 +49,170 @@
             </div>
         </section>
 
+        <!-- CALCULADORA TDEE -->
+        <section class="meal-section calculator-section" id="calculator-section">
+            <div class="section-header" data-toggle="calculator">
+                <h2><span class="section-icon">🔥</span> Calculadora de Gasto Calórico (TDEE)</h2>
+                <p class="section-subtitle">Calcula tus calorías de mantenimiento y compara con tu dieta actual.</p>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="section-body open" id="calculator-body">
+                <div class="calc-container">
+                    <div class="calc-form">
+                        <div class="calc-row">
+                            <div class="calc-field">
+                                <label for="calc-sex">Sexo</label>
+                                <select id="calc-sex">
+                                    <option value="male" selected>Hombre</option>
+                                    <option value="female">Mujer</option>
+                                </select>
+                            </div>
+                            <div class="calc-field">
+                                <label for="calc-age">Edad</label>
+                                <input type="number" id="calc-age" min="14" max="80" placeholder="25" value="">
+                            </div>
+                        </div>
+                        <div class="calc-row">
+                            <div class="calc-field">
+                                <label for="calc-height">Altura (cm)</label>
+                                <input type="number" id="calc-height" min="120" max="230" placeholder="175" value="">
+                            </div>
+                            <div class="calc-field">
+                                <label for="calc-weight">Peso (kg)</label>
+                                <input type="number" id="calc-weight" min="35" max="200" step="0.1" placeholder="80" value="">
+                            </div>
+                        </div>
+                        <div class="calc-row">
+                            <div class="calc-field full-width">
+                                <label for="calc-activity">
+                                    Actividad diaria (sin contar entreno)
+                                    <span class="tooltip-trigger" data-tooltip="activity">ⓘ</span>
+                                </label>
+                                <select id="calc-activity">
+                                    <option value="">-- Selecciona --</option>
+                                    <option value="1.2">Sedentario · Trabajo de oficina, poco movimiento</option>
+                                    <option value="1.375">Ligeramente activo · Trabajo de oficina + caminas algo</option>
+                                    <option value="1.55">Moderadamente activo · Trabajo de pie o caminas bastante</option>
+                                    <option value="1.725">Muy activo · Trabajo físico o estás en movimiento todo el día</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="calc-row">
+                            <div class="calc-field">
+                                <label for="calc-trains">¿Entrenas?</label>
+                                <select id="calc-trains">
+                                    <option value="no">No</option>
+                                    <option value="yes" selected>Sí</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="calc-training-details" id="calc-training-details">
+                            <div class="calc-row">
+                                <div class="calc-field">
+                                    <label for="calc-train-type">Tipo de entreno</label>
+                                    <select id="calc-train-type">
+                                        <option value="strength">Fuerza / Hipertrofia</option>
+                                        <option value="cardio">Cardio</option>
+                                        <option value="hiit">HIIT / CrossFit</option>
+                                        <option value="mixed">Mixto (fuerza + cardio)</option>
+                                    </select>
+                                </div>
+                                <div class="calc-field">
+                                    <label for="calc-train-days">Días/semana</label>
+                                    <select id="calc-train-days">
+                                        <option value="1">1 día</option>
+                                        <option value="2">2 días</option>
+                                        <option value="3">3 días</option>
+                                        <option value="4" selected>4 días</option>
+                                        <option value="5">5 días</option>
+                                        <option value="6">6 días</option>
+                                        <option value="7">7 días</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="calc-row">
+                                <div class="calc-field">
+                                    <label for="calc-train-duration">Duración por sesión</label>
+                                    <select id="calc-train-duration">
+                                        <option value="30">30 min</option>
+                                        <option value="45">45 min</option>
+                                        <option value="60" selected>60 min</option>
+                                        <option value="75">75 min</option>
+                                        <option value="90">90 min</option>
+                                        <option value="120">120 min</option>
+                                    </select>
+                                </div>
+                                <div class="calc-field">
+                                    <label for="calc-train-intensity">Intensidad</label>
+                                    <select id="calc-train-intensity">
+                                        <option value="low">Baja</option>
+                                        <option value="medium" selected>Media</option>
+                                        <option value="high">Alta</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RESULTADOS -->
+                    <div class="calc-results" id="calc-results" style="display:none;">
+                        <div class="calc-results-grid">
+                            <div class="calc-result-card bmr-card">
+                                <div class="calc-result-label">
+                                    TMB
+                                    <span class="tooltip-trigger" data-tooltip="bmr">ⓘ</span>
+                                </div>
+                                <div class="calc-result-value" id="result-bmr">--</div>
+                                <div class="calc-result-sub">kcal/día en reposo</div>
+                            </div>
+                            <div class="calc-result-card neat-card">
+                                <div class="calc-result-label">
+                                    NEAT + Actividad
+                                    <span class="tooltip-trigger" data-tooltip="neat">ⓘ</span>
+                                </div>
+                                <div class="calc-result-value" id="result-neat">--</div>
+                                <div class="calc-result-sub">kcal/día sin entreno</div>
+                            </div>
+                            <div class="calc-result-card tdee-card">
+                                <div class="calc-result-label">
+                                    TDEE Total
+                                    <span class="tooltip-trigger" data-tooltip="tdee">ⓘ</span>
+                                </div>
+                                <div class="calc-result-value" id="result-tdee">--</div>
+                                <div class="calc-result-sub">kcal/día con entreno</div>
+                            </div>
+                        </div>
+
+                        <div class="calc-balance" id="calc-balance">
+                            <div class="balance-bar-container">
+                                <div class="balance-labels">
+                                    <span>Déficit</span>
+                                    <span>Mantenimiento</span>
+                                    <span>Superávit</span>
+                                </div>
+                                <div class="balance-bar">
+                                    <div class="balance-bar-fill" id="balance-bar-fill"></div>
+                                    <div class="balance-bar-marker" id="balance-bar-marker"></div>
+                                </div>
+                            </div>
+                            <div class="balance-verdict" id="balance-verdict"></div>
+                        </div>
+                    </div>
+
+                    <!-- TOOLTIP MODAL -->
+                    <div class="tooltip-overlay" id="tooltip-overlay" style="display:none;">
+                        <div class="tooltip-modal">
+                            <div class="tooltip-modal-header">
+                                <span id="tooltip-title"></span>
+                                <button class="tooltip-close" id="tooltip-close">&times;</button>
+                            </div>
+                            <div class="tooltip-modal-body" id="tooltip-body"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- DESAYUNO / MERIENDA -->
         <section class="meal-section" id="breakfast-section">
             <div class="section-header" data-toggle="breakfast">
