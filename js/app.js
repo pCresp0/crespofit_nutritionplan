@@ -1906,6 +1906,7 @@ function init() {
         renderAll();
         activateTab(getDefaultTab());
         populateDisclaimer();
+        window.scrollTo(0, 0);
     } else {
         document.getElementById('onboarding').style.display = '';
         document.getElementById('app-wrapper').style.display = 'none';
