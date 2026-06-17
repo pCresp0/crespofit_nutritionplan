@@ -471,6 +471,44 @@ body {
     margin-bottom: 16px;
 }
 
+.info-banner-goal-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, rgba(212, 160, 23, 0.12) 0%, rgba(232, 167, 53, 0.08) 100%);
+    border: 1.5px solid var(--accent);
+    cursor: pointer;
+    transition: background var(--transition), transform 0.15s ease;
+    margin-bottom: 10px;
+}
+
+.info-banner-goal-strip:hover {
+    background: linear-gradient(135deg, rgba(212, 160, 23, 0.18) 0%, rgba(232, 167, 53, 0.12) 100%);
+    transform: translateY(-1px);
+}
+
+.info-banner-goal-strip .info-goal-icon {
+    font-size: 1.4rem;
+}
+
+.info-banner-goal-strip .info-goal-text {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.info-banner-goal-strip .info-goal-edit {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-left: 4px;
+    opacity: 0.7;
+}
+
 .info-banner-card {
     background: var(--card-bg);
     border-radius: var(--radius-sm);
@@ -480,23 +518,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 14px;
-}
-
-.info-banner-goal {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: var(--radius-xs);
-    background: rgba(212, 160, 23, 0.08);
-    border: 1px dashed var(--accent);
-    transition: background var(--transition);
-    align-self: flex-start;
-}
-
-.info-banner-goal:hover {
-    background: rgba(212, 160, 23, 0.15);
 }
 
 .info-goal-icon {
@@ -2696,6 +2717,20 @@ body {
 
     .info-banner {
         margin-bottom: 12px;
+    }
+
+    .info-banner-goal-strip {
+        padding: 10px 12px;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .info-banner-goal-strip .info-goal-icon {
+        font-size: 1.2rem;
+    }
+
+    .info-banner-goal-strip .info-goal-text {
+        font-size: 0.9rem;
     }
 
     .info-banner-card {

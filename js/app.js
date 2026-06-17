@@ -482,11 +482,12 @@ function renderInfoBanner() {
     }
 
     el.innerHTML =
+        '<div class="info-banner-goal-strip" id="info-goal-picker">' +
+            '<span class="info-goal-icon">' + goalIcons[userGoal] + '</span>' +
+            '<span class="info-goal-text">' + goalLabels[userGoal] + '</span>' +
+            '<span class="info-goal-edit">✎ Cambiar</span>' +
+        '</div>' +
         '<div class="info-banner-card">' +
-            '<div class="info-banner-goal" id="info-goal-picker">' +
-                '<span class="info-goal-icon">' + goalIcons[userGoal] + '</span>' +
-                '<span class="info-goal-text">' + goalLabels[userGoal] + ' ✎</span>' +
-            '</div>' +
             '<div class="info-banner-metrics">' +
                 '<div class="info-metric">' +
                     '<span class="info-metric-label">Lo que quemas</span>' +
