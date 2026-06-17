@@ -1137,20 +1137,19 @@ body {
 .nutrition-body {
     padding: 20px;
     display: flex;
-    align-items: center;
-    gap: 24px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 16px;
 }
 
-.nutrition-kcal {
+.nutrition-kcal-row {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 100px;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
 }
 
 .nutrition-kcal-number {
-    font-size: 2.2rem;
+    font-size: 2.4rem;
     font-weight: 800;
     color: var(--primary);
     letter-spacing: -0.03em;
@@ -1159,155 +1158,123 @@ body {
 }
 
 .nutrition-kcal-unit {
-    font-size: 0.76rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    margin-top: 2px;
 }
+
+/* Stacked horizontal bar */
+.nutrition-stacked-bar {
+    display: flex;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--macro-bar-bg);
+    gap: 2px;
+}
+
+.stacked-seg {
+    height: 100%;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 4px;
+}
+
+.stacked-protein { background: var(--protein-accent); border-radius: 6px 0 0 6px; }
+.stacked-carbs { background: var(--carbs-accent); }
+.stacked-fat { background: var(--fat-accent); border-radius: 0 6px 6px 0; }
+
+/* Macro cards grid */
+.nutrition-macro-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.macro-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 8px 12px;
+    border-radius: var(--radius-xs);
+    background: var(--bg);
+    border: 1px solid var(--border);
+}
+
+/* Ring using conic-gradient */
+.macro-card-ring {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: conic-gradient(
+        var(--ring-color) calc(var(--ring-pct) * 3.6deg),
+        var(--macro-bar-bg) calc(var(--ring-pct) * 3.6deg)
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.macro-card-ring::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    background: var(--bg);
+}
+
+.macro-card-ring-value {
+    position: relative;
+    z-index: 1;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.macro-card-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+
+.macro-card-grams {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.macro-card-name {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Color accents on card borders */
+.macro-card-protein { border-bottom: 3px solid var(--protein-accent); }
+.macro-card-carbs { border-bottom: 3px solid var(--carbs-accent); }
+.macro-card-fat { border-bottom: 3px solid var(--fat-accent); }
 
 .nutrition-ring {
     display: none;
 }
 
 .nutrition-macros {
-    flex: 1;
-    min-width: 200px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    display: none;
 }
 
-.macro-bar-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.macro-info {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-}
-
-.macro-info .macro-name {
-    flex: 1;
-}
-
-.macro-info strong {
-    color: var(--text-primary);
-    font-variant-numeric: tabular-nums;
-    min-width: 42px;
-    text-align: right;
-}
-
-.macro-pct {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-    min-width: 32px;
-    text-align: right;
-}
-
-.macro-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
+/* Legacy macro styles (kept for compatibility) */
+.macro-bar-group { display: none; }
 
 .protein-dot { background: var(--protein-accent); }
 .carbs-dot { background: var(--carbs-accent); }
 .fat-dot { background: var(--fat-accent); }
-
-.macro-bar {
-    height: 8px;
-    background: var(--macro-bar-bg);
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.macro-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    min-width: 2px;
-}
-
-.protein-fill { background: linear-gradient(90deg, #E8899E, #D87093); }
-.carbs-fill { background: linear-gradient(90deg, #E8C44A, #D4A017); }
-.fat-fill { background: linear-gradient(90deg, #7BB3E0, #5B9BD5); }
-
-/* Two-color split bar */
-.macro-bar-split {
-    display: flex;
-    height: 8px;
-    background: var(--macro-bar-bg);
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.macro-bar-base {
-    height: 100%;
-    background: rgba(255,255,255,0.18);
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.macro-bar-chosen {
-    height: 100%;
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.macro-bar-detail {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.68rem;
-    color: var(--text-muted);
-    margin-top: 2px;
-}
-
-/* Nutrition legend */
-.nutrition-legend {
-    display: flex;
-    gap: 16px;
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid var(--border);
-    flex-wrap: wrap;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-}
-
-.legend-swatch {
-    width: 14px;
-    height: 8px;
-    border-radius: 3px;
-    flex-shrink: 0;
-}
-
-.legend-base {
-    background: rgba(255,255,255,0.18);
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.legend-chosen {
-    background: linear-gradient(90deg, #E8899E, #D87093);
-}
-
-/* Kcal breakdown label */
-.nutrition-kcal-breakdown {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-    margin-left: 6px;
-}
 
 /* ========== SUPPLEMENTS ========== */
 .supplements-grid {
@@ -2128,19 +2095,34 @@ body {
     }
 
     .nutrition-body {
-        flex-direction: column;
-        padding: 16px;
-        gap: 16px;
+        padding: 16px 12px;
+        gap: 14px;
     }
 
-    .nutrition-kcal {
-        flex-direction: row;
-        gap: 8px;
-        align-items: baseline;
+    .nutrition-kcal-row {
+        gap: 5px;
     }
 
     .nutrition-kcal-number {
-        font-size: 1.8rem;
+        font-size: 2rem;
+    }
+
+    .macro-card {
+        padding: 10px 6px;
+        gap: 6px;
+    }
+
+    .macro-card-ring {
+        width: 48px;
+        height: 48px;
+    }
+
+    .macro-card-ring-value {
+        font-size: 0.7rem;
+    }
+
+    .macro-card-grams {
+        font-size: 0.88rem;
     }
 
     .footer-visits {

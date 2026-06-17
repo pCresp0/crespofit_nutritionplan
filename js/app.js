@@ -364,13 +364,8 @@ function renderNutritionSummary() {
     var macros = data.total;
     container.style.display='';
     var kcal=Math.round(macros.kcal), p=Math.round(macros.protein), c=Math.round(macros.carbs), f=Math.round(macros.fat);
-    var bp=Math.round(data.base.protein), bc=Math.round(data.base.carbs), bf=Math.round(data.base.fat), bk=Math.round(data.base.kcal);
     var tg=p+c+f;
     var pp=tg>0?Math.round(p/tg*100):0, cp=tg>0?Math.round(c/tg*100):0, fp=tg>0?100-pp-cp:0;
-    // Base percentages within each macro bar
-    var bpPct = p>0 ? Math.round(bp/p*100) : 0;
-    var bcPct = c>0 ? Math.round(bc/c*100) : 0;
-    var bfPct = f>0 ? Math.round(bf/f*100) : 0;
     var meals=[];
     if (selections.breakfast!==null) meals.push('Desayuno');
     if (selections.lunchCarb!==null||selections.lunchProtein!==null) meals.push('Almuerzo');
@@ -381,33 +376,50 @@ function renderNutritionSummary() {
         var missingItems = [];
         if (selections.breakfast === null) missingItems.push('Desayuno');
         if (selections.lunchCarb === null) missingItems.push('Almuerzo: hidrato');
-        if (selections.lunchProtein === null) missingItems.push('Almuerzo: proteína');
+        if (selections.lunchProtein === null) missingItems.push('Almuerzo: prote\u00edna');
         if (selections.dinnerCarb === null) missingItems.push('Cena: hidrato');
-        if (selections.dinnerProtein === null) missingItems.push('Cena: proteína');
+        if (selections.dinnerProtein === null) missingItems.push('Cena: prote\u00edna');
         missingHtml = '<div class="nutrition-missing">\u26a0\ufe0f Falta: ' + missingItems.join(' \u00b7 ') + '</div>';
     }
-    container.innerHTML = '<div class="nutrition-header"><h3>\ud83d\udcca Resumen Nutricional Estimado</h3><span class="nutrition-meals">'+meals.join(' + ')+(complete?'':' \u00b7 Incompleto')+'</span></div>' + missingHtml +
+
+    // Stacked bar widths
+    var pKcal = p * 4, cKcal = c * 4, fKcal = f * 9;
+    var fromMacros = pKcal + cKcal + fKcal;
+    var pKcalPct = fromMacros > 0 ? Math.round(pKcal / fromMacros * 100) : 0;
+    var cKcalPct = fromMacros > 0 ? Math.round(cKcal / fromMacros * 100) : 0;
+    var fKcalPct = fromMacros > 0 ? 100 - pKcalPct - cKcalPct : 0;
+
+    container.innerHTML =
+        '<div class="nutrition-header"><h3>\ud83d\udcca Resumen Nutricional</h3><span class="nutrition-meals">'+meals.join(' + ')+(complete?'':' \u00b7 Incompleto')+'</span></div>' +
+        missingHtml +
         '<div class="nutrition-body">' +
-        '<div class="nutrition-kcal"><span class="nutrition-kcal-number">'+kcal+'</span><span class="nutrition-kcal-unit">kcal</span><span class="nutrition-kcal-breakdown">('+bk+' base + '+(kcal-bk)+' elegido)</span></div>' +
-        '<div class="nutrition-macros">' +
-        renderMacroBar('Prote\u00ednas', 'protein', p, pp, bp, bpPct) +
-        renderMacroBar('Carbohidratos', 'carbs', c, cp, bc, bcPct) +
-        renderMacroBar('Grasas', 'fat', f, fp, bf, bfPct) +
-        '</div>' +
-        '<div class="nutrition-legend"><span class="legend-item"><span class="legend-swatch legend-base"></span>Base (verdura + AOVE + fruta)</span><span class="legend-item"><span class="legend-swatch legend-chosen"></span>Tu elecci\u00f3n (comidas)</span></div>' +
+            '<div class="nutrition-kcal-row">' +
+                '<span class="nutrition-kcal-number">'+kcal+'</span>' +
+                '<span class="nutrition-kcal-unit">kcal</span>' +
+            '</div>' +
+            '<div class="nutrition-stacked-bar">' +
+                '<div class="stacked-seg stacked-protein" style="width:'+pKcalPct+'%"></div>' +
+                '<div class="stacked-seg stacked-carbs" style="width:'+cKcalPct+'%"></div>' +
+                '<div class="stacked-seg stacked-fat" style="width:'+fKcalPct+'%"></div>' +
+            '</div>' +
+            '<div class="nutrition-macro-cards">' +
+                renderMacroCard('Prote\u00ednas', 'protein', p, pp, pKcalPct) +
+                renderMacroCard('Carbos', 'carbs', c, cp, cKcalPct) +
+                renderMacroCard('Grasas', 'fat', f, fp, fKcalPct) +
+            '</div>' +
         '</div>';
 }
 
-function renderMacroBar(name, cls, total, pct, baseG, basePct) {
-    var chosenPct = 100 - basePct;
-    return '<div class="macro-bar-group">' +
-        '<div class="macro-info"><span class="macro-dot '+cls+'-dot"></span><span class="macro-name">'+name+'</span><strong>'+total+'g</strong><span class="macro-pct">'+pct+'%</span></div>' +
-        '<div class="macro-bar-split">' +
-        '<div class="macro-bar-base" style="width:'+basePct+'%"></div>' +
-        '<div class="macro-bar-chosen '+cls+'-fill" style="width:'+chosenPct+'%"></div>' +
+function renderMacroCard(name, cls, grams, pctWeight, pctKcal) {
+    return '<div class="macro-card macro-card-'+cls+'">' +
+        '<div class="macro-card-ring" style="--ring-pct:'+pctKcal+';--ring-color:var(--'+cls+'-accent)">' +
+            '<span class="macro-card-ring-value">'+pctKcal+'%</span>' +
         '</div>' +
-        '<div class="macro-bar-detail"><span>'+baseG+'g base</span><span>'+(total-baseG)+'g elegido</span></div>' +
-        '</div>';
+        '<div class="macro-card-info">' +
+            '<span class="macro-card-grams">'+grams+'g</span>' +
+            '<span class="macro-card-name">'+name+'</span>' +
+        '</div>' +
+    '</div>';
 }
 
 function renderAll() {
