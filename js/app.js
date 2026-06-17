@@ -1003,8 +1003,74 @@ document.getElementById('goal-cards').addEventListener('click', function(e) {
     document.getElementById('next-3').classList.remove('disabled');
 });
 
+function getGoalMismatchWarning(recommended, chosen) {
+    var bf = parseFloat(document.getElementById('calc-bf').value) || 0;
+    var sex = document.getElementById('calc-sex').value;
+    var recLabel = goalLabels[recommended];
+    var chosenLabel = goalLabels[chosen];
+
+    var msg = '⚠️ Has elegido "' + chosenLabel + '" pero te recomendamos "' + recLabel + '".\n\n';
+
+    // Specific warnings based on mismatch
+    if (recommended === 'cut' && chosen === 'bulk') {
+        msg += 'Con un ' + bf + '% de grasa corporal, hacer un bulk (superávit) ahora significa ganar aún más grasa. ' +
+            'Los estudios muestran que por encima del ' + (sex === 'male' ? '20%' : '30%') + ' de grasa, ' +
+            'la partición calórica empeora: una mayor proporción del exceso se almacena como grasa en vez de músculo (Forbes, 2000; Hall, 2007). ' +
+            'Además, la sensibilidad a la insulina se reduce, lo que dificulta la ganancia muscular limpia.\n\n' +
+            'Lo ideal sería primero reducir grasa (cut) y luego hacer un bulk desde un % más bajo.';
+    } else if (recommended === 'cut' && chosen === 'maintain') {
+        msg += 'Con un ' + bf + '% de grasa corporal, mantenerte significa quedarte en un rango que puede afectar tu salud metabólica a largo plazo. ' +
+            'Un déficit moderado del 15-20% te permitiría perder grasa preservando músculo (Helms et al., 2014) y mejorar tu perfil hormonal y sensibilidad a la insulina.';
+    } else if (recommended === 'cut' && chosen === 'recomp') {
+        msg += 'La recomposición es viable, pero con un ' + bf + '% de grasa un déficit moderado (cut) sería más eficiente. ' +
+            'La recomposición funciona mejor en rangos de grasa intermedios. Con tu % actual, un cut te dará resultados más rápidos y visibles, ' +
+            'y luego puedes hacer recomp o bulk desde una mejor base (Barakat et al., 2020).';
+    } else if (recommended === 'bulk' && chosen === 'cut') {
+        msg += 'Con un ' + bf + '% de grasa ya estás bastante definido/a. Hacer un déficit ahora puede hacerte perder masa muscular ' +
+            'sin mucho margen de grasa que eliminar. Los estudios indican que por debajo del ' + (sex === 'male' ? '12%' : '20%') + ' de grasa, ' +
+            'los déficits aumentan significativamente la pérdida de tejido magro (Helms et al., 2014). ' +
+            'Mejor aprovecha tu buena base para ganar músculo con un superávit controlado.';
+    } else if (recommended === 'bulk' && chosen === 'maintain') {
+        msg += 'Tu % de grasa es bastante bajo (' + bf + '%). Mantenerte aquí es una opción válida, pero si tu objetivo es ganar músculo, ' +
+            'necesitas un superávit calórico para maximizar la síntesis proteica y la ganancia muscular (Slater et al., 2019). ' +
+            'A mantenimiento la ganancia muscular será mínima o nula.';
+    } else if (recommended === 'recomp' && chosen === 'bulk') {
+        msg += 'Con tu ' + bf + '% de grasa actual, un bulk te hará acumular grasa adicional antes de estar en un punto óptimo. ' +
+            'La recomposición te permite mejorar tu composición corporal (ganar músculo + perder grasa) sin pasar por una fase de exceso de grasa. ' +
+            'Es más lenta pero más sostenible a medio plazo (Barakat et al., 2020).';
+    } else if (recommended === 'recomp' && chosen === 'cut') {
+        msg += 'Un cut no es mala opción, pero con tu % de grasa actual (' + bf + '%) la recomposición te daría mejores resultados estéticos: ' +
+            'ganar algo de músculo mientras pierdes grasa, en vez de solo perder peso. ' +
+            'Es ideal para tu rango y nivel de experiencia.';
+    } else if (recommended === 'maintain' && chosen === 'cut') {
+        msg += 'Ya tienes un buen % de grasa (' + bf + '%). Seguir perdiendo puede comprometer tu rendimiento, tu recuperación y tu bienestar hormonal. ' +
+            'A estos niveles, mantener es la opción más saludable y sostenible.';
+    } else if (recommended === 'maintain' && chosen === 'bulk') {
+        msg += 'Tu % de grasa está en un buen punto (' + bf + '%). Un bulk moderado es viable desde aquí, pero ten en cuenta que ' +
+            'inevitablemente ganarás algo de grasa junto con el músculo. Si te sientes bien donde estás, mantener puede ser lo ideal.';
+    } else {
+        msg += 'Según tus datos, "' + recLabel + '" sería la opción más adecuada para tu situación actual.';
+    }
+
+    msg += '\n\n¿Quieres continuar con "' + chosenLabel + '" igualmente?';
+    return msg;
+}
+
 document.getElementById('next-3').addEventListener('click', function() {
     if (!userGoal) return;
+
+    // Check if user chose a different goal than recommended
+    var recommended = getRecommendedGoal();
+    if (recommended && userGoal !== recommended && !this.dataset.confirmed) {
+        var warnings = getGoalMismatchWarning(recommended, userGoal);
+        if (warnings) {
+            var proceed = confirm(warnings);
+            if (!proceed) return;
+            this.dataset.confirmed = 'true';
+        }
+    }
+    delete this.dataset.confirmed;
+
     var result = calculateTDEE();
     if (!result) { alert('Error calculando TDEE.'); return; }
     userTdee = result.tdee;

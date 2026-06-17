@@ -3170,6 +3170,12 @@ body {
 
 .goal-card.recommended {
     border-color: var(--border-hover);
+    animation: rec-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes rec-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 23, 0); }
+    50% { box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.12); }
 }
 
 .goal-card.recommended::before {
@@ -3197,6 +3203,7 @@ body {
 .goal-card.recommended.selected {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px var(--accent);
+    animation: none;
 }
 
 .goal-recommendation {
