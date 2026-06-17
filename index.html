@@ -12,295 +12,307 @@
 </head>
 <body>
 
-    <header class="header">
-        <div class="header-content">
-            <h1>Mi Plan Nutricional</h1>
-            <div class="kcal-selector">
-                <label for="kcal-range">Calorías diarias</label>
-                <div class="kcal-controls">
-                    <button class="kcal-btn" id="kcal-minus" aria-label="Reducir calorías">−</button>
-                    <div class="kcal-value">
-                        <span class="kcal-number" id="kcal-display">2500</span>
-                        <span class="kcal-unit">kcal</span>
+    <!-- ========== ONBOARDING ========== -->
+    <div class="onboarding" id="onboarding">
+        <div class="onboarding-card">
+            <h1 class="onboarding-title">🍽️ Mi Plan Nutricional</h1>
+            <p class="onboarding-subtitle">Configura tu perfil para calcular tus calorías recomendadas y personalizar tu plan.</p>
+
+            <!-- STEP 1: Datos personales -->
+            <div class="onboarding-step active" id="step-1">
+                <h2 class="step-title">1. Tus datos</h2>
+                <div class="calc-form">
+                    <div class="calc-row">
+                        <div class="calc-field">
+                            <label for="calc-sex">Sexo</label>
+                            <select id="calc-sex">
+                                <option value="male" selected>Hombre</option>
+                                <option value="female">Mujer</option>
+                            </select>
+                        </div>
+                        <div class="calc-field">
+                            <label for="calc-age">Edad</label>
+                            <input type="number" id="calc-age" min="14" max="80" placeholder="25">
+                        </div>
                     </div>
-                    <button class="kcal-btn" id="kcal-plus" aria-label="Aumentar calorías">+</button>
+                    <div class="calc-row">
+                        <div class="calc-field">
+                            <label for="calc-height">Altura (cm)</label>
+                            <input type="number" id="calc-height" min="120" max="230" placeholder="175">
+                        </div>
+                        <div class="calc-field">
+                            <label for="calc-weight">Peso (kg)</label>
+                            <input type="number" id="calc-weight" min="35" max="200" step="0.1" placeholder="80">
+                        </div>
+                    </div>
                 </div>
-                <input type="range" id="kcal-range" min="1500" max="3500" step="100" value="2500" aria-label="Selector de calorías">
+                <button class="onboarding-next" id="next-1">Siguiente →</button>
+            </div>
+
+            <!-- STEP 2: Actividad y entreno -->
+            <div class="onboarding-step" id="step-2">
+                <h2 class="step-title">2. Tu actividad</h2>
+                <div class="calc-form">
+                    <div class="calc-row">
+                        <div class="calc-field full-width">
+                            <label for="calc-activity">Actividad diaria (sin contar entreno)</label>
+                            <select id="calc-activity">
+                                <option value="">-- Selecciona --</option>
+                                <option value="1.2">Sedentario · Oficina, poco movimiento</option>
+                                <option value="1.375">Ligeramente activo · Oficina + caminas algo</option>
+                                <option value="1.55">Moderadamente activo · Trabajo de pie / caminas bastante</option>
+                                <option value="1.725">Muy activo · Trabajo físico / movimiento todo el día</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="calc-row">
+                        <div class="calc-field">
+                            <label for="calc-trains">¿Entrenas?</label>
+                            <select id="calc-trains">
+                                <option value="no">No</option>
+                                <option value="yes" selected>Sí</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="calc-training-details" id="calc-training-details">
+                        <div class="calc-row">
+                            <div class="calc-field">
+                                <label for="calc-train-type">Tipo de entreno</label>
+                                <select id="calc-train-type">
+                                    <option value="strength">Fuerza / Hipertrofia</option>
+                                    <option value="cardio">Cardio</option>
+                                    <option value="hiit">HIIT / CrossFit</option>
+                                    <option value="mixed">Mixto (fuerza + cardio)</option>
+                                </select>
+                            </div>
+                            <div class="calc-field">
+                                <label for="calc-train-days">Días/semana</label>
+                                <select id="calc-train-days">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4" selected>4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="calc-row">
+                            <div class="calc-field">
+                                <label for="calc-train-duration">Duración</label>
+                                <select id="calc-train-duration">
+                                    <option value="30">30 min</option>
+                                    <option value="45">45 min</option>
+                                    <option value="60" selected>60 min</option>
+                                    <option value="75">75 min</option>
+                                    <option value="90">90 min</option>
+                                    <option value="120">120 min</option>
+                                </select>
+                            </div>
+                            <div class="calc-field">
+                                <label for="calc-train-intensity">Intensidad</label>
+                                <select id="calc-train-intensity">
+                                    <option value="low">Baja</option>
+                                    <option value="medium" selected>Media</option>
+                                    <option value="high">Alta</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-buttons">
+                    <button class="onboarding-back" id="back-2">← Atrás</button>
+                    <button class="onboarding-next" id="next-2">Siguiente →</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Objetivo -->
+            <div class="onboarding-step" id="step-3">
+                <h2 class="step-title">3. Tu objetivo</h2>
+                <div class="goal-cards" id="goal-cards">
+                    <div class="goal-card" data-goal="cut">
+                        <span class="goal-icon">🔥</span>
+                        <strong>Perder grasa</strong>
+                        <span class="goal-desc">Déficit calórico moderado para reducir % grasa corporal</span>
+                    </div>
+                    <div class="goal-card" data-goal="maintain">
+                        <span class="goal-icon">⚖️</span>
+                        <strong>Mantener peso</strong>
+                        <span class="goal-desc">Comer a mantenimiento para recomposición corporal</span>
+                    </div>
+                    <div class="goal-card" data-goal="bulk">
+                        <span class="goal-icon">💪</span>
+                        <strong>Ganar masa muscular</strong>
+                        <span class="goal-desc">Superávit calórico controlado para ganar músculo</span>
+                    </div>
+                </div>
+                <div class="step-buttons">
+                    <button class="onboarding-back" id="back-3">← Atrás</button>
+                    <button class="onboarding-next disabled" id="next-3">Ver mi plan →</button>
+                </div>
+            </div>
+
+            <!-- STEP 4: Resultados -->
+            <div class="onboarding-step" id="step-4">
+                <h2 class="step-title">4. Tu plan recomendado</h2>
+                <div class="onboarding-results">
+                    <div class="ob-result-row">
+                        <div class="ob-result-card">
+                            <span class="ob-result-label">TDEE</span>
+                            <span class="ob-result-value" id="ob-tdee">--</span>
+                            <span class="ob-result-sub">kcal/día mantenimiento</span>
+                        </div>
+                        <div class="ob-result-card highlight">
+                            <span class="ob-result-label" id="ob-goal-label">Recomendado</span>
+                            <span class="ob-result-value" id="ob-recommended">--</span>
+                            <span class="ob-result-sub" id="ob-rec-sub">kcal/día para tu objetivo</span>
+                        </div>
+                    </div>
+                    <p class="ob-explanation" id="ob-explanation"></p>
+                </div>
+                <div class="step-buttons">
+                    <button class="onboarding-back" id="back-4">← Atrás</button>
+                    <button class="onboarding-next cta" id="start-plan">🚀 Empezar con mi plan</button>
+                </div>
+            </div>
+
+            <div class="onboarding-progress">
+                <span class="progress-dot active" data-step="1"></span>
+                <span class="progress-dot" data-step="2"></span>
+                <span class="progress-dot" data-step="3"></span>
+                <span class="progress-dot" data-step="4"></span>
             </div>
         </div>
-    </header>
+    </div>
 
-    <main class="main">
-
-        <!-- NAVEGACIÓN PRINCIPAL -->
-        <nav class="main-tabs-nav">
-            <div class="main-tabs">
-                <button class="main-tab" data-tab="planning">
-                    <span class="tab-icon">📊</span>
-                    <span class="tab-label">Planificación</span>
-                </button>
-                <button class="main-tab" data-tab="breakfast">
-                    <span class="tab-icon">☀️</span>
-                    <span class="tab-label">Desayuno</span>
-                </button>
-                <button class="main-tab" data-tab="lunch">
-                    <span class="tab-icon">🍲</span>
-                    <span class="tab-label">Almuerzo</span>
-                </button>
-                <button class="main-tab" data-tab="dinner">
-                    <span class="tab-icon">🌙</span>
-                    <span class="tab-label">Cena</span>
-                </button>
-            </div>
-        </nav>
-
-        <!-- TAB: PLANIFICACIÓN -->
-        <div class="tab-panel" id="tab-planning">
-            <section class="info-banner">
-                <div class="info-item">
-                    <span class="info-icon">🎯</span>
-                    <div>
-                        <span class="info-label">Objetivo</span>
-                        <span class="info-value">Mejorar % de grasa</span>
+    <!-- ========== APP ========== -->
+    <div class="app-wrapper" id="app-wrapper" style="display:none;">
+        <header class="header">
+            <div class="header-content">
+                <h1>Mi Plan Nutricional</h1>
+                <div class="kcal-selector">
+                    <label for="kcal-range">Calorías diarias</label>
+                    <div class="kcal-controls">
+                        <button class="kcal-btn" id="kcal-minus" aria-label="Reducir calorías">−</button>
+                        <div class="kcal-value">
+                            <span class="kcal-number" id="kcal-display">2500</span>
+                            <span class="kcal-unit">kcal</span>
+                        </div>
+                        <button class="kcal-btn" id="kcal-plus" aria-label="Aumentar calorías">+</button>
                     </div>
+                    <input type="range" id="kcal-range" min="1500" max="3500" step="100" value="2500" aria-label="Selector de calorías">
                 </div>
-                <div class="info-item">
-                    <span class="info-icon">🚶</span>
-                    <div>
-                        <span class="info-label">NEAT</span>
-                        <span class="info-value">10-12k pasos/día</span>
+                <!-- Warning banner -->
+                <div class="kcal-warning" id="kcal-warning" style="display:none;"></div>
+            </div>
+        </header>
+
+        <main class="main">
+            <!-- INFO BANNER -->
+            <div class="info-banner" id="info-banner"></div>
+
+            <!-- NAVEGACIÓN PRINCIPAL -->
+            <nav class="main-tabs-nav">
+                <div class="main-tabs">
+                    <button class="main-tab" data-tab="breakfast">
+                        <span class="tab-icon">☀️</span>
+                        <span class="tab-label">Desayuno</span>
+                    </button>
+                    <button class="main-tab" data-tab="lunch">
+                        <span class="tab-icon">🍲</span>
+                        <span class="tab-label">Almuerzo</span>
+                    </button>
+                    <button class="main-tab" data-tab="dinner">
+                        <span class="tab-icon">🌙</span>
+                        <span class="tab-label">Cena</span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- TAB: DESAYUNO -->
+            <div class="tab-panel" id="tab-breakfast">
+                <div class="meal-card">
+                    <div class="tab-subtitle">Elige una opción. Se puede acompañar con café o infusión.</div>
+                    <div class="breakfast-grid" id="breakfast-grid"></div>
+                </div>
+            </div>
+
+            <!-- TAB: ALMUERZO -->
+            <div class="tab-panel" id="tab-lunch">
+                <div class="meal-card">
+                    <div class="tab-subtitle">Elige un hidrato y una proteína.</div>
+                    <div class="extras-banner">
+                        <span>+ ~<span class="scaled-veg-lunch">200</span>g verduras (verdes) &nbsp;|&nbsp; <span class="scaled-oil-lunch">5</span>ml aceite oliva &nbsp;|&nbsp; 1 fruta</span>
                     </div>
+                    <div class="meal-tables" id="lunch-tables"></div>
+                </div>
+            </div>
+
+            <!-- TAB: CENA -->
+            <div class="tab-panel" id="tab-dinner">
+                <div class="meal-card">
+                    <div class="tab-subtitle">Elige un hidrato y una proteína.</div>
+                    <div class="extras-banner">
+                        <span>+ ~<span class="scaled-veg-dinner">200</span>g verduras (verdes) &nbsp;|&nbsp; <span class="scaled-oil-dinner">5</span>ml aceite oliva &nbsp;|&nbsp; 1 fruta</span>
+                    </div>
+                    <div class="meal-tables" id="dinner-tables"></div>
+                </div>
+            </div>
+
+            <!-- RESUMEN NUTRICIONAL -->
+            <section class="nutrition-summary" id="nutrition-summary"></section>
+
+            <!-- SUPLEMENTACIÓN -->
+            <section class="meal-section supplements-section">
+                <div class="section-header" data-toggle="supplements">
+                    <h2><span class="section-icon">💊</span> Suplementación</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-body open" id="supplements-body">
+                    <div class="supplements-grid" id="supplements-list"></div>
                 </div>
             </section>
 
-            <section class="calc-panel">
-                <h2 class="calc-panel-title"><span class="section-icon">🔥</span> Calculadora TDEE</h2>
-                <p class="calc-panel-subtitle">Calcula tus calorías de mantenimiento y compara con tu dieta actual.</p>
-                <div class="calc-container">
-                    <div class="calc-form">
-                        <div class="calc-row">
-                            <div class="calc-field">
-                                <label for="calc-sex">Sexo</label>
-                                <select id="calc-sex">
-                                    <option value="male" selected>Hombre</option>
-                                    <option value="female">Mujer</option>
-                                </select>
-                            </div>
-                            <div class="calc-field">
-                                <label for="calc-age">Edad</label>
-                                <input type="number" id="calc-age" min="14" max="80" placeholder="25" value="">
-                            </div>
-                        </div>
-                        <div class="calc-row">
-                            <div class="calc-field">
-                                <label for="calc-height">Altura (cm)</label>
-                                <input type="number" id="calc-height" min="120" max="230" placeholder="175" value="">
-                            </div>
-                            <div class="calc-field">
-                                <label for="calc-weight">Peso (kg)</label>
-                                <input type="number" id="calc-weight" min="35" max="200" step="0.1" placeholder="80" value="">
-                            </div>
-                        </div>
-                        <div class="calc-row">
-                            <div class="calc-field full-width">
-                                <label for="calc-activity">
-                                    Actividad diaria (sin contar entreno)
-                                    <span class="tooltip-trigger" data-tooltip="activity">ⓘ</span>
-                                </label>
-                                <select id="calc-activity">
-                                    <option value="">-- Selecciona --</option>
-                                    <option value="1.2">Sedentario · Oficina, poco movimiento</option>
-                                    <option value="1.375">Ligeramente activo · Oficina + caminas algo</option>
-                                    <option value="1.55">Moderadamente activo · Trabajo de pie / caminas bastante</option>
-                                    <option value="1.725">Muy activo · Trabajo físico / movimiento todo el día</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="calc-row">
-                            <div class="calc-field">
-                                <label for="calc-trains">¿Entrenas?</label>
-                                <select id="calc-trains">
-                                    <option value="no">No</option>
-                                    <option value="yes" selected>Sí</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="calc-training-details" id="calc-training-details">
-                            <div class="calc-row">
-                                <div class="calc-field">
-                                    <label for="calc-train-type">Tipo de entreno</label>
-                                    <select id="calc-train-type">
-                                        <option value="strength">Fuerza / Hipertrofia</option>
-                                        <option value="cardio">Cardio</option>
-                                        <option value="hiit">HIIT / CrossFit</option>
-                                        <option value="mixed">Mixto (fuerza + cardio)</option>
-                                    </select>
-                                </div>
-                                <div class="calc-field">
-                                    <label for="calc-train-days">Días/semana</label>
-                                    <select id="calc-train-days">
-                                        <option value="1">1 día</option>
-                                        <option value="2">2 días</option>
-                                        <option value="3">3 días</option>
-                                        <option value="4" selected>4 días</option>
-                                        <option value="5">5 días</option>
-                                        <option value="6">6 días</option>
-                                        <option value="7">7 días</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="calc-row">
-                                <div class="calc-field">
-                                    <label for="calc-train-duration">Duración por sesión</label>
-                                    <select id="calc-train-duration">
-                                        <option value="30">30 min</option>
-                                        <option value="45">45 min</option>
-                                        <option value="60" selected>60 min</option>
-                                        <option value="75">75 min</option>
-                                        <option value="90">90 min</option>
-                                        <option value="120">120 min</option>
-                                    </select>
-                                </div>
-                                <div class="calc-field">
-                                    <label for="calc-train-intensity">Intensidad</label>
-                                    <select id="calc-train-intensity">
-                                        <option value="low">Baja</option>
-                                        <option value="medium" selected>Media</option>
-                                        <option value="high">Alta</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <!-- RECONFIGURA -->
+            <button class="reconfigure-btn" id="reconfigure-btn">⚙️ Recalcular mis datos</button>
 
-                    <div class="calc-results" id="calc-results" style="display:none;">
-                        <div class="calc-results-grid">
-                            <div class="calc-result-card bmr-card">
-                                <div class="calc-result-label">
-                                    TMB
-                                    <span class="tooltip-trigger" data-tooltip="bmr">ⓘ</span>
-                                </div>
-                                <div class="calc-result-value" id="result-bmr">--</div>
-                                <div class="calc-result-sub">kcal/día en reposo</div>
-                            </div>
-                            <div class="calc-result-card neat-card">
-                                <div class="calc-result-label">
-                                    NEAT + Actividad
-                                    <span class="tooltip-trigger" data-tooltip="neat">ⓘ</span>
-                                </div>
-                                <div class="calc-result-value" id="result-neat">--</div>
-                                <div class="calc-result-sub">kcal/día sin entreno</div>
-                            </div>
-                            <div class="calc-result-card tdee-card">
-                                <div class="calc-result-label">
-                                    TDEE Total
-                                    <span class="tooltip-trigger" data-tooltip="tdee">ⓘ</span>
-                                </div>
-                                <div class="calc-result-value" id="result-tdee">--</div>
-                                <div class="calc-result-sub">kcal/día con entreno</div>
-                            </div>
-                        </div>
+            <!-- DISCLAIMER -->
+            <div class="disclaimer">
+                <span class="disclaimer-icon">⚠️</span>
+                <p>Esta herramienta es <strong>orientativa</strong>. Las cantidades y macros son <strong>estimaciones</strong>. Consulta siempre con un <strong>médico y/o nutricionista</strong> antes de modificar tu alimentación.</p>
+            </div>
+        </main>
 
-                        <div class="calc-balance" id="calc-balance">
-                            <div class="balance-bar-container">
-                                <div class="balance-labels">
-                                    <span>Déficit</span>
-                                    <span>Mantenimiento</span>
-                                    <span>Superávit</span>
-                                </div>
-                                <div class="balance-bar">
-                                    <div class="balance-bar-fill" id="balance-bar-fill"></div>
-                                    <div class="balance-bar-marker" id="balance-bar-marker"></div>
-                                </div>
-                            </div>
-                            <div class="balance-verdict" id="balance-verdict"></div>
-                        </div>
-                    </div>
-
-                    <div class="tooltip-overlay" id="tooltip-overlay" style="display:none;">
-                        <div class="tooltip-modal">
-                            <div class="tooltip-modal-header">
-                                <span id="tooltip-title"></span>
-                                <button class="tooltip-close" id="tooltip-close">&times;</button>
-                            </div>
-                            <div class="tooltip-modal-body" id="tooltip-body"></div>
-                        </div>
-                    </div>
+        <footer class="footer">
+            <div class="footer-content">
+                <p class="footer-author">Web desarrollada por <strong>Pablo Crespo</strong></p>
+                <div class="footer-socials">
+                    <a href="https://www.linkedin.com/in/pablocrespobellido/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="footer-social-link">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    </a>
+                    <a href="https://x.com/pablocrespob" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" class="footer-social-link">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    </a>
+                    <a href="https://github.com/pCresp0" target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="footer-social-link">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                    </a>
                 </div>
-            </section>
-        </div>
-
-        <!-- TAB: DESAYUNO -->
-        <div class="tab-panel" id="tab-breakfast">
-            <div class="meal-card">
-                <div class="tab-subtitle">
-                    Elige una opción. Se puede acompañar con café o infusión.
-                </div>
-                <div class="breakfast-grid" id="breakfast-grid"></div>
+                <p class="footer-copy">&copy; 2026 &middot; Pablo Crespo</p>
             </div>
-        </div>
+        </footer>
+    </div>
 
-        <!-- TAB: ALMUERZO -->
-        <div class="tab-panel" id="tab-lunch">
-            <div class="meal-card">
-                <div class="tab-subtitle">Elige un hidrato y una proteína.</div>
-                <div class="extras-banner">
-                    <span>+ ~<span class="scaled-veg-lunch">200</span>g verduras (verdes) &nbsp;|&nbsp; <span class="scaled-oil-lunch">5</span>ml aceite oliva &nbsp;|&nbsp; 1 fruta</span>
-                </div>
-                <div class="meal-tables" id="lunch-tables"></div>
+    <!-- TOOLTIP MODAL (global) -->
+    <div class="tooltip-overlay" id="tooltip-overlay" style="display:none;">
+        <div class="tooltip-modal">
+            <div class="tooltip-modal-header">
+                <span id="tooltip-title"></span>
+                <button class="tooltip-close" id="tooltip-close">&times;</button>
             </div>
+            <div class="tooltip-modal-body" id="tooltip-body"></div>
         </div>
-
-        <!-- TAB: CENA -->
-        <div class="tab-panel" id="tab-dinner">
-            <div class="meal-card">
-                <div class="tab-subtitle">Elige un hidrato y una proteína.</div>
-                <div class="extras-banner">
-                    <span>+ ~<span class="scaled-veg-dinner">200</span>g verduras (verdes) &nbsp;|&nbsp; <span class="scaled-oil-dinner">5</span>ml aceite oliva &nbsp;|&nbsp; 1 fruta</span>
-                </div>
-                <div class="meal-tables" id="dinner-tables"></div>
-            </div>
-        </div>
-
-        <!-- RESUMEN NUTRICIONAL -->
-        <section class="nutrition-summary" id="nutrition-summary"></section>
-
-        <!-- SUPLEMENTACIÓN -->
-        <section class="meal-section supplements-section">
-            <div class="section-header" data-toggle="supplements">
-                <h2><span class="section-icon">💊</span> Suplementación</h2>
-                <span class="toggle-icon">▼</span>
-            </div>
-            <div class="section-body open" id="supplements-body">
-                <div class="supplements-grid" id="supplements-list"></div>
-            </div>
-        </section>
-
-        <!-- DISCLAIMER -->
-        <div class="disclaimer">
-            <span class="disclaimer-icon">⚠️</span>
-            <p>Esta herramienta es <strong>orientativa</strong>. Las cantidades y los macros mostrados son <strong>estimaciones</strong>. Consulta siempre con un <strong>médico y/o nutricionista</strong> antes de iniciar o modificar cualquier plan de alimentación.</p>
-        </div>
-
-    </main>
-
-    <footer class="footer">
-        <div class="footer-content">
-            <p class="footer-author">Web desarrollada por <strong>Pablo Crespo</strong></p>
-            <div class="footer-socials">
-                <a href="https://www.linkedin.com/in/pablocrespobellido/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="footer-social-link">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                </a>
-                <a href="https://x.com/pablocrespob" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" class="footer-social-link">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                </a>
-                <a href="https://github.com/pCresp0" target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="footer-social-link">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-                </a>
-            </div>
-            <p class="footer-copy">&copy; 2026 &middot; Pablo Crespo</p>
-        </div>
-    </footer>
+    </div>
 
     <script src="js/app.js"></script>
 </body>
