@@ -1128,10 +1128,10 @@ function getSliderMax() {
 function updateSliderRange() {
     // No slider — kcal is fixed from onboarding. Just update display.
     document.getElementById('kcal-display').textContent = currentKcal;
-    var sub = document.getElementById('kcal-fixed-sub');
-    if (sub && userGoal) {
-        var goalName = goalLabels[userGoal] || '';
-        sub.textContent = goalIcons[userGoal] + ' ' + goalName + ' · Recomendado: ' + recommendedKcal + ' kcal';
+    var titleEl = document.getElementById('header-title');
+    if (titleEl && userGoal) {
+        var goalName = goalLabels[userGoal] || 'tu objetivo';
+        titleEl.textContent = 'Mi plan personalizado para ' + goalName.toLowerCase();
     }
 }
 
