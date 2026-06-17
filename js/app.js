@@ -231,9 +231,15 @@ function renderInfoBanner() {
     };
 
     el.innerHTML =
-        '<div class="info-item"><span class="info-icon">'+goalIcons[userGoal]+'</span><div><span class="info-label">Objetivo <button class="info-tip-btn" data-infotip="goal">i</button></span><span class="info-value">'+goalLabels[userGoal]+'</span></div></div>' +
+        '<div class="info-item info-item-goal" id="info-goal-picker"><span class="info-icon">'+goalIcons[userGoal]+'</span><div><span class="info-label">Objetivo <button class="info-tip-btn" data-infotip="goal">i</button></span><span class="info-value info-value-clickable">'+goalLabels[userGoal]+' ✎</span></div></div>' +
         '<div class="info-item"><span class="info-icon">📊</span><div><span class="info-label">TDEE <button class="info-tip-btn" data-infotip="tdee">i</button></span><span class="info-value">'+userTdee+' kcal/día</span></div></div>' +
         '<div class="info-item"><span class="info-icon">🎯</span><div><span class="info-label">Recomendado <button class="info-tip-btn" data-infotip="rec">i</button></span><span class="info-value">'+recommendedKcal+' kcal/día</span></div></div>';
+
+    // Goal quick-change click
+    document.getElementById('info-goal-picker').addEventListener('click', function(e) {
+        if (e.target.closest('.info-tip-btn')) return;
+        showGoalPicker();
+    });
 
     // Attach click handlers for info tips
     el.querySelectorAll('.info-tip-btn').forEach(function(btn) {
@@ -257,6 +263,41 @@ function renderInfoBanner() {
             document.getElementById('tooltip-title').textContent = title;
             document.getElementById('tooltip-body').innerHTML = body;
             document.getElementById('tooltip-overlay').style.display = '';
+        });
+    });
+}
+
+function showGoalPicker() {
+    var goals = ['cut', 'recomp', 'maintain', 'bulk'];
+    var html = '<div class="goal-picker-title">Cambiar objetivo</div>';
+    goals.forEach(function(g) {
+        var sel = g === userGoal ? ' goal-picker-selected' : '';
+        html += '<div class="goal-picker-option'+sel+'" data-goal="'+g+'">' +
+            '<span class="goal-picker-icon">'+goalIcons[g]+'</span>' +
+            '<div class="goal-picker-text"><strong>'+goalLabels[g]+'</strong></div>' +
+            '</div>';
+    });
+
+    document.getElementById('tooltip-title').textContent = '';
+    document.getElementById('tooltip-body').innerHTML = html;
+    document.getElementById('tooltip-overlay').style.display = '';
+
+    // Attach handlers
+    document.querySelectorAll('.goal-picker-option').forEach(function(opt) {
+        opt.addEventListener('click', function() {
+            var newGoal = this.dataset.goal;
+            if (newGoal === userGoal) {
+                document.getElementById('tooltip-overlay').style.display = 'none';
+                return;
+            }
+            userGoal = newGoal;
+            recommendedKcal = getRecommendedKcal(userTdee, userGoal);
+            currentKcal = recommendedKcal;
+            document.getElementById('tooltip-overlay').style.display = 'none';
+            document.getElementById('kcal-display').textContent = currentKcal;
+            updateSliderRange();
+            renderAll();
+            saveAllState();
         });
     });
 }
