@@ -965,9 +965,17 @@ applyTheme(getTheme());
 // ============================================================
 (function() {
     var header = null;
+    var tabsNav = null;
     var isCompact = false;
     var anchorY = 0;
     var ignoreUntil = 0;
+
+    function updateTabsTop() {
+        if (!tabsNav) tabsNav = document.querySelector('.main-tabs-nav');
+        if (!tabsNav || !header) return;
+        var headerH = header.offsetHeight;
+        tabsNav.style.top = headerH + 'px';
+    }
 
     window.addEventListener('scroll', function() {
         if (!header) header = document.querySelector('.header');
@@ -975,22 +983,27 @@ applyTheme(getTheme());
         var now = Date.now();
         if (now < ignoreUntil) return;
         var y = window.scrollY;
-        if (!isCompact && y > 100 && y - anchorY > 30) {
+        if (!isCompact && y > 120 && y - anchorY > 60) {
             header.classList.add('header-compact');
             isCompact = true;
             anchorY = y;
-            ignoreUntil = now + 150;
-        } else if (isCompact && (anchorY - y > 30 || y < 20)) {
+            ignoreUntil = now + 250;
+            setTimeout(updateTabsTop, 360);
+        } else if (isCompact && (anchorY - y > 50 || y < 30)) {
             header.classList.remove('header-compact');
             isCompact = false;
             anchorY = y;
-            ignoreUntil = now + 150;
+            ignoreUntil = now + 250;
+            setTimeout(updateTabsTop, 360);
         } else if (!isCompact && y < anchorY) {
             anchorY = y;
         } else if (isCompact && y > anchorY) {
             anchorY = y;
         }
     }, { passive: true });
+
+    // Set initial tabs top after DOM is ready
+    setTimeout(updateTabsTop, 100);
 })();
 
 // ============================================================

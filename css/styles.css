@@ -188,7 +188,7 @@ body {
     z-index: 100;
     box-shadow: var(--header-shadow);
     border-bottom: 2px solid var(--accent);
-    transition: padding 0.3s ease;
+    transition: padding 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header-content {
@@ -205,7 +205,7 @@ body {
     margin-bottom: 12px;
     letter-spacing: -0.01em;
     opacity: 0.95;
-    transition: font-size 0.3s ease, margin 0.3s ease, max-height 0.3s ease, opacity 0.3s ease;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin 0.3s ease;
     max-height: 40px;
     overflow: hidden;
 }
@@ -215,15 +215,61 @@ body {
     padding: 6px 16px 8px;
 }
 
-.header.header-compact h1,
-.header.header-compact .reconfigure-btn,
-.header.header-compact .kcal-selector label,
-.header.header-compact .kcal-slider-wrapper,
-.header.header-compact .kcal-rec-label,
-.header.header-compact .kcal-warning,
+.header.header-compact h1 {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: 0;
+    pointer-events: none;
+}
+
+.header.header-compact .reconfigure-btn {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+}
+
+.header.header-compact .kcal-selector label {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin: 0;
+    pointer-events: none;
+}
+
+.header.header-compact .kcal-slider-wrapper {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin: 0;
+    pointer-events: none;
+}
+
+.header.header-compact .kcal-rec-label {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin: 0;
+    pointer-events: none;
+}
+
+.header.header-compact .kcal-warning {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+}
+
 .header.header-compact .trainer-toggle,
 .header.header-compact .theme-toggle {
-    display: none;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.5);
+    transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 .header.header-compact .header-export-btn {
@@ -416,8 +462,13 @@ body {
 
 /* ========== MAIN TABS NAV ========== */
 .main-tabs-nav {
-    padding: 16px 0 0;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    padding: 12px 0 0;
     margin-bottom: 16px;
+    background: var(--bg);
+    transition: top 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .main-tabs {
@@ -2701,7 +2752,8 @@ body {
     line-height: 1.4;
     text-align: left;
     animation: tabFadeIn 0.2s ease;
-    transition: all 0.3s ease;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+    max-height: 200px;
     overflow: hidden;
 }
 
