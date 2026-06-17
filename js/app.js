@@ -125,33 +125,31 @@ function getRecommendedKcal(tdee, goal) {
 // ============================================================
 function calculateSelectedMacros() {
     var ratio = getRatio();
-    var t = { kcal:0, protein:0, carbs:0, fat:0 };
-    var has = false;
+    var base = { kcal:0, protein:0, carbs:0, fat:0 };
+    var chosen = { kcal:0, protein:0, carbs:0, fat:0 };
 
     if (selections.breakfast !== null) {
-        has = true;
         var m = breakfastOptions[selections.breakfast].macros;
-        t.kcal += m[0]*ratio; t.protein += m[1]*ratio; t.carbs += m[2]*ratio; t.fat += m[3]*ratio;
+        chosen.kcal += m[0]*ratio; chosen.protein += m[1]*ratio; chosen.carbs += m[2]*ratio; chosen.fat += m[3]*ratio;
     }
 
     function addFood(data, idx) {
-        if (idx === null) return; has = true;
+        if (idx === null) return;
         var item = data[idx]; var g = scaleAmount(item.base, ratio);
-        t.kcal += item.n[0]*g/100; t.protein += item.n[1]*g/100; t.carbs += item.n[2]*g/100; t.fat += item.n[3]*g/100;
+        chosen.kcal += item.n[0]*g/100; chosen.protein += item.n[1]*g/100; chosen.carbs += item.n[2]*g/100; chosen.fat += item.n[3]*g/100;
     }
     function addExtras() {
         var vg = scaleAmount(200, ratio); var om = scaleAmount(EXTRAS_OIL_ML, ratio);
-        t.kcal += extrasNutr.verduras[0]*vg/100; t.protein += extrasNutr.verduras[1]*vg/100; t.carbs += extrasNutr.verduras[2]*vg/100; t.fat += extrasNutr.verduras[3]*vg/100;
-        t.kcal += extrasNutr.aceite[0]*om/100; t.fat += extrasNutr.aceite[3]*om/100;
-        t.kcal += extrasNutr.fruta[0]; t.protein += extrasNutr.fruta[1]; t.carbs += extrasNutr.fruta[2]; t.fat += extrasNutr.fruta[3];
+        base.kcal += extrasNutr.verduras[0]*vg/100; base.protein += extrasNutr.verduras[1]*vg/100; base.carbs += extrasNutr.verduras[2]*vg/100; base.fat += extrasNutr.verduras[3]*vg/100;
+        base.kcal += extrasNutr.aceite[0]*om/100; base.fat += extrasNutr.aceite[3]*om/100;
+        base.kcal += extrasNutr.fruta[0]; base.protein += extrasNutr.fruta[1]; base.carbs += extrasNutr.fruta[2]; base.fat += extrasNutr.fruta[3];
     }
 
     addFood(lunchCarbs, selections.lunchCarb); addFood(lunchProteins, selections.lunchProtein);
     addExtras();
     addFood(dinnerCarbs, selections.dinnerCarb); addFood(dinnerProteins, selections.dinnerProtein);
     addExtras();
-    has = true;
-    return t;
+    return { base: base, chosen: chosen, total: { kcal: base.kcal+chosen.kcal, protein: base.protein+chosen.protein, carbs: base.carbs+chosen.carbs, fat: base.fat+chosen.fat } };
 }
 
 // ============================================================
@@ -243,12 +241,17 @@ function updateKcalWarning() {
 
 function renderNutritionSummary() {
     var container = document.getElementById('nutrition-summary');
-    var macros = calculateSelectedMacros();
-    if (!macros) { container.innerHTML=''; container.style.display='none'; return; }
+    var data = calculateSelectedMacros();
+    var macros = data.total;
     container.style.display='';
     var kcal=Math.round(macros.kcal), p=Math.round(macros.protein), c=Math.round(macros.carbs), f=Math.round(macros.fat);
+    var bp=Math.round(data.base.protein), bc=Math.round(data.base.carbs), bf=Math.round(data.base.fat), bk=Math.round(data.base.kcal);
     var tg=p+c+f;
     var pp=tg>0?Math.round(p/tg*100):0, cp=tg>0?Math.round(c/tg*100):0, fp=tg>0?100-pp-cp:0;
+    // Base percentages within each macro bar
+    var bpPct = p>0 ? Math.round(bp/p*100) : 0;
+    var bcPct = c>0 ? Math.round(bc/c*100) : 0;
+    var bfPct = f>0 ? Math.round(bf/f*100) : 0;
     var meals=[];
     if (selections.breakfast!==null) meals.push('Desayuno');
     if (selections.lunchCarb!==null||selections.lunchProtein!==null) meals.push('Almuerzo');
@@ -262,15 +265,30 @@ function renderNutritionSummary() {
         if (selections.lunchProtein === null) missingItems.push('Almuerzo: proteína');
         if (selections.dinnerCarb === null) missingItems.push('Cena: hidrato');
         if (selections.dinnerProtein === null) missingItems.push('Cena: proteína');
-        missingHtml = '<div class="nutrition-missing">⚠️ Falta: ' + missingItems.join(' · ') + '</div>';
+        missingHtml = '<div class="nutrition-missing">\u26a0\ufe0f Falta: ' + missingItems.join(' \u00b7 ') + '</div>';
     }
-    container.innerHTML = '<div class="nutrition-header"><h3>📊 Resumen Nutricional Estimado</h3><span class="nutrition-meals">'+meals.join(' + ')+(complete?'':' · Incompleto')+'</span></div>' + missingHtml +
-        '<div class="nutrition-body"><div class="nutrition-kcal"><span class="nutrition-kcal-number">'+kcal+'</span><span class="nutrition-kcal-unit">kcal</span></div>' +
+    container.innerHTML = '<div class="nutrition-header"><h3>\ud83d\udcca Resumen Nutricional Estimado</h3><span class="nutrition-meals">'+meals.join(' + ')+(complete?'':' \u00b7 Incompleto')+'</span></div>' + missingHtml +
+        '<div class="nutrition-body">' +
+        '<div class="nutrition-kcal"><span class="nutrition-kcal-number">'+kcal+'</span><span class="nutrition-kcal-unit">kcal</span><span class="nutrition-kcal-breakdown">('+bk+' base + '+(kcal-bk)+' elegido)</span></div>' +
         '<div class="nutrition-macros">' +
-        '<div class="macro-bar-group"><div class="macro-info"><span class="macro-dot protein-dot"></span><span class="macro-name">Proteínas</span><strong>'+p+'g</strong><span class="macro-pct">'+pp+'%</span></div><div class="macro-bar"><div class="macro-bar-fill protein-fill" style="width:'+pp+'%"></div></div></div>' +
-        '<div class="macro-bar-group"><div class="macro-info"><span class="macro-dot carbs-dot"></span><span class="macro-name">Carbohidratos</span><strong>'+c+'g</strong><span class="macro-pct">'+cp+'%</span></div><div class="macro-bar"><div class="macro-bar-fill carbs-fill" style="width:'+cp+'%"></div></div></div>' +
-        '<div class="macro-bar-group"><div class="macro-info"><span class="macro-dot fat-dot"></span><span class="macro-name">Grasas</span><strong>'+f+'g</strong><span class="macro-pct">'+fp+'%</span></div><div class="macro-bar"><div class="macro-bar-fill fat-fill" style="width:'+fp+'%"></div></div></div>' +
-        '</div></div>';
+        renderMacroBar('Prote\u00ednas', 'protein', p, pp, bp, bpPct) +
+        renderMacroBar('Carbohidratos', 'carbs', c, cp, bc, bcPct) +
+        renderMacroBar('Grasas', 'fat', f, fp, bf, bfPct) +
+        '</div>' +
+        '<div class="nutrition-legend"><span class="legend-item"><span class="legend-swatch legend-base"></span>Base (verdura + AOVE + fruta)</span><span class="legend-item"><span class="legend-swatch legend-chosen"></span>Tu elecci\u00f3n (comidas)</span></div>' +
+        '</div>';
+}
+
+function renderMacroBar(name, cls, total, pct, baseG, basePct) {
+    var chosenPct = 100 - basePct;
+    return '<div class="macro-bar-group">' +
+        '<div class="macro-info"><span class="macro-dot '+cls+'-dot"></span><span class="macro-name">'+name+'</span><strong>'+total+'g</strong><span class="macro-pct">'+pct+'%</span></div>' +
+        '<div class="macro-bar-split">' +
+        '<div class="macro-bar-base" style="width:'+basePct+'%"></div>' +
+        '<div class="macro-bar-chosen '+cls+'-fill" style="width:'+chosenPct+'%"></div>' +
+        '</div>' +
+        '<div class="macro-bar-detail"><span>'+baseG+'g base</span><span>'+(total-baseG)+'g elegido</span></div>' +
+        '</div>';
 }
 
 function renderAll() {
@@ -635,7 +653,7 @@ function renderValidator() {
     if (allDone) {
         bar.classList.add('complete');
         var macros = calculateSelectedMacros();
-        var kcal = macros ? Math.round(macros.kcal) : currentKcal;
+        var kcal = macros ? Math.round(macros.total.kcal) : currentKcal;
         bar.innerHTML = '<div class="validator-complete">' +
             '<span>✅ Plan completo</span>' +
             '<span class="vc-kcal">— ' + kcal + ' kcal</span>' +

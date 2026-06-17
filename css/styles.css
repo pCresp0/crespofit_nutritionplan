@@ -963,6 +963,75 @@ body {
 .carbs-fill { background: linear-gradient(90deg, #E8C44A, #D4A017); }
 .fat-fill { background: linear-gradient(90deg, #7BB3E0, #5B9BD5); }
 
+/* Two-color split bar */
+.macro-bar-split {
+    display: flex;
+    height: 8px;
+    background: var(--macro-bar-bg);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.macro-bar-base {
+    height: 100%;
+    background: rgba(255,255,255,0.18);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.macro-bar-chosen {
+    height: 100%;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.macro-bar-detail {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Nutrition legend */
+.nutrition-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.legend-swatch {
+    width: 14px;
+    height: 8px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.legend-base {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.legend-chosen {
+    background: linear-gradient(90deg, #E8899E, #D87093);
+}
+
+/* Kcal breakdown label */
+.nutrition-kcal-breakdown {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-left: 6px;
+}
+
 /* ========== SUPPLEMENTS ========== */
 .supplements-grid {
     display: grid;
