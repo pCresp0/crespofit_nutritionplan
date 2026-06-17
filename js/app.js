@@ -1833,14 +1833,6 @@ function exportWeeklyDiet(format) {
         exportAsPdf(canvas, fileName);
     } else {
         canvas.toBlob(function(blob) {
-            if (navigator.share && navigator.canShare) {
-                var file = new File([blob], fileName + '.png', { type: 'image/png' });
-                var shareData = { files: [file], title: 'Mi Plan Semanal' };
-                if (navigator.canShare(shareData)) {
-                    navigator.share(shareData).catch(function() { openBlobInNewTab(blob); });
-                    return;
-                }
-            }
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
             a.href = url;
@@ -3057,22 +3049,8 @@ function exportDiet(format) {
     if (format === 'pdf') {
         exportAsPdf(canvas);
     } else {
-        // PNG export — mobile-compatible
+        // PNG export — direct download
         canvas.toBlob(function(blob) {
-            // Try Web Share API first (works on mobile)
-            if (navigator.share && navigator.canShare) {
-                var dName = getExportFileName('Mi Plan Nutricional');
-                var file = new File([blob], dName + '.png', { type: 'image/png' });
-                var shareData = { files: [file], title: dName };
-                if (navigator.canShare(shareData)) {
-                    navigator.share(shareData).catch(function() {
-                        // User cancelled share — open in new tab as fallback
-                        openBlobInNewTab(blob);
-                    });
-                    return;
-                }
-            }
-            // Desktop fallback: standard download
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
             a.href = url;
@@ -3127,19 +3105,6 @@ function generatePdf(canvas, pdfName) {
 
     var doc = new jsPDF({ unit: 'mm', format: [pageW, pdfH] });
     doc.addImage(imgData, 'PNG', 10, 10, imgW, imgH);
-
-    // Mobile: use share or open in new tab; Desktop: standard save
-    if (navigator.share && navigator.canShare) {
-        var pdfBlob = doc.output('blob');
-        var file = new File([pdfBlob], pdfName + '.pdf', { type: 'application/pdf' });
-        var shareData = { files: [file], title: 'Mi Plan Nutricional' };
-        if (navigator.canShare(shareData)) {
-            navigator.share(shareData).catch(function() {
-                openBlobInNewTab(pdfBlob);
-            });
-            return;
-        }
-    }
     doc.save(pdfName + '.pdf');
 }
 
