@@ -85,6 +85,13 @@ var userGoal = null;
 var userTdee = null;
 var selections = { breakfast:null, lunchCarb:null, lunchProtein:null, dinnerCarb:null, dinnerProtein:null };
 
+function getExportFileName(prefix) {
+    var parts = [prefix || 'Mi Plan Nutricional'];
+    if (userGoal && goalLabels[userGoal]) parts.push(goalLabels[userGoal]);
+    parts.push(currentKcal + 'kcal');
+    return parts.join('_').replace(/\s+/g, ' ');
+}
+
 // ============================================================
 // SCALING — dynamic ratio based on actual selection base kcal
 // ============================================================
@@ -1209,7 +1216,7 @@ function buildWeeklyExportCanvas(plan) {
 function exportWeeklyDiet(format) {
     if (!weeklyPlan) return;
     var canvas = buildWeeklyExportCanvas(weeklyPlan);
-    var fileName = 'mi-plan-semanal';
+    var fileName = getExportFileName('Mi Plan Semanal');
 
     if (format === 'pdf') {
         exportAsPdf(canvas, fileName);
@@ -2318,8 +2325,9 @@ function exportDiet(format) {
         canvas.toBlob(function(blob) {
             // Try Web Share API first (works on mobile)
             if (navigator.share && navigator.canShare) {
-                var file = new File([blob], 'mi-plan-nutricional.png', { type: 'image/png' });
-                var shareData = { files: [file], title: 'Mi Plan Nutricional' };
+                var dName = getExportFileName('Mi Plan Nutricional');
+                var file = new File([blob], dName + '.png', { type: 'image/png' });
+                var shareData = { files: [file], title: dName };
                 if (navigator.canShare(shareData)) {
                     navigator.share(shareData).catch(function() {
                         // User cancelled share — open in new tab as fallback
@@ -2332,7 +2340,7 @@ function exportDiet(format) {
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
             a.href = url;
-            a.download = 'mi-plan-nutricional.png';
+            a.download = getExportFileName('Mi Plan Nutricional') + '.png';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -2351,7 +2359,7 @@ function openBlobInNewTab(blob) {
 }
 
 function exportAsPdf(canvas, fileName) {
-    var pdfName = fileName || 'mi-plan-nutricional';
+    var pdfName = fileName || getExportFileName('Mi Plan Nutricional');
     // Use canvas as a full-page image in a PDF via jsPDF
     var script = document.getElementById('jspdf-script');
     if (!script) {
@@ -2366,7 +2374,7 @@ function exportAsPdf(canvas, fileName) {
 }
 
 function generatePdf(canvas, pdfName) {
-    pdfName = pdfName || 'mi-plan-nutricional';
+    pdfName = pdfName || getExportFileName('Mi Plan Nutricional');
     var jsPDF = window.jspdf.jsPDF;
     var imgData = canvas.toDataURL('image/png');
     var cW = canvas.width;
