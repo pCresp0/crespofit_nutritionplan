@@ -618,6 +618,7 @@ function renderNutritionSummary() {
                 renderMacroCard('Carbos', 'carbs', c, cp, cKcalPct, cPerKg) +
                 renderMacroCard('Grasas', 'fat', f, fp, fKcalPct, fPerKg) +
             '</div>' +
+            '<div class="macro-tap-hint">\ud83d\udc46 Pulsa sobre cada macro para ver recomendaciones</div>' +
         '</div>';
 }
 

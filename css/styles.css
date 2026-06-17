@@ -1357,6 +1357,15 @@ body {
     transform: translateY(0);
 }
 
+.macro-tap-hint {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    opacity: 0.75;
+    letter-spacing: 0.01em;
+}
+
 .nutrition-ring {
     display: none;
 }
