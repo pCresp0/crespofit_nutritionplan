@@ -19,10 +19,10 @@ var breakfastOptions = [
 ];
 
 var lunchCarbs = [
-    {name:'Arroz blanco',base:130,n:[130,2.7,28,0.3]},{name:'Patata boniato',base:590,altName:'Precongelada',altBase:370,n:[86,1.6,20,0.1]},
-    {name:'Tortitas de arroz',base:130,n:[385,7,83,3]},{name:'Pasta',base:130,n:[360,13,72,1.5]},{name:'Pan',base:180,n:[265,9,49,3.2]},
-    {name:'Quinoa',base:130,n:[368,14,64,6]},{name:'Cus-cus',base:130,n:[376,12.8,77,0.6]},{name:'Gnocchis de patata',base:260,n:[165,4,34,1]},
-    {name:'Legumbres cocidas',base:450,n:[115,8,18,0.8]}
+    {name:'Arroz blanco',base:130,tag:'seco',n:[130,2.7,28,0.3]},{name:'Patata boniato',base:590,altName:'Precongelada',altBase:370,tag:'crudo',n:[86,1.6,20,0.1]},
+    {name:'Tortitas de arroz',base:130,n:[385,7,83,3]},{name:'Pasta',base:130,tag:'seco',n:[360,13,72,1.5]},{name:'Pan',base:180,n:[265,9,49,3.2]},
+    {name:'Quinoa',base:130,tag:'seco',n:[368,14,64,6]},{name:'Cus-cus',base:130,tag:'seco',n:[376,12.8,77,0.6]},{name:'Gnocchis de patata',base:260,n:[165,4,34,1]},
+    {name:'Legumbres cocidas',base:450,tag:'cocido',n:[115,8,18,0.8]}
 ];
 var lunchProteins = [
     {name:'Pollo',base:200,n:[110,23,0,1.5]},{name:'Pescado blanco',base:250,n:[82,18,0,0.8]},{name:'Salmón',base:125,n:[208,20,0,13]},
@@ -30,10 +30,10 @@ var lunchProteins = [
     {name:'Lomo adobado',base:200,n:[150,20,1,7]},{name:'Ternera',base:160,n:[155,22,0,7]}
 ];
 var dinnerCarbs = [
-    {name:'Arroz blanco',base:100,n:[130,2.7,28,0.3]},{name:'Patata boniato',base:450,altName:'Precongelada',altBase:300,n:[86,1.6,20,0.1]},
-    {name:'Tortitas de arroz',base:100,n:[385,7,83,3]},{name:'Pasta',base:100,n:[360,13,72,1.5]},{name:'Pan',base:140,n:[265,9,49,3.2]},
-    {name:'Quinoa',base:100,n:[368,14,64,6]},{name:'Cus-cus',base:100,n:[376,12.8,77,0.6]},{name:'Gnocchis de patata',base:200,n:[165,4,34,1]},
-    {name:'Legumbres cocidas',base:350,n:[115,8,18,0.8]}
+    {name:'Arroz blanco',base:100,tag:'seco',n:[130,2.7,28,0.3]},{name:'Patata boniato',base:450,altName:'Precongelada',altBase:300,tag:'crudo',n:[86,1.6,20,0.1]},
+    {name:'Tortitas de arroz',base:100,n:[385,7,83,3]},{name:'Pasta',base:100,tag:'seco',n:[360,13,72,1.5]},{name:'Pan',base:140,n:[265,9,49,3.2]},
+    {name:'Quinoa',base:100,tag:'seco',n:[368,14,64,6]},{name:'Cus-cus',base:100,tag:'seco',n:[376,12.8,77,0.6]},{name:'Gnocchis de patata',base:200,n:[165,4,34,1]},
+    {name:'Legumbres cocidas',base:350,tag:'cocido',n:[115,8,18,0.8]}
 ];
 var dinnerProteins = [
     {name:'Pollo',base:200,n:[110,23,0,1.5]},{name:'Pescado blanco',base:250,n:[82,18,0,0.8]},{name:'Pavo',base:220,n:[105,24,0,1]},
@@ -188,8 +188,9 @@ function renderMealTable(cid, cd, pd, cs, ps, mt) {
     var ratio = getRatio();
     var cr = cd.map(function(it,i) {
         var s = cs===i; var sc = scaleAmount(it.base,ratio); var u = it.unit||'g';
-        var r = '<tr class="'+(s?'selected':'')+'" data-meal="'+mt+'" data-type="carb" data-index="'+i+'"><td>'+it.name+'</td><td>'+sc+' '+u+'</td></tr>';
-        if (it.altName) { r += '<tr class="sub-row '+(s?'selected':'')+'" data-meal="'+mt+'" data-type="carb" data-index="'+i+'"><td>'+it.altName+'</td><td>'+scaleAmount(it.altBase,ratio)+' '+u+'</td></tr>'; }
+        var tagHtml = it.tag ? ' <span class="food-tag food-tag-'+it.tag+'">'+it.tag+'</span>' : '';
+        var r = '<tr class="'+(s?'selected':'')+'" data-meal="'+mt+'" data-type="carb" data-index="'+i+'"><td>'+it.name+'</td><td>'+sc+' '+u+tagHtml+'</td></tr>';
+        if (it.altName) { r += '<tr class="sub-row '+(s?'selected':'')+'" data-meal="'+mt+'" data-type="carb" data-index="'+i+'"><td>'+it.altName+'</td><td>'+scaleAmount(it.altBase,ratio)+' '+u+tagHtml+'</td></tr>'; }
         return r;
     }).join('');
     var pr = pd.map(function(it,i) {

@@ -1069,6 +1069,38 @@ body {
     background: transparent;
 }
 
+/* Food state tags (seco/cocido/crudo) */
+.food-tag {
+    display: inline-block;
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+    vertical-align: middle;
+    line-height: 1.4;
+}
+
+.food-tag-seco {
+    color: #c49a2a;
+    background: rgba(196, 154, 42, 0.12);
+    border: 1px solid rgba(196, 154, 42, 0.25);
+}
+
+.food-tag-cocido {
+    color: #5ba85b;
+    background: rgba(91, 168, 91, 0.12);
+    border: 1px solid rgba(91, 168, 91, 0.25);
+}
+
+.food-tag-crudo {
+    color: #b07040;
+    background: rgba(176, 112, 64, 0.12);
+    border: 1px solid rgba(176, 112, 64, 0.25);
+}
+
 /* ========== NUTRITION SUMMARY ========== */
 .nutrition-summary {
     background: var(--card-bg);
