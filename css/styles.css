@@ -1509,7 +1509,7 @@ body {
 /* ========== RESPONSIVE ========== */
 @media (max-width: 640px) {
     .header {
-        padding: 14px 14px 18px;
+        padding: 16px 14px 18px;
         text-align: center;
     }
 
@@ -1519,7 +1519,7 @@ body {
         left: auto;
         font-size: 0.68rem;
         padding: 6px 12px;
-        margin: 0 auto 10px;
+        margin: 0 auto 12px;
         display: inline-flex;
     }
 
@@ -1529,7 +1529,7 @@ body {
 
     .header h1 {
         font-size: 1.15rem;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
     }
 
     .kcal-number {
@@ -1537,7 +1537,7 @@ body {
     }
 
     .main {
-        padding: 0 10px 12px;
+        padding: 16px 10px 12px;
     }
 
     .main-tabs-nav {
