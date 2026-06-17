@@ -8,12 +8,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Mi Plan Nutricional</title>
     <link rel="stylesheet" href="css/styles.css">
+    <script>
+        (function(){var t=localStorage.getItem('dietTheme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
+    </script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
 </head>
 <body>
 
     <!-- ========== ONBOARDING ========== -->
     <div class="onboarding" id="onboarding">
+        <button class="theme-toggle" id="theme-toggle-onboarding" aria-label="Cambiar tema">🌙</button>
         <div class="onboarding-card">
             <h1 class="onboarding-title">🍽️ Mi Plan Nutricional</h1>
             <p class="onboarding-subtitle">Configura tu perfil para calcular tus calorías recomendadas y personalizar tu plan.</p>
@@ -189,6 +193,7 @@
     <!-- ========== APP ========== -->
     <div class="app-wrapper" id="app-wrapper" style="display:none;">
         <header class="header">
+            <button class="theme-toggle" id="theme-toggle-app" aria-label="Cambiar tema">🌙</button>
             <div class="header-content">
                 <h1>Mi Plan Nutricional</h1>
                 <div class="kcal-selector">

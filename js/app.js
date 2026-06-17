@@ -485,6 +485,38 @@ function loadState() {
 }
 
 // ============================================================
+// THEME TOGGLE
+// ============================================================
+function getTheme() {
+    var saved = localStorage.getItem('dietTheme');
+    if (saved) return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : '');
+    if (theme !== 'dark') document.documentElement.removeAttribute('data-theme');
+    var icon = theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
+    document.querySelectorAll('.theme-toggle').forEach(function(btn) { btn.textContent = icon; });
+    var metaColor = document.querySelector('meta[name="theme-color"]');
+    if (metaColor) metaColor.content = theme === 'dark' ? '#1A1510' : '#D4A017';
+}
+
+function toggleTheme() {
+    var current = document.documentElement.hasAttribute('data-theme') ? 'dark' : 'light';
+    var next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem('dietTheme', next);
+}
+
+document.querySelectorAll('.theme-toggle').forEach(function(btn) {
+    btn.addEventListener('click', toggleTheme);
+});
+
+// Apply theme immediately
+applyTheme(getTheme());
+
+// ============================================================
 // INIT
 // ============================================================
 function init() {
