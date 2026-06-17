@@ -1717,22 +1717,40 @@ function calculateTrainerMacros() {
     var t = { kcal: 0, protein: 0, carbs: 0, fat: 0 };
     var has = false;
 
+    // Calculate trainer ratio to hit BASE_KCAL (2500)
+    var scaleBase = 0;
+    if (trainerSelections.breakfast !== null) scaleBase += breakfastOptions[trainerSelections.breakfast].macros[0];
+    else scaleBase += REF_SLOT_KCAL.breakfast;
+    if (trainerSelections.lunchCarb !== null) scaleBase += lunchCarbs[trainerSelections.lunchCarb].n[0] * lunchCarbs[trainerSelections.lunchCarb].base / 100;
+    else scaleBase += REF_SLOT_KCAL.lunchCarb;
+    if (trainerSelections.lunchProtein !== null) scaleBase += lunchProteins[trainerSelections.lunchProtein].n[0] * lunchProteins[trainerSelections.lunchProtein].base / 100;
+    else scaleBase += REF_SLOT_KCAL.lunchProtein;
+    scaleBase += EXTRAS_SCALED_BASE;
+    if (trainerSelections.dinnerCarb !== null) scaleBase += dinnerCarbs[trainerSelections.dinnerCarb].n[0] * dinnerCarbs[trainerSelections.dinnerCarb].base / 100;
+    else scaleBase += REF_SLOT_KCAL.dinnerCarb;
+    if (trainerSelections.dinnerProtein !== null) scaleBase += dinnerProteins[trainerSelections.dinnerProtein].n[0] * dinnerProteins[trainerSelections.dinnerProtein].base / 100;
+    else scaleBase += REF_SLOT_KCAL.dinnerProtein;
+    scaleBase += EXTRAS_SCALED_BASE;
+    var ratio = scaleBase > 0 ? (BASE_KCAL - EXTRAS_FIXED_KCAL * NUM_EXTRA_MEALS) / scaleBase : 1;
+
     if (trainerSelections.breakfast !== null) {
         has = true;
         var m = breakfastOptions[trainerSelections.breakfast].macros;
-        t.kcal += m[0]; t.protein += m[1]; t.carbs += m[2]; t.fat += m[3];
+        t.kcal += m[0]*ratio; t.protein += m[1]*ratio; t.carbs += m[2]*ratio; t.fat += m[3]*ratio;
     }
 
     function addFood(data, idx) {
         if (idx === null) return;
         has = true;
         var item = data[idx];
-        var g = item.base; // base grams (2500 kcal)
+        var g = scaleAmount(item.base, ratio);
         t.kcal += item.n[0]*g/100; t.protein += item.n[1]*g/100; t.carbs += item.n[2]*g/100; t.fat += item.n[3]*g/100;
     }
     function addExtras() {
-        t.kcal += extrasNutr.verduras[0]*200/100; t.protein += extrasNutr.verduras[1]*200/100; t.carbs += extrasNutr.verduras[2]*200/100; t.fat += extrasNutr.verduras[3]*200/100;
-        t.kcal += extrasNutr.aceite[0]*EXTRAS_OIL_ML/100; t.fat += extrasNutr.aceite[3]*EXTRAS_OIL_ML/100;
+        var vg = scaleAmount(200, ratio);
+        t.kcal += extrasNutr.verduras[0]*vg/100; t.protein += extrasNutr.verduras[1]*vg/100; t.carbs += extrasNutr.verduras[2]*vg/100; t.fat += extrasNutr.verduras[3]*vg/100;
+        var om = scaleAmount(EXTRAS_OIL_ML, ratio);
+        t.kcal += extrasNutr.aceite[0]*om/100; t.fat += extrasNutr.aceite[3]*om/100;
         t.kcal += extrasNutr.fruta[0]; t.protein += extrasNutr.fruta[1]; t.carbs += extrasNutr.fruta[2]; t.fat += extrasNutr.fruta[3];
     }
 
