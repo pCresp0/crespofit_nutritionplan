@@ -93,56 +93,184 @@ function getExportFileName(prefix) {
 }
 
 // ============================================================
-// SCALING — dynamic ratio based on actual selection base kcal
+// SCALING — protein-priority system
 // ============================================================
+
+// Protein targets per goal (g per kg body weight) — evidence-based:
+// - Cut: 2.3-3.1 g/kg LBM ≈ 2.4 g/kg total BW (Helms 2014, ISSN Position Stand 2017)
+// - Recomp: 2.0-2.4 g/kg (near maintenance + training stimulus, Stokes 2018)
+// - Maintain: 1.6-2.2 g/kg (ISSN 2017 general athletes)
+// - Bulk: 1.6-2.0 g/kg (surplus is protein-sparing, Iraki 2019)
+var PROTEIN_TARGET_GPK = { cut:2.4, recomp:2.2, maintain:2.0, bulk:1.6 };
+var DEFAULT_PROTEIN_GPK = 2.0;
 
 // Reference kcal per slot (averages at base amounts) for unselected slots
 var REF_SLOT_KCAL = { breakfast:467, lunchCarb:480, lunchProtein:241, dinnerCarb:370, dinnerProtein:241 };
+// Reference protein per slot at base amounts (g)
+var REF_SLOT_PROT = { breakfast:31, lunchCarb:9, lunchProtein:46, dinnerCarb:7, dinnerProtein:46 };
 // Extras: verduras + aceite scale with ratio; fruta is fixed (1 piece per meal)
 var EXTRAS_SCALED_BASE = extrasNutr.verduras[0]*200/100 + extrasNutr.aceite[0]*EXTRAS_OIL_ML/100; // ~95
 var EXTRAS_FIXED_KCAL = extrasNutr.fruta[0]; // 80 per meal, not scaled
+var EXTRAS_PROT_PER_MEAL = extrasNutr.verduras[1]*200/100 + extrasNutr.fruta[1]; // ~4.5g
 var NUM_EXTRA_MEALS = 2; // lunch + dinner
 
-function getScaleableBaseKcal() {
-    var t = 0;
-    t += selections.breakfast !== null
-        ? breakfastOptions[selections.breakfast].macros[0]
-        : REF_SLOT_KCAL.breakfast;
-    t += selections.lunchCarb !== null
-        ? lunchCarbs[selections.lunchCarb].n[0] * lunchCarbs[selections.lunchCarb].base / 100
-        : REF_SLOT_KCAL.lunchCarb;
-    t += selections.lunchProtein !== null
-        ? lunchProteins[selections.lunchProtein].n[0] * lunchProteins[selections.lunchProtein].base / 100
-        : REF_SLOT_KCAL.lunchProtein;
-    t += EXTRAS_SCALED_BASE; // lunch verduras + aceite
-    t += selections.dinnerCarb !== null
-        ? dinnerCarbs[selections.dinnerCarb].n[0] * dinnerCarbs[selections.dinnerCarb].base / 100
-        : REF_SLOT_KCAL.dinnerCarb;
-    t += selections.dinnerProtein !== null
-        ? dinnerProteins[selections.dinnerProtein].n[0] * dinnerProteins[selections.dinnerProtein].base / 100
-        : REF_SLOT_KCAL.dinnerProtein;
-    t += EXTRAS_SCALED_BASE; // dinner verduras + aceite
-    return t;
+// Get user's body weight (from calculator)
+function getUserWeight() {
+    var el = document.getElementById('calc-weight');
+    var w = el ? parseFloat(el.value) : 0;
+    return (w > 0) ? w : 0;
 }
 
+// Get target protein in grams based on goal and weight
+function getProteinTargetG() {
+    var w = getUserWeight();
+    if (!w) return 0; // No weight entered, can't prioritize
+    var gpk = userGoal ? (PROTEIN_TARGET_GPK[userGoal] || DEFAULT_PROTEIN_GPK) : DEFAULT_PROTEIN_GPK;
+    return gpk * w;
+}
+
+// Calculate base kcal & protein at ratio=1 for the "carb" category (carbs + breakfast + extras)
+// and "protein" category (protein sources) separately
+function getBaseComponents(sel) {
+    var carbKcal = 0, protKcal = 0, carbProt = 0, protProt = 0;
+
+    // Breakfast goes into "carb" bucket (mixed macros, scales with carbRatio)
+    if (sel.breakfast !== null) {
+        carbKcal += breakfastOptions[sel.breakfast].macros[0];
+        carbProt += breakfastOptions[sel.breakfast].macros[1];
+    } else {
+        carbKcal += REF_SLOT_KCAL.breakfast;
+        carbProt += REF_SLOT_PROT.breakfast;
+    }
+
+    // Lunch carb
+    if (sel.lunchCarb !== null) {
+        var it = lunchCarbs[sel.lunchCarb];
+        carbKcal += it.n[0] * it.base / 100;
+        carbProt += it.n[1] * it.base / 100;
+    } else {
+        carbKcal += REF_SLOT_KCAL.lunchCarb;
+        carbProt += REF_SLOT_PROT.lunchCarb;
+    }
+
+    // Lunch protein
+    if (sel.lunchProtein !== null) {
+        var it = lunchProteins[sel.lunchProtein];
+        protKcal += it.n[0] * it.base / 100;
+        protProt += it.n[1] * it.base / 100;
+    } else {
+        protKcal += REF_SLOT_KCAL.lunchProtein;
+        protProt += REF_SLOT_PROT.lunchProtein;
+    }
+
+    // Dinner carb
+    if (sel.dinnerCarb !== null) {
+        var it = dinnerCarbs[sel.dinnerCarb];
+        carbKcal += it.n[0] * it.base / 100;
+        carbProt += it.n[1] * it.base / 100;
+    } else {
+        carbKcal += REF_SLOT_KCAL.dinnerCarb;
+        carbProt += REF_SLOT_PROT.dinnerCarb;
+    }
+
+    // Dinner protein
+    if (sel.dinnerProtein !== null) {
+        var it = dinnerProteins[sel.dinnerProtein];
+        protKcal += it.n[0] * it.base / 100;
+        protProt += it.n[1] * it.base / 100;
+    } else {
+        protKcal += REF_SLOT_KCAL.dinnerProtein;
+        protProt += REF_SLOT_PROT.dinnerProtein;
+    }
+
+    // Extras (scale with carbRatio): verduras + aceite
+    carbKcal += EXTRAS_SCALED_BASE * NUM_EXTRA_MEALS;
+    carbProt += EXTRAS_PROT_PER_MEAL * NUM_EXTRA_MEALS;
+
+    return { carbKcal: carbKcal, protKcal: protKcal, carbProt: carbProt, protProt: protProt };
+}
+
+// Compute separate ratios for protein sources vs carb/breakfast/extras sources
+function getScalingRatios(sel) {
+    sel = sel || selections;
+    var comp = getBaseComponents(sel);
+    var totalBaseKcal = comp.carbKcal + comp.protKcal;
+    if (totalBaseKcal <= 0) return { protein: 1, carb: 1 };
+
+    var availableKcal = currentKcal - EXTRAS_FIXED_KCAL * NUM_EXTRA_MEALS;
+    var uniformRatio = availableKcal / totalBaseKcal;
+
+    // Check if we need protein priority
+    var targetP = getProteinTargetG();
+    if (!targetP) {
+        // No weight entered — use uniform scaling
+        return { protein: uniformRatio, carb: uniformRatio };
+    }
+
+    // Protein at uniform ratio
+    var protAtUniform = (comp.protProt + comp.carbProt) * uniformRatio;
+
+    if (protAtUniform >= targetP) {
+        // Uniform ratio already meets protein target — no adjustment needed
+        return { protein: uniformRatio, carb: uniformRatio };
+    }
+
+    // Need to boost protein: find proteinRatio so protein sources meet target
+    // Total protein = carbProt * carbRatio + protProt * protRatio = targetP
+    // Total kcal = carbKcal * carbRatio + protKcal * protRatio + fixedExtras = currentKcal
+    // Solve: carbRatio = (availableKcal - protKcal * protRatio) / carbKcal
+    // protProt * protRatio + carbProt * carbRatio = targetP
+
+    // We fix protein sources to deliver enough and reduce carbs to compensate
+    // protRatio = ratio that makes protein target achievable
+    // Substituting: protProt * pR + carbProt * (availableKcal - protKcal * pR) / carbKcal = targetP
+    // protProt * pR + carbProt * availableKcal / carbKcal - carbProt * protKcal * pR / carbKcal = targetP
+    // pR * (protProt - carbProt * protKcal / carbKcal) = targetP - carbProt * availableKcal / carbKcal
+    // pR = (targetP - carbProt * availableKcal / carbKcal) / (protProt - carbProt * protKcal / carbKcal)
+
+    var a = comp.protProt - comp.carbProt * comp.protKcal / comp.carbKcal;
+    var b = targetP - comp.carbProt * availableKcal / comp.carbKcal;
+
+    var protRatio, carbRatio;
+    if (Math.abs(a) < 0.01) {
+        // Edge case: ratios would be degenerate, fall back to uniform
+        return { protein: uniformRatio, carb: uniformRatio };
+    }
+
+    protRatio = b / a;
+
+    // Cap proteinRatio: don't let protein go above 1.5x base (reasonable limit)
+    // and don't let it go below 0.7 (would mean less protein than a severe cut)
+    protRatio = Math.max(0.7, Math.min(1.5, protRatio));
+
+    carbRatio = (availableKcal - comp.protKcal * protRatio) / comp.carbKcal;
+
+    // Safety: carbRatio shouldn't go below 0.4 (extreme) or above 2.0
+    if (carbRatio < 0.4) {
+        carbRatio = 0.4;
+        protRatio = (availableKcal - comp.carbKcal * carbRatio) / comp.protKcal;
+    }
+    if (carbRatio > 2.0) {
+        carbRatio = 2.0;
+        protRatio = (availableKcal - comp.carbKcal * carbRatio) / comp.protKcal;
+    }
+
+    return { protein: protRatio, carb: carbRatio };
+}
+
+// Legacy single-ratio for backward compatibility (uses carb ratio as default)
 function getRatio() {
-    var scaleBase = getScaleableBaseKcal();
-    if (scaleBase <= 0) return 1;
-    return (currentKcal - EXTRAS_FIXED_KCAL * NUM_EXTRA_MEALS) / scaleBase;
+    var ratios = getScalingRatios();
+    return ratios.carb;
 }
 
-// Per-selection ratio for weekly plan (all slots filled)
+// Per-selection ratio for weekly plan (uses split ratios)
 function getRatioForSel(sel) {
-    var t = 0;
-    t += breakfastOptions[sel.breakfast].macros[0];
-    t += lunchCarbs[sel.lunchCarb].n[0] * lunchCarbs[sel.lunchCarb].base / 100;
-    t += lunchProteins[sel.lunchProtein].n[0] * lunchProteins[sel.lunchProtein].base / 100;
-    t += EXTRAS_SCALED_BASE;
-    t += dinnerCarbs[sel.dinnerCarb].n[0] * dinnerCarbs[sel.dinnerCarb].base / 100;
-    t += dinnerProteins[sel.dinnerProtein].n[0] * dinnerProteins[sel.dinnerProtein].base / 100;
-    t += EXTRAS_SCALED_BASE;
-    if (t <= 0) return 1;
-    return (currentKcal - EXTRAS_FIXED_KCAL * NUM_EXTRA_MEALS) / t;
+    return getScalingRatios(sel).carb;
+}
+
+function getProteinRatioForSel(sel) {
+    return getScalingRatios(sel).protein;
 }
 
 function scaleAmount(base, ratio) {
@@ -205,30 +333,37 @@ function getRecommendedKcal(tdee, goal) {
 // MACROS CALCULATION
 // ============================================================
 function calculateSelectedMacros() {
-    var ratio = getRatio();
+    var ratios = getScalingRatios();
+    var carbRatio = ratios.carb;
+    var protRatio = ratios.protein;
     var base = { kcal:0, protein:0, carbs:0, fat:0 };
     var chosen = { kcal:0, protein:0, carbs:0, fat:0 };
 
     if (selections.breakfast !== null) {
         var m = breakfastOptions[selections.breakfast].macros;
-        chosen.kcal += m[0]*ratio; chosen.protein += m[1]*ratio; chosen.carbs += m[2]*ratio; chosen.fat += m[3]*ratio;
+        chosen.kcal += m[0]*carbRatio; chosen.protein += m[1]*carbRatio; chosen.carbs += m[2]*carbRatio; chosen.fat += m[3]*carbRatio;
     }
 
-    function addFood(data, idx) {
+    function addCarbFood(data, idx) {
         if (idx === null) return;
-        var item = data[idx]; var g = scaleAmount(item.base, ratio);
+        var item = data[idx]; var g = scaleAmount(item.base, carbRatio);
+        chosen.kcal += item.n[0]*g/100; chosen.protein += item.n[1]*g/100; chosen.carbs += item.n[2]*g/100; chosen.fat += item.n[3]*g/100;
+    }
+    function addProtFood(data, idx) {
+        if (idx === null) return;
+        var item = data[idx]; var g = scaleAmount(item.base, protRatio);
         chosen.kcal += item.n[0]*g/100; chosen.protein += item.n[1]*g/100; chosen.carbs += item.n[2]*g/100; chosen.fat += item.n[3]*g/100;
     }
     function addExtras() {
-        var vg = scaleAmount(200, ratio); var om = scaleAmount(EXTRAS_OIL_ML, ratio);
+        var vg = scaleAmount(200, carbRatio); var om = scaleAmount(EXTRAS_OIL_ML, carbRatio);
         base.kcal += extrasNutr.verduras[0]*vg/100; base.protein += extrasNutr.verduras[1]*vg/100; base.carbs += extrasNutr.verduras[2]*vg/100; base.fat += extrasNutr.verduras[3]*vg/100;
         base.kcal += extrasNutr.aceite[0]*om/100; base.fat += extrasNutr.aceite[3]*om/100;
         base.kcal += extrasNutr.fruta[0]; base.protein += extrasNutr.fruta[1]; base.carbs += extrasNutr.fruta[2]; base.fat += extrasNutr.fruta[3];
     }
 
-    addFood(lunchCarbs, selections.lunchCarb); addFood(lunchProteins, selections.lunchProtein);
+    addCarbFood(lunchCarbs, selections.lunchCarb); addProtFood(lunchProteins, selections.lunchProtein);
     addExtras();
-    addFood(dinnerCarbs, selections.dinnerCarb); addFood(dinnerProteins, selections.dinnerProtein);
+    addCarbFood(dinnerCarbs, selections.dinnerCarb); addProtFood(dinnerProteins, selections.dinnerProtein);
     addExtras();
     return { base: base, chosen: chosen, total: { kcal: base.kcal+chosen.kcal, protein: base.protein+chosen.protein, carbs: base.carbs+chosen.carbs, fat: base.fat+chosen.fat } };
 }
@@ -238,7 +373,7 @@ function calculateSelectedMacros() {
 // ============================================================
 function renderBreakfast() {
     var grid = document.getElementById('breakfast-grid');
-    var ratio = getRatio();
+    var ratio = getScalingRatios().carb; // breakfast scales with carb ratio
     grid.innerHTML = breakfastOptions.map(function(opt, idx) {
         var sel = selections.breakfast === idx;
         var items = opt.items.map(function(it) {
@@ -254,16 +389,18 @@ function renderBreakfast() {
 
 function renderMealTable(cid, cd, pd, cs, ps, mt) {
     var container = document.getElementById(cid);
-    var ratio = getRatio();
+    var ratios = getScalingRatios();
+    var carbRatio = ratios.carb;
+    var protRatio = ratios.protein;
     var cr = cd.map(function(it,i) {
-        var s = cs===i; var sc = scaleAmount(it.base,ratio); var u = it.unit||'g';
+        var s = cs===i; var sc = scaleAmount(it.base,carbRatio); var u = it.unit||'g';
         var tagHtml = it.tag ? ' <span class="food-tag food-tag-'+it.tag+'">'+it.tag+'</span>' : '';
         var r = '<tr class="'+(s?'selected':'')+'" data-meal="'+mt+'" data-type="carb" data-index="'+i+'"><td>'+it.name+'</td><td>'+sc+' '+u+tagHtml+'</td></tr>';
-        if (it.altName) { r += '<tr class="sub-row '+(s?'selected':'')+'" data-meal="'+mt+'" data-type="carb" data-index="'+i+'"><td>'+it.altName+'</td><td>'+scaleAmount(it.altBase,ratio)+' '+u+tagHtml+'</td></tr>'; }
+        if (it.altName) { r += '<tr class="sub-row '+(s?'selected':'')+'" data-meal="'+mt+'" data-type="carb" data-index="'+i+'"><td>'+it.altName+'</td><td>'+scaleAmount(it.altBase,carbRatio)+' '+u+tagHtml+'</td></tr>'; }
         return r;
     }).join('');
     var pr = pd.map(function(it,i) {
-        var s = ps===i; var sc = scaleAmount(it.base,ratio); var u = it.unit||'g';
+        var s = ps===i; var sc = scaleAmount(it.base,protRatio); var u = it.unit||'g';
         return '<tr class="'+(s?'selected':'')+'" data-meal="'+mt+'" data-type="protein" data-index="'+i+'"><td>'+it.name+'</td><td>'+sc+' '+u+'</td></tr>';
     }).join('');
     container.innerHTML = '<div class="meal-table-wrapper"><div class="meal-table-header carbs">🌾 Hidratos de Carbono</div><table class="meal-table"><tbody>'+cr+'</tbody></table></div>' +
@@ -278,7 +415,7 @@ function renderSupplements() {
 }
 
 function updateExtras() {
-    var ratio = getRatio(); var vg = scaleAmount(200,ratio); var ol = scaleAmount(EXTRAS_OIL_ML,ratio);
+    var ratio = getScalingRatios().carb; var vg = scaleAmount(200,ratio); var ol = scaleAmount(EXTRAS_OIL_ML,ratio);
     document.querySelectorAll('.scaled-veg-lunch,.scaled-veg-dinner').forEach(function(e){e.textContent=vg;});
     document.querySelectorAll('.scaled-oil-lunch,.scaled-oil-dinner').forEach(function(e){e.textContent=ol;});
 }
@@ -952,32 +1089,40 @@ function generateWeeklyPlan() {
 }
 
 function calcDayMacros(sel) {
-    var ratio = getRatioForSel(sel);
+    var ratios = getScalingRatios(sel);
+    var carbRatio = ratios.carb;
+    var protRatio = ratios.protein;
     var t = { kcal: 0, protein: 0, carbs: 0, fat: 0 };
 
-    // Breakfast
+    // Breakfast (scales with carbRatio)
     var m = breakfastOptions[sel.breakfast].macros;
-    t.kcal += m[0] * ratio; t.protein += m[1] * ratio; t.carbs += m[2] * ratio; t.fat += m[3] * ratio;
+    t.kcal += m[0] * carbRatio; t.protein += m[1] * carbRatio; t.carbs += m[2] * carbRatio; t.fat += m[3] * carbRatio;
 
-    function addFood(data, idx) {
+    function addCarbFood(data, idx) {
         var item = data[idx];
-        var grams = scaleAmount(item.base, ratio);
+        var grams = scaleAmount(item.base, carbRatio);
+        t.kcal += item.n[0] * grams / 100; t.protein += item.n[1] * grams / 100;
+        t.carbs += item.n[2] * grams / 100; t.fat += item.n[3] * grams / 100;
+    }
+    function addProtFood(data, idx) {
+        var item = data[idx];
+        var grams = scaleAmount(item.base, protRatio);
         t.kcal += item.n[0] * grams / 100; t.protein += item.n[1] * grams / 100;
         t.carbs += item.n[2] * grams / 100; t.fat += item.n[3] * grams / 100;
     }
 
     function addExtras() {
-        var vegG = scaleAmount(200, ratio);
+        var vegG = scaleAmount(200, carbRatio);
         t.kcal += extrasNutr.verduras[0] * vegG / 100; t.protein += extrasNutr.verduras[1] * vegG / 100;
         t.carbs += extrasNutr.verduras[2] * vegG / 100; t.fat += extrasNutr.verduras[3] * vegG / 100;
-        var oilMl = scaleAmount(EXTRAS_OIL_ML, ratio);
+        var oilMl = scaleAmount(EXTRAS_OIL_ML, carbRatio);
         t.kcal += extrasNutr.aceite[0] * oilMl / 100; t.fat += extrasNutr.aceite[3] * oilMl / 100;
         t.kcal += extrasNutr.fruta[0]; t.protein += extrasNutr.fruta[1];
         t.carbs += extrasNutr.fruta[2]; t.fat += extrasNutr.fruta[3];
     }
 
-    addFood(lunchCarbs, sel.lunchCarb); addFood(lunchProteins, sel.lunchProtein); addExtras();
-    addFood(dinnerCarbs, sel.dinnerCarb); addFood(dinnerProteins, sel.dinnerProtein); addExtras();
+    addCarbFood(lunchCarbs, sel.lunchCarb); addProtFood(lunchProteins, sel.lunchProtein); addExtras();
+    addCarbFood(dinnerCarbs, sel.dinnerCarb); addProtFood(dinnerProteins, sel.dinnerProtein); addExtras();
 
     return { kcal: Math.round(t.kcal), protein: Math.round(t.protein), carbs: Math.round(t.carbs), fat: Math.round(t.fat) };
 }
@@ -1162,17 +1307,19 @@ function buildWeeklyExportCanvas(plan) {
         ctx.fillStyle = textMuted;
         ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         ctx.fillText('🍲 Almuerzo', pad + 20, mealY);
-        var dayRatio = getRatioForSel(sel);
-        var lcScaled = scaleAmount(lc.base, dayRatio);
-        var lpScaled = scaleAmount(lp.base, dayRatio);
+        var dayRatios = getScalingRatios(sel);
+        var dayCarbR = dayRatios.carb;
+        var dayProtR = dayRatios.protein;
+        var lcScaled = scaleAmount(lc.base, dayCarbR);
+        var lpScaled = scaleAmount(lp.base, dayProtR);
         ctx.fillStyle = textLight;
         ctx.font = '16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         ctx.fillText(lc.name + ' (' + lcScaled + 'g)  +  ' + lp.name + ' (' + lpScaled + (lp.unit || 'g') + ')', pad + 150, mealY);
 
         mealY += 32;
         // Extras
-        var vegG = scaleAmount(200, dayRatio);
-        var oilMl = scaleAmount(EXTRAS_OIL_ML, dayRatio);
+        var vegG = scaleAmount(200, dayCarbR);
+        var oilMl = scaleAmount(EXTRAS_OIL_ML, dayCarbR);
         ctx.fillStyle = textMuted;
         ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         ctx.fillText('+ ' + vegG + 'g verduras · ' + oilMl + 'ml aceite · 1 fruta (por comida)', pad + 150, mealY);
@@ -1182,8 +1329,8 @@ function buildWeeklyExportCanvas(plan) {
         ctx.fillStyle = textMuted;
         ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         ctx.fillText('🌙 Cena', pad + 20, mealY);
-        var dcScaled = scaleAmount(dc.base, dayRatio);
-        var dpScaled = scaleAmount(dp.base, dayRatio);
+        var dcScaled = scaleAmount(dc.base, dayCarbR);
+        var dpScaled = scaleAmount(dp.base, dayProtR);
         ctx.fillStyle = textLight;
         ctx.font = '16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
         ctx.fillText(dc.name + ' (' + dcScaled + 'g)  +  ' + dp.name + ' (' + dpScaled + (dp.unit || 'g') + ')', pad + 150, mealY);
@@ -1582,6 +1729,10 @@ var mealSupplements = {
 
 function buildMealSummaryHTML(selObj, ratio, isTrainer) {
     var r = ratio || 1;
+    // For public view: use split ratios; for trainer: ratio=1 passed in
+    var ratios = isTrainer ? null : getScalingRatios(selObj);
+    var carbR = isTrainer ? r : ratios.carb;
+    var protR = isTrainer ? r : ratios.protein;
 
     function getBreakfastItems() {
         if (selObj.breakfast === null) return null;
@@ -1589,11 +1740,11 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
         var items = opt.items.map(function(item) {
             var line = item.text;
             if (item.amount !== null) {
-                var scaled = isTrainer ? item.amount : scaleAmount(item.amount, r);
+                var scaled = isTrainer ? item.amount : scaleAmount(item.amount, carbR);
                 line += ': <strong>' + scaled + (item.unit || 'g') + '</strong>';
             }
             if (item.extra) {
-                var extraScaled = isTrainer ? item.extraBase : scaleAmount(item.extraBase, r);
+                var extraScaled = isTrainer ? item.extraBase : scaleAmount(item.extraBase, carbR);
                 var extraText = item.extra.replace(/\{(\d+)\}/, extraScaled);
                 line += ' <span class="summary-extra">' + extraText + '</span>';
             }
@@ -1606,16 +1757,16 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
         var items = [];
         if (carbIdx !== null) {
             var carb = carbsData[carbIdx];
-            var cg = isTrainer ? carb.base : scaleAmount(carb.base, r);
+            var cg = isTrainer ? carb.base : scaleAmount(carb.base, carbR);
             items.push(carb.name + ': <strong>' + cg + (carb.unit || 'g') + '</strong>');
         }
         if (protIdx !== null) {
             var prot = protsData[protIdx];
-            var pg = isTrainer ? prot.base : scaleAmount(prot.base, r);
+            var pg = isTrainer ? prot.base : scaleAmount(prot.base, protR);
             items.push(prot.name + ': <strong>' + pg + (prot.unit || 'g') + '</strong>');
         }
-        var vegG = isTrainer ? 200 : scaleAmount(200, r);
-        var oilMl = isTrainer ? EXTRAS_OIL_ML : scaleAmount(EXTRAS_OIL_ML, r);
+        var vegG = isTrainer ? 200 : scaleAmount(200, carbR);
+        var oilMl = isTrainer ? EXTRAS_OIL_ML : scaleAmount(EXTRAS_OIL_ML, carbR);
         items.push('Verduras/ensalada: <strong>~' + vegG + 'g</strong>');
         items.push('Aceite de oliva: <strong>' + oilMl + 'ml</strong>');
         items.push('1 pieza de fruta');
@@ -1935,7 +2086,9 @@ document.getElementById('export-as-pdf').addEventListener('click', function() {
 });
 
 function buildExportCanvas() {
-    var ratio = getRatio();
+    var ratios = getScalingRatios();
+    var carbRatio = ratios.carb;
+    var protRatio = ratios.protein;
     var macroData = calculateSelectedMacros();
     var macros = macroData.total;
     var kcal = Math.round(macros.kcal);
@@ -2121,7 +2274,7 @@ function buildExportCanvas() {
     if (selections.breakfast !== null) {
         var bOpt = breakfastOptions[selections.breakfast];
         var bItems = bOpt.items.map(function(it) {
-            var amt = it.amount !== null ? scaleAmount(it.amount, ratio) + it.unit : '';
+            var amt = it.amount !== null ? scaleAmount(it.amount, carbRatio) + it.unit : '';
             return { name: it.text, amount: amt };
         });
         curY = drawMealSection('Desayuno  -  ' + bOpt.name, bItems, curY);
@@ -2132,14 +2285,14 @@ function buildExportCanvas() {
         var lItems = [];
         if (selections.lunchCarb !== null) {
             var lc = lunchCarbs[selections.lunchCarb];
-            lItems.push({ name: lc.name + (lc.tag ? ' (' + lc.tag + ')' : ''), amount: scaleAmount(lc.base, ratio) + (lc.unit || 'g') });
+            lItems.push({ name: lc.name + (lc.tag ? ' (' + lc.tag + ')' : ''), amount: scaleAmount(lc.base, carbRatio) + (lc.unit || 'g') });
         }
         if (selections.lunchProtein !== null) {
             var lp = lunchProteins[selections.lunchProtein];
-            lItems.push({ name: lp.name, amount: scaleAmount(lp.base, ratio) + (lp.unit || 'g') });
+            lItems.push({ name: lp.name, amount: scaleAmount(lp.base, protRatio) + (lp.unit || 'g') });
         }
-        var vegG = scaleAmount(200, ratio);
-        var oilMl = scaleAmount(EXTRAS_OIL_ML, ratio);
+        var vegG = scaleAmount(200, carbRatio);
+        var oilMl = scaleAmount(EXTRAS_OIL_ML, carbRatio);
         lItems.push({ name: '+ Verduras / Aceite oliva / 1 Fruta', amount: vegG + 'g / ' + oilMl + 'ml' });
         curY = drawMealSection('Almuerzo', lItems, curY);
     }
@@ -2149,14 +2302,14 @@ function buildExportCanvas() {
         var dItems = [];
         if (selections.dinnerCarb !== null) {
             var dc = dinnerCarbs[selections.dinnerCarb];
-            dItems.push({ name: dc.name + (dc.tag ? ' (' + dc.tag + ')' : ''), amount: scaleAmount(dc.base, ratio) + (dc.unit || 'g') });
+            dItems.push({ name: dc.name + (dc.tag ? ' (' + dc.tag + ')' : ''), amount: scaleAmount(dc.base, carbRatio) + (dc.unit || 'g') });
         }
         if (selections.dinnerProtein !== null) {
             var dp = dinnerProteins[selections.dinnerProtein];
-            dItems.push({ name: dp.name, amount: scaleAmount(dp.base, ratio) + (dp.unit || 'g') });
+            dItems.push({ name: dp.name, amount: scaleAmount(dp.base, protRatio) + (dp.unit || 'g') });
         }
-        var vegGd = scaleAmount(200, ratio);
-        var oilMld = scaleAmount(EXTRAS_OIL_ML, ratio);
+        var vegGd = scaleAmount(200, carbRatio);
+        var oilMld = scaleAmount(EXTRAS_OIL_ML, carbRatio);
         dItems.push({ name: '+ Verduras / Aceite oliva / 1 Fruta', amount: vegGd + 'g / ' + oilMld + 'ml' });
         curY = drawMealSection('Cena', dItems, curY);
     }
