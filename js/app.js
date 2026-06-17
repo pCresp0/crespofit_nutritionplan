@@ -491,6 +491,15 @@ function activateTab(name) {
     var panel = document.getElementById('tab-'+name);
     if (btn) btn.classList.add('active');
     if (panel) panel.classList.add('active');
+
+    // Scroll so the tabs nav sits right below the header
+    var tabsNav = document.querySelector('.main-tabs-nav');
+    if (tabsNav) {
+        var header = document.querySelector('.header');
+        var headerH = header ? header.offsetHeight : 0;
+        var navTop = tabsNav.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({ top: navTop - headerH - 4, behavior: 'smooth' });
+    }
 }
 function getDefaultTab() { var h = new Date().getHours(); return h<11?'breakfast':h<17?'lunch':'dinner'; }
 
@@ -1027,38 +1036,64 @@ applyTheme(getTheme());
     var header = null;
     var tabsNav = null;
     var isCompact = false;
-    var anchorY = 0;
-    var ignoreUntil = 0;
+    var lastY = 0;
+    var scrollDelta = 0;
+    var ticking = false;
+    var COMPACT_THRESHOLD = 80;  // px scrolled down to compact
+    var EXPAND_THRESHOLD = 40;   // px scrolled up to expand
 
     function updateTabsTop() {
         if (!tabsNav) tabsNav = document.querySelector('.main-tabs-nav');
         if (!tabsNav || !header) return;
-        var headerH = header.offsetHeight;
-        tabsNav.style.top = headerH + 'px';
+        tabsNav.style.top = header.offsetHeight + 'px';
+    }
+
+    function onScroll() {
+        if (!header) header = document.querySelector('.header');
+        if (!header) return;
+
+        var y = window.scrollY;
+        var dy = y - lastY;
+        lastY = y;
+
+        // Near the top: always expanded
+        if (y < 50) {
+            if (isCompact) {
+                header.classList.remove('header-compact');
+                isCompact = false;
+                scrollDelta = 0;
+                updateTabsTop();
+            }
+            return;
+        }
+
+        // Accumulate scroll delta in the current direction
+        if ((dy > 0 && scrollDelta < 0) || (dy < 0 && scrollDelta > 0)) {
+            scrollDelta = 0; // direction changed, reset
+        }
+        scrollDelta += dy;
+
+        if (!isCompact && scrollDelta > COMPACT_THRESHOLD) {
+            header.classList.add('header-compact');
+            isCompact = true;
+            scrollDelta = 0;
+            // Wait for transition to finish then update tabs position
+            setTimeout(updateTabsTop, 380);
+        } else if (isCompact && scrollDelta < -EXPAND_THRESHOLD) {
+            header.classList.remove('header-compact');
+            isCompact = false;
+            scrollDelta = 0;
+            setTimeout(updateTabsTop, 380);
+        }
     }
 
     window.addEventListener('scroll', function() {
-        if (!header) header = document.querySelector('.header');
-        if (!header) return;
-        var now = Date.now();
-        if (now < ignoreUntil) return;
-        var y = window.scrollY;
-        if (!isCompact && y > 120 && y - anchorY > 60) {
-            header.classList.add('header-compact');
-            isCompact = true;
-            anchorY = y;
-            ignoreUntil = now + 250;
-            setTimeout(updateTabsTop, 360);
-        } else if (isCompact && (anchorY - y > 50 || y < 30)) {
-            header.classList.remove('header-compact');
-            isCompact = false;
-            anchorY = y;
-            ignoreUntil = now + 250;
-            setTimeout(updateTabsTop, 360);
-        } else if (!isCompact && y < anchorY) {
-            anchorY = y;
-        } else if (isCompact && y > anchorY) {
-            anchorY = y;
+        if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(function() {
+                onScroll();
+                ticking = false;
+            });
         }
     }, { passive: true });
 
