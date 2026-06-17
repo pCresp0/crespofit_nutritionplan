@@ -97,7 +97,7 @@ function getExportFileName(prefix) {
 // ============================================================
 
 // Reference kcal per slot (averages at base amounts) for unselected slots
-var REF_SLOT_KCAL = { breakfast:455, lunchCarb:448, lunchProtein:227, dinnerCarb:346, dinnerProtein:223 };
+var REF_SLOT_KCAL = { breakfast:455, lunchCarb:448, lunchProtein:227, dinnerCarb:346, dinnerProtein:252 };
 // Extras: verduras + aceite scale with ratio; fruta is fixed (1 piece per meal)
 var EXTRAS_SCALED_BASE = extrasNutr.verduras[0]*200/100 + extrasNutr.aceite[0]*EXTRAS_OIL_ML/100; // ~95
 var EXTRAS_FIXED_KCAL = extrasNutr.fruta[0]; // 80 per meal, not scaled
