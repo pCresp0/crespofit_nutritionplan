@@ -498,6 +498,7 @@ function renderInfoBanner() {
                 '</div>' +
                 '<div class="info-metric info-metric-highlight">' +
                     '<span class="info-metric-label">Lo que deberías comer</span>' +
+                    '<button class="info-metric-why" id="info-why-kcal-btn" title="¿Por qué estas kcal?">?</button>' +
                     '<span class="info-metric-value">' + recommendedKcal + '</span>' +
                     '<span class="info-metric-sub">kcal/día recomendadas</span>' +
                 '</div>' +
@@ -524,6 +525,67 @@ function renderInfoBanner() {
             '<li><strong>+ Calorías de entreno:</strong> Lo que quemas en tus sesiones de ejercicio.</li>' +
             '</ul>' +
             '<p style="margin-top:10px;opacity:0.8">Si comes <strong>por debajo</strong> de tu TDEE → pierdes peso (déficit).<br>Si comes <strong>por encima</strong> → ganas peso (superávit).<br>Si comes <strong>igual</strong> → mantienes peso.</p>';
+        document.getElementById('tooltip-overlay').style.display = '';
+    });
+
+    // Why these kcal explainer
+    document.getElementById('info-why-kcal-btn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        var goalExplanations = {
+            cut: {
+                title: '🔥 ¿Por qué ' + recommendedKcal + ' kcal para perder grasa?',
+                body: '<p>Para tu objetivo de <strong>pérdida de grasa</strong>, se aplica un <strong>déficit calórico del 15-20%</strong> sobre tu TDEE (' + userTdee + ' kcal).</p>' +
+                    '<h4>Base científica:</h4>' +
+                    '<ul class="tooltip-list">' +
+                    '<li><strong>Déficit moderado (15-25%):</strong> Maximiza la pérdida de grasa mientras minimiza la pérdida de masa muscular. Un déficit mayor aumenta el catabolismo proteico y la adaptación metabólica (Trexler et al., 2014).</li>' +
+                    '<li><strong>Tasa de pérdida óptima:</strong> 0.5-1% del peso corporal/semana. Déficits mayores se asocian a mayor pérdida de masa muscular, especialmente en personas ya delgadas (Helms et al., 2014).</li>' +
+                    '<li><strong>Preservación metabólica:</strong> Déficits agresivos (>25%) activan mecanismos de adaptación termogénica que reducen el NEAT y la T3 (Rosenbaum & Leibel, 2010).</li>' +
+                    '<li><strong>Adherencia:</strong> La restricción moderada mejora la adherencia a largo plazo frente a dietas muy restrictivas (Stewart et al., 2021).</li>' +
+                    '</ul>' +
+                    '<p style="margin-top:10px"><strong>Tu cálculo:</strong> ' + userTdee + ' × 0.82 ≈ ' + recommendedKcal + ' kcal/día (déficit de ~' + Math.abs(diff) + ' kcal)</p>' +
+                    '<p class="tooltip-refs">Refs: Helms et al. (2014) <em>JISSN</em>; Trexler et al. (2014) <em>JISSN</em>; Rosenbaum & Leibel (2010) <em>Int J Obes</em></p>'
+            },
+            recomp: {
+                title: '🔄 ¿Por qué ' + recommendedKcal + ' kcal para recomposición?',
+                body: '<p>Para <strong>recomposición corporal</strong> se usa un <strong>déficit leve del 5%</strong> sobre tu TDEE (' + userTdee + ' kcal).</p>' +
+                    '<h4>Base científica:</h4>' +
+                    '<ul class="tooltip-list">' +
+                    '<li><strong>Recomposición simultánea:</strong> Es posible ganar músculo y perder grasa a la vez con un déficit mínimo (~5%) combinado con entrenamiento de fuerza y proteína alta (Barakat et al., 2020).</li>' +
+                    '<li><strong>Particionamiento calórico:</strong> Con déficit leve, el cuerpo prioriza la oxidación de grasa mientras mantiene la síntesis proteica muscular si la ingesta proteica es ≥1.6g/kg (Morton et al., 2018).</li>' +
+                    '<li><strong>Ideal para:</strong> Principiantes en entrenamiento, personas con sobrepeso, o tras un periodo de desentrenamiento (Ribeiro et al., 2022).</li>' +
+                    '</ul>' +
+                    '<p style="margin-top:10px"><strong>Tu cálculo:</strong> ' + userTdee + ' × 0.95 ≈ ' + recommendedKcal + ' kcal/día</p>' +
+                    '<p class="tooltip-refs">Refs: Barakat et al. (2020) <em>Strength Cond J</em>; Morton et al. (2018) <em>Br J Sports Med</em></p>'
+            },
+            maintain: {
+                title: '⚖️ ¿Por qué ' + recommendedKcal + ' kcal para mantenimiento?',
+                body: '<p>Para <strong>mantener peso</strong> se igualan las calorías consumidas con las gastadas (TDEE = ' + userTdee + ' kcal).</p>' +
+                    '<h4>Base científica:</h4>' +
+                    '<ul class="tooltip-list">' +
+                    '<li><strong>Balance energético:</strong> El peso corporal se mantiene estable cuando la ingesta calórica ≈ gasto calórico total durante periodos sostenidos (Hall et al., 2012).</li>' +
+                    '<li><strong>Optimización del rendimiento:</strong> En mantenimiento, se maximiza la disponibilidad energética para el entrenamiento sin ganar ni perder peso (Thomas et al., 2016).</li>' +
+                    '<li><strong>Flexibilidad metabólica:</strong> Periodos de mantenimiento entre fases de déficit permiten recuperar hormonas y reducir la adaptación metabólica (Peos et al., 2019).</li>' +
+                    '</ul>' +
+                    '<p style="margin-top:10px"><strong>Tu cálculo:</strong> TDEE = ' + recommendedKcal + ' kcal/día</p>' +
+                    '<p class="tooltip-refs">Refs: Hall et al. (2012) <em>Am J Clin Nutr</em>; Thomas et al. (2016) <em>ACSM Position Stand</em></p>'
+            },
+            bulk: {
+                title: '💪 ¿Por qué ' + recommendedKcal + ' kcal para ganar músculo?',
+                body: '<p>Para <strong>ganancia muscular</strong> se aplica un <strong>superávit del 10-15%</strong> sobre tu TDEE (' + userTdee + ' kcal).</p>' +
+                    '<h4>Base científica:</h4>' +
+                    '<ul class="tooltip-list">' +
+                    '<li><strong>Superávit moderado:</strong> Un exceso de 200-500 kcal/día es suficiente para maximizar la síntesis proteica muscular. Excesos mayores solo aumentan la ganancia de grasa (Slater et al., 2019).</li>' +
+                    '<li><strong>Tasa de ganancia realista:</strong> 0.25-0.5% del peso/semana en intermedios/avanzados. Más rápido = más grasa acumulada (Iraki et al., 2019).</li>' +
+                    '<li><strong>Disponibilidad energética:</strong> El exceso calórico mejora el entorno hormonal anabólico (testosterona, IGF-1) y la recuperación del entrenamiento (Huovinen et al., 2015).</li>' +
+                    '<li><strong>"Lean bulk":</strong> Superávits controlados (10-15%) producen ratios músculo:grasa significativamente mejores que los "dirty bulks" (+25%+) (Garthe et al., 2013).</li>' +
+                    '</ul>' +
+                    '<p style="margin-top:10px"><strong>Tu cálculo:</strong> ' + userTdee + ' × 1.15 ≈ ' + recommendedKcal + ' kcal/día (superávit de ~' + Math.abs(diff) + ' kcal)</p>' +
+                    '<p class="tooltip-refs">Refs: Slater et al. (2019) <em>JISSN</em>; Iraki et al. (2019) <em>JISSN</em>; Garthe et al. (2013) <em>Br J Sports Med</em></p>'
+            }
+        };
+        var exp = goalExplanations[userGoal] || goalExplanations.maintain;
+        document.getElementById('tooltip-title').textContent = exp.title;
+        document.getElementById('tooltip-body').innerHTML = exp.body;
         document.getElementById('tooltip-overlay').style.display = '';
     });
 }

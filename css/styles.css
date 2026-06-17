@@ -553,10 +553,45 @@ body {
 .info-metric-highlight {
     border-color: var(--accent);
     background: rgba(212, 160, 23, 0.06);
+    position: relative;
 }
 
 .info-metric-highlight .info-metric-value {
     color: var(--accent);
+}
+
+.info-metric-why {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.info-metric-why:hover {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+.tooltip-refs {
+    margin-top: 12px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-style: italic;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
 }
 
 .info-metric-arrow {
