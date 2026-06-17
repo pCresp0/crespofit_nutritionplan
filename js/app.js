@@ -548,13 +548,12 @@ function activateTab(name) {
     if (btn) btn.classList.add('active');
     if (panel) panel.classList.add('active');
 
-    // Scroll so the tabs nav sits right below the header
-    var tabsNav = document.querySelector('.main-tabs-nav');
-    if (tabsNav) {
-        var header = document.querySelector('.header');
-        var headerH = header ? header.offsetHeight : 0;
-        var navTop = tabsNav.getBoundingClientRect().top + window.scrollY;
-        window.scrollTo({ top: navTop - headerH - 4, behavior: 'smooth' });
+    // Scroll so the tab panel content is visible right below the sticky tabs nav
+    if (panel) {
+        var tabsNav = document.querySelector('.main-tabs-nav');
+        var navH = tabsNav ? tabsNav.offsetHeight : 0;
+        var panelTop = panel.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({ top: panelTop - navH - 4, behavior: 'smooth' });
     }
 }
 function getDefaultTab() { var h = new Date().getHours(); return h<11?'breakfast':h<17?'lunch':'dinner'; }
