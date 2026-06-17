@@ -52,10 +52,22 @@ var supplements = [
     {icon:'😴',title:'Melatonina',desc:'6-10mg pre-sueño',tip:'Mejora sprint anaeróbico al día siguiente, acelera recuperación y reduce marcadores de daño muscular (CK, LDH). Sin efecto si se toma pre-ejercicio (Guo et al. 2026).'}
 ];
 
-var goalLabels = { cut:'Perder grasa', maintain:'Mantener peso', bulk:'Ganar masa muscular' };
-var goalIcons = { cut:'🔥', maintain:'⚖️', bulk:'💪' };
+var goalLabels = { cut:'Perder grasa', recomp:'Recomposición corporal', maintain:'Mantener peso', bulk:'Ganar masa muscular' };
+var goalIcons = { cut:'🔥', recomp:'🔄', maintain:'⚖️', bulk:'💪' };
 
-var trainBurnPerMin = { strength:[5,6.5,8], cardio:[8,10,12], hiit:[9,11.5,14], mixed:[7,9,11] };
+// kcal/min por tipo de ejercicio [baja, media, alta intensidad]
+var trainBurnPerMin = {
+    strength:[5,6.5,8],
+    cardio:[8,10,12],
+    hiit:[9,11.5,14],
+    mixed:[7,9,11],
+    yoga:[3,4,5],
+    swimming:[7,9.5,12],
+    cycling:[6,8.5,11],
+    walking:[3.5,4.5,6],
+    team:[6,8,10],
+    martial:[7,9,12]
+};
 
 var tooltipData = {
     activity:{title:'Factor de Actividad',body:'<ul><li><strong>Sedentario (x1.2):</strong> Oficina, poco movimiento.</li><li><strong>Ligero (x1.375):</strong> Oficina + caminas algo.</li><li><strong>Moderado (x1.55):</strong> Trabajo de pie / >10k pasos.</li><li><strong>Muy activo (x1.725):</strong> Trabajo físico intenso.</li></ul>'},
@@ -116,6 +128,7 @@ function calculateTDEE() {
 
 function getRecommendedKcal(tdee, goal) {
     if (goal === 'cut') return Math.round((tdee * 0.80) / 100) * 100;
+    if (goal === 'recomp') return Math.round((tdee * 0.95) / 100) * 100;
     if (goal === 'bulk') return Math.round((tdee * 1.15) / 100) * 100;
     return Math.round(tdee / 100) * 100;
 }
@@ -224,6 +237,14 @@ function updateKcalWarning() {
         } else {
             w.className = 'kcal-warning warn-info';
             w.innerHTML = 'ℹ️ Estás <strong>'+absDiff+' kcal por debajo</strong>. Un déficit tan agresivo puede afectar al rendimiento y a la masa muscular.';
+        }
+    } else if (userGoal === 'recomp') {
+        if (diff > 200) {
+            w.className = 'kcal-warning warn-info';
+            w.innerHTML = 'ℹ️ Estás <strong>'+absDiff+' kcal por encima</strong> de lo recomendado para recomposición. Podrías acumular algo de grasa.';
+        } else if (diff < -200) {
+            w.className = 'kcal-warning warn-info';
+            w.innerHTML = 'ℹ️ Estás <strong>'+absDiff+' kcal por debajo</strong>. Un déficit mayor puede dificultar ganar músculo.';
         }
     } else if (userGoal === 'bulk') {
         if (diff < -200) {
@@ -382,6 +403,10 @@ document.getElementById('next-3').addEventListener('click', function() {
         document.getElementById('ob-goal-label').textContent = '🔥 Recomendado';
         document.getElementById('ob-rec-sub').textContent = 'kcal/día · Déficit del ~20%';
         document.getElementById('ob-explanation').innerHTML = 'Para <strong>perder grasa</strong> necesitas comer por debajo de tu gasto calórico. Te recomendamos un <strong>déficit moderado del 20%</strong> (~' + (result.tdee - recommendedKcal) + ' kcal menos/día) para preservar masa muscular y no pasar hambre.';
+    } else if (userGoal === 'recomp') {
+        document.getElementById('ob-goal-label').textContent = '🔄 Recomendado';
+        document.getElementById('ob-rec-sub').textContent = 'kcal/día · Déficit mínimo ~5%';
+        document.getElementById('ob-explanation').innerHTML = 'La <strong>recomposición corporal</strong> busca ganar músculo y perder grasa a la vez. Se consigue con un <strong>déficit mínimo (~5%)</strong>, alta proteína (1.6-2.2g/kg) y entrenamiento de fuerza. Es más lento que un bulk+cut, pero mejora la composición corporal sin fases extremas.';
     } else if (userGoal === 'bulk') {
         document.getElementById('ob-goal-label').textContent = '💪 Recomendado';
         document.getElementById('ob-rec-sub').textContent = 'kcal/día · Superávit del ~15%';
@@ -389,7 +414,7 @@ document.getElementById('next-3').addEventListener('click', function() {
     } else {
         document.getElementById('ob-goal-label').textContent = '⚖️ Recomendado';
         document.getElementById('ob-rec-sub').textContent = 'kcal/día · Mantenimiento';
-        document.getElementById('ob-explanation').innerHTML = 'Para <strong>mantener tu peso</strong> actual, come a tu nivel de gasto calórico. Ideal para <strong>recomposición corporal</strong> (ganar músculo y perder grasa simultáneamente, de forma más lenta).';
+        document.getElementById('ob-explanation').innerHTML = 'Para <strong>mantener tu peso</strong> actual, come a tu nivel de gasto calórico. Tu composición corporal se mantendrá estable.';
     }
 
     showStep(4);
