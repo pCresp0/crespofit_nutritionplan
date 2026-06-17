@@ -126,7 +126,8 @@ function calculateTDEE() {
 }
 
 function getRecommendedKcal(tdee, goal) {
-    if (goal === 'cut') return Math.round((tdee * 0.80) / 100) * 100;
+    // cut: ~15% deficit (Helms 2014, Iraki 2019) - moderado para preservar músculo
+    if (goal === 'cut') return Math.round((tdee * 0.85) / 100) * 100;
     if (goal === 'recomp') return Math.round((tdee * 0.95) / 100) * 100;
     if (goal === 'bulk') return Math.round((tdee * 1.15) / 100) * 100;
     return Math.round(tdee / 100) * 100;
