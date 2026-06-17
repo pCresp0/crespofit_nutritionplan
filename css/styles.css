@@ -1450,6 +1450,10 @@ body {
         left: 10px;
     }
 
+    .header-content {
+        padding-top: 28px;
+    }
+
     .header h1 {
         font-size: 1.1rem;
         margin-bottom: 10px;
@@ -1515,7 +1519,33 @@ body {
     }
 
     .info-banner {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .info-item {
+        min-width: 0;
+        padding: 8px 8px;
+        gap: 6px;
+        overflow: hidden;
+    }
+
+    .info-icon {
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .info-label {
+        font-size: 0.58rem;
+    }
+
+    .info-value {
+        font-size: 0.7rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .extras-banner {
