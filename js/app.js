@@ -1938,6 +1938,8 @@ function renderValidator() {
     // Enable/disable export button
     var exportBtn = document.getElementById('export-btn');
     if (exportBtn) exportBtn.disabled = !allDone;
+    var waBtn = document.getElementById('share-whatsapp-btn');
+    if (waBtn) waBtn.disabled = !allDone;
 
     // Render diet summary when complete
     renderDietSummary();
@@ -2339,6 +2341,98 @@ document.getElementById('export-as-png').addEventListener('click', function() {
 document.getElementById('export-as-pdf').addEventListener('click', function() {
     hideExportModal();
     exportDiet('pdf');
+});
+
+// ============================================================
+// WHATSAPP SHARE
+// ============================================================
+function buildWhatsAppText() {
+    var ratios = getScalingRatios();
+    var carbR = ratios.carb;
+    var protR = ratios.protein;
+
+    function getBreakfastText() {
+        if (selections.breakfast === null) return '';
+        var opt = breakfastOptions[selections.breakfast];
+        var lines = opt.items.map(function(item) {
+            var line = '  • ' + item.text;
+            if (item.amount !== null) {
+                var scaled = scaleAmount(item.amount, carbR);
+                line += ': *' + scaled + (item.unit || 'g') + '*';
+            }
+            if (item.extra) {
+                var extraScaled = scaleAmount(item.extraBase, carbR);
+                var extraText = item.extra.replace(/\{(\d+)\}/, extraScaled);
+                line += ' ' + extraText;
+            }
+            return line;
+        });
+        var bkKcal = Math.round(opt.macros[0] * carbR);
+        return '☀️ *DESAYUNO* — ' + bkKcal + ' kcal\n_' + opt.name + '_\n' + lines.join('\n');
+    }
+
+    function getMealText(title, emoji, carbsData, protsData, carbIdx, protIdx) {
+        var lines = [];
+        var kcal = 0;
+        if (carbIdx !== null) {
+            var carb = carbsData[carbIdx];
+            var cg = scaleAmount(carb.base, carbR);
+            lines.push('  • ' + carb.name + ': *' + cg + (carb.unit || 'g') + '*');
+            kcal += carb.n[0] * cg / 100;
+        }
+        if (protIdx !== null) {
+            var prot = protsData[protIdx];
+            var pg = scaleAmount(prot.base, protR);
+            lines.push('  • ' + prot.name + ': *' + pg + (prot.unit || 'g') + '*');
+            kcal += prot.n[0] * pg / 100;
+        }
+        var vegG = scaleAmount(200, carbR);
+        var oilMl = scaleAmount(EXTRAS_OIL_ML, carbR);
+        lines.push('  • Verduras/ensalada: *~' + vegG + 'g*');
+        lines.push('  • Aceite de oliva: *' + oilMl + 'ml*');
+        lines.push('  • 1 pieza de fruta');
+        kcal += extrasNutr.verduras[0] * vegG / 100;
+        kcal += extrasNutr.aceite[0] * oilMl / 100;
+        kcal += extrasNutr.fruta[0];
+        return emoji + ' *' + title + '* — ' + Math.round(kcal) + ' kcal\n' + lines.join('\n');
+    }
+
+    var macroData = calculateSelectedMacros();
+    var macros = macroData.total || macroData;
+    var totalKcal = Math.round(macros.kcal);
+    var p = Math.round(macros.protein);
+    var c = Math.round(macros.carbs);
+    var f = Math.round(macros.fat);
+
+    var goalName = goalLabels[userGoal] || 'Mi dieta';
+    var goalIcon = goalIcons[userGoal] || '🍽️';
+
+    var text = '🍽️ *MI PLAN NUTRICIONAL*\n';
+    text += goalIcon + ' Objetivo: *' + goalName + '*\n';
+    text += '📊 *' + totalKcal + ' kcal* · P:' + p + 'g · C:' + c + 'g · G:' + f + 'g\n';
+    text += '\n━━━━━━━━━━━━━━━━━━━━\n\n';
+
+    text += getBreakfastText() + '\n\n';
+    text += getMealText('ALMUERZO', '🍲', lunchCarbs, lunchProteins, selections.lunchCarb, selections.lunchProtein) + '\n\n';
+    text += getMealText('CENA', '🌙', dinnerCarbs, dinnerProteins, selections.dinnerCarb, selections.dinnerProtein) + '\n\n';
+
+    text += '━━━━━━━━━━━━━━━━━━━━\n\n';
+    text += '💊 *SUPLEMENTOS*\n';
+    text += '  • 💪 Creatina: 8g/día\n';
+    text += '  • 🐟 Omega 3: 2 pastillas/día\n';
+    text += '  • 🧲 Magnesio: 300mg antes de dormir\n';
+    text += '  • ⚡ Zinc: 30mg antes de dormir\n';
+    text += '\n━━━━━━━━━━━━━━━━━━━━\n\n';
+    text += '¿Qué te parece esta dieta? 💪\n';
+    text += 'Hecha con 👉 https://pcresp0.github.io/dieta_gym_PCB/';
+
+    return text;
+}
+
+document.getElementById('share-whatsapp-btn').addEventListener('click', function() {
+    var text = buildWhatsAppText();
+    var url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(text);
+    window.open(url, '_blank');
 });
 
 function buildExportCanvas() {
