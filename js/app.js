@@ -1264,7 +1264,8 @@ document.getElementById('next-3').addEventListener('click', function() {
     }).join('');
 
     document.getElementById('ob-tips').innerHTML =
-        '<h3 class="ob-tips-heading">💡 Recomendaciones ' + (userName ? 'para ' + userName : 'para ti') + '</h3>' + tipsHTML;
+        '<h3 class="ob-tips-heading">💡 Recomendaciones ' + (userName ? 'para ' + userName : 'para ti') + '</h3>' +
+        '<div class="ob-tips-grid">' + tipsHTML + '</div>';
 
     showStep(4);
 });
