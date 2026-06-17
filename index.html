@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#D4A017">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Mi Plan Nutricional</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-content">
+            <h1>Mi Plan Nutricional</h1>
+            <div class="kcal-selector">
+                <label for="kcal-range">Calorías diarias</label>
+                <div class="kcal-controls">
+                    <button class="kcal-btn" id="kcal-minus" aria-label="Reducir calorías">−</button>
+                    <div class="kcal-value">
+                        <span class="kcal-number" id="kcal-display">2500</span>
+                        <span class="kcal-unit">kcal</span>
+                    </div>
+                    <button class="kcal-btn" id="kcal-plus" aria-label="Aumentar calorías">+</button>
+                </div>
+                <input type="range" id="kcal-range" min="1500" max="3500" step="100" value="2500" aria-label="Selector de calorías">
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+
+        <section class="info-banner">
+            <div class="info-item">
+                <span class="info-icon">🎯</span>
+                <div>
+                    <span class="info-label">Objetivo</span>
+                    <span class="info-value">Mejorar % de grasa</span>
+                </div>
+            </div>
+            <div class="info-item">
+                <span class="info-icon">🚶</span>
+                <div>
+                    <span class="info-label">NEAT</span>
+                    <span class="info-value">10-12k pasos/día</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- DESAYUNO / MERIENDA -->
+        <section class="meal-section" id="breakfast-section">
+            <div class="section-header" data-toggle="breakfast">
+                <h2><span class="section-icon">☀️</span> Desayuno / Merienda</h2>
+                <p class="section-subtitle">Elige una opción. Se puede acompañar con café o infusión.</p>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="section-body open" id="breakfast-body">
+                <div class="breakfast-grid" id="breakfast-grid"></div>
+            </div>
+        </section>
+
+        <!-- ALMUERZO -->
+        <section class="meal-section" id="lunch-section">
+            <div class="section-header" data-toggle="lunch">
+                <h2><span class="section-icon">🍲</span> Almuerzo</h2>
+                <p class="section-subtitle">Elige un hidrato y una proteína. Añadir verduras (~<span class="scaled-veg-lunch">200</span>g), <span class="scaled-oil-lunch">5</span>ml aceite oliva y 1 fruta.</p>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="section-body open" id="lunch-body">
+                <div class="extras-banner">
+                    <span>+ ~<span class="scaled-veg-lunch">200</span>g verduras (verdes) &nbsp;|&nbsp; <span class="scaled-oil-lunch">5</span>ml aceite oliva &nbsp;|&nbsp; 1 fruta</span>
+                </div>
+                <div class="meal-tables" id="lunch-tables"></div>
+            </div>
+        </section>
+
+        <!-- CENA -->
+        <section class="meal-section" id="dinner-section">
+            <div class="section-header" data-toggle="dinner">
+                <h2><span class="section-icon">🌙</span> Cena</h2>
+                <p class="section-subtitle">Elige un hidrato y una proteína. Añadir verduras (~<span class="scaled-veg-dinner">200</span>g), <span class="scaled-oil-dinner">5</span>ml aceite oliva y 1 fruta.</p>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="section-body open" id="dinner-body">
+                <div class="extras-banner">
+                    <span>+ ~<span class="scaled-veg-dinner">200</span>g verduras (verdes) &nbsp;|&nbsp; <span class="scaled-oil-dinner">5</span>ml aceite oliva &nbsp;|&nbsp; 1 fruta</span>
+                </div>
+                <div class="meal-tables" id="dinner-tables"></div>
+            </div>
+        </section>
+
+        <!-- SUPLEMENTACIÓN -->
+        <section class="meal-section supplements-section">
+            <div class="section-header" data-toggle="supplements">
+                <h2><span class="section-icon">💊</span> Suplementación</h2>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="section-body open" id="supplements-body">
+                <div class="supplements-grid" id="supplements-list"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <p>Plan nutricional personalizado · Las cantidades se ajustan automáticamente según las kcal seleccionadas</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
