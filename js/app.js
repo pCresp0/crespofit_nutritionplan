@@ -478,7 +478,7 @@ function renderAll() {
     renderBreakfast();
     renderMealTable('lunch-tables',lunchCarbs,lunchProteins,selections.lunchCarb,selections.lunchProtein,'lunch');
     renderMealTable('dinner-tables',dinnerCarbs,dinnerProteins,selections.dinnerCarb,selections.dinnerProtein,'dinner');
-    renderSupplements(); updateExtras(); renderNutritionSummary(); renderInfoBanner(); updateKcalWarning(); renderValidator();
+    renderSupplements(); updateExtras(); renderNutritionSummary(); renderInfoBanner(); updateKcalWarning(); renderValidator(); renderDietSummary();
 }
 
 // ============================================================
@@ -1166,6 +1166,121 @@ function renderValidator() {
     // Enable/disable export button
     var exportBtn = document.getElementById('export-btn');
     if (exportBtn) exportBtn.disabled = !allDone;
+
+    // Render diet summary when complete
+    renderDietSummary();
+}
+
+// ============================================================
+// DIET SUMMARY (shown when all meals selected)
+// ============================================================
+var mealSupplements = {
+    breakfast: ['Creatina', 'Omega 3'],
+    lunch: ['Omega 3'],
+    dinner: ['Magnesio y Zinc', 'Melatonina']
+};
+
+function buildMealSummaryHTML(selObj, ratio, isTrainer) {
+    var r = ratio || 1;
+
+    function getBreakfastItems() {
+        if (selObj.breakfast === null) return null;
+        var opt = breakfastOptions[selObj.breakfast];
+        var items = opt.items.map(function(item) {
+            var line = item.text;
+            if (item.amount !== null) {
+                var scaled = isTrainer ? item.amount : scaleAmount(item.amount, r);
+                line += ': <strong>' + scaled + (item.unit || 'g') + '</strong>';
+            }
+            if (item.extra) {
+                var extraScaled = isTrainer ? item.extraBase : scaleAmount(item.extraBase, r);
+                var extraText = item.extra.replace(/\{(\d+)\}/, extraScaled);
+                line += ' <span class="summary-extra">' + extraText + '</span>';
+            }
+            return line;
+        });
+        return { name: opt.name, items: items };
+    }
+
+    function getMealItems(carbsData, protsData, carbIdx, protIdx) {
+        var items = [];
+        if (carbIdx !== null) {
+            var carb = carbsData[carbIdx];
+            var cg = isTrainer ? carb.base : scaleAmount(carb.base, r);
+            items.push(carb.name + ': <strong>' + cg + (carb.unit || 'g') + '</strong>');
+        }
+        if (protIdx !== null) {
+            var prot = protsData[protIdx];
+            var pg = isTrainer ? prot.base : scaleAmount(prot.base, r);
+            items.push(prot.name + ': <strong>' + pg + (prot.unit || 'g') + '</strong>');
+        }
+        var vegG = isTrainer ? 200 : scaleAmount(200, r);
+        var oilMl = isTrainer ? EXTRAS_OIL_ML : scaleAmount(EXTRAS_OIL_ML, r);
+        items.push('Verduras/ensalada: <strong>~' + vegG + 'g</strong>');
+        items.push('Aceite de oliva: <strong>' + oilMl + 'ml</strong>');
+        items.push('1 pieza de fruta');
+        return items;
+    }
+
+    var bk = getBreakfastItems();
+    var lunchItems = (selObj.lunchCarb !== null || selObj.lunchProtein !== null)
+        ? getMealItems(lunchCarbs, lunchProteins, selObj.lunchCarb, selObj.lunchProtein) : null;
+    var dinnerItems = (selObj.dinnerCarb !== null || selObj.dinnerProtein !== null)
+        ? getMealItems(dinnerCarbs, dinnerProteins, selObj.dinnerCarb, selObj.dinnerProtein) : null;
+
+    var complete = bk && lunchItems && dinnerItems;
+    if (!complete) return '';
+
+    function suppHTML(mealKey) {
+        var names = mealSupplements[mealKey] || [];
+        if (!names.length) return '';
+        var pills = names.map(function(name) {
+            var s = supplements.find(function(sup) { return sup.title === name; });
+            if (!s) return '';
+            return '<span class="summary-supp">' + s.icon + ' ' + s.title + ' — ' + s.desc + '</span>';
+        }).join('');
+        return '<div class="summary-supps">' + pills + '</div>';
+    }
+
+    var html = '<div class="diet-summary-card">' +
+        '<h3>🍽️ Tu dieta de hoy</h3>';
+
+    // Breakfast
+    html += '<div class="summary-meal">' +
+        '<div class="summary-meal-header">☀️ Desayuno</div>' +
+        '<div class="summary-meal-name">' + bk.name + '</div>' +
+        '<ul class="summary-meal-items">' + bk.items.map(function(i){ return '<li>'+i+'</li>'; }).join('') + '</ul>' +
+        suppHTML('breakfast') +
+        '</div>';
+
+    // Lunch
+    html += '<div class="summary-meal">' +
+        '<div class="summary-meal-header">🍲 Almuerzo</div>' +
+        '<ul class="summary-meal-items">' + lunchItems.map(function(i){ return '<li>'+i+'</li>'; }).join('') + '</ul>' +
+        suppHTML('lunch') +
+        '</div>';
+
+    // Dinner
+    html += '<div class="summary-meal">' +
+        '<div class="summary-meal-header">🌙 Cena</div>' +
+        '<ul class="summary-meal-items">' + dinnerItems.map(function(i){ return '<li>'+i+'</li>'; }).join('') + '</ul>' +
+        suppHTML('dinner') +
+        '</div>';
+
+    html += '</div>';
+    return html;
+}
+
+function renderDietSummary() {
+    var container = document.getElementById('diet-summary');
+    if (!container) return;
+    container.innerHTML = buildMealSummaryHTML(selections, getRatio(), false);
+}
+
+function renderTrainerDietSummary() {
+    var container = document.getElementById('trainer-diet-summary');
+    if (!container) return;
+    container.innerHTML = buildMealSummaryHTML(trainerSelections, 1, true);
 }
 
 // ============================================================
@@ -1339,6 +1454,7 @@ function renderTrainerContent() {
 
     document.getElementById('trainer-content').innerHTML = html;
     renderTrainerNutrition();
+    renderTrainerDietSummary();
 }
 
 // Trainer toggle button
