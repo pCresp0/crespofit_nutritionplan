@@ -213,7 +213,7 @@ body {
 
 /* Compact header on scroll down — only title visible */
 .header.header-compact {
-    padding: 10px 16px;
+    padding: 8px 16px;
 }
 
 .header.header-compact h1 {
@@ -222,13 +222,16 @@ body {
 }
 
 .header.header-compact .header-content > *:not(h1) {
-    max-height: 0;
+    max-height: 0 !important;
     opacity: 0;
     overflow: hidden;
     margin: 0;
     padding: 0;
     pointer-events: none;
     transition: max-height 0.35s ease, opacity 0.25s ease, margin 0.3s ease, padding 0.3s ease;
+    line-height: 0;
+    border: 0;
+    font-size: 0;
 }
 
 .header .header-content > * {
