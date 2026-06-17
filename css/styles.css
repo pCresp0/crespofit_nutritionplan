@@ -1167,14 +1167,12 @@ body {
 }
 
 .footer-visits {
-    position: absolute;
-    bottom: 28px;
-    right: 16px;
+    margin-top: 2px;
 }
 
 .footer-visits img {
-    height: 22px;
-    opacity: 0.7;
+    height: 20px;
+    opacity: 0.6;
     transition: opacity 0.25s ease;
 }
 
@@ -1822,8 +1820,7 @@ body {
     }
 
     .footer-visits {
-        position: static;
-        margin-top: 4px;
+        margin-top: 2px;
     }
 }
 
