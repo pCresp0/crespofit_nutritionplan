@@ -9,7 +9,7 @@
     <title>Mi Plan Nutricional</title>
     <link rel="stylesheet" href="css/styles.css">
     <script>
-        (function(){var t=localStorage.getItem('dietTheme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
+        (function(){var t=localStorage.getItem('dietTheme')||'dark';if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();
     </script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
 </head>

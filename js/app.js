@@ -488,9 +488,7 @@ function loadState() {
 // THEME TOGGLE
 // ============================================================
 function getTheme() {
-    var saved = localStorage.getItem('dietTheme');
-    if (saved) return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return localStorage.getItem('dietTheme') || 'dark';
 }
 
 function applyTheme(theme) {
