@@ -19,7 +19,7 @@ var breakfastOptions = [
 ];
 
 var lunchCarbs = [
-    {name:'Arroz blanco',base:130,tag:'seco',n:[130,2.7,28,0.3]},{name:'Patata boniato',base:590,altName:'Precongelada',altBase:370,tag:'crudo',n:[86,1.6,20,0.1]},
+    {name:'Arroz blanco',base:130,tag:'seco',n:[350,7,78,0.6]},{name:'Patata boniato',base:590,altName:'Precongelada',altBase:370,tag:'crudo',n:[86,1.6,20,0.1]},
     {name:'Tortitas de arroz',base:130,n:[385,7,83,3]},{name:'Pasta',base:130,tag:'seco',n:[360,13,72,1.5]},{name:'Pan',base:180,n:[265,9,49,3.2]},
     {name:'Quinoa',base:130,tag:'seco',n:[368,14,64,6]},{name:'Cus-cus',base:130,tag:'seco',n:[376,12.8,77,0.6]},{name:'Gnocchis de patata',base:260,n:[165,4,34,1]},
     {name:'Legumbres cocidas',base:450,tag:'cocido',n:[115,8,18,0.8]}
@@ -30,7 +30,7 @@ var lunchProteins = [
     {name:'Lomo adobado',base:200,n:[150,20,1,7]},{name:'Ternera',base:160,n:[155,22,0,7]}
 ];
 var dinnerCarbs = [
-    {name:'Arroz blanco',base:100,tag:'seco',n:[130,2.7,28,0.3]},{name:'Patata boniato',base:450,altName:'Precongelada',altBase:300,tag:'crudo',n:[86,1.6,20,0.1]},
+    {name:'Arroz blanco',base:100,tag:'seco',n:[350,7,78,0.6]},{name:'Patata boniato',base:450,altName:'Precongelada',altBase:300,tag:'crudo',n:[86,1.6,20,0.1]},
     {name:'Tortitas de arroz',base:100,n:[385,7,83,3]},{name:'Pasta',base:100,tag:'seco',n:[360,13,72,1.5]},{name:'Pan',base:140,n:[265,9,49,3.2]},
     {name:'Quinoa',base:100,tag:'seco',n:[368,14,64,6]},{name:'Cus-cus',base:100,tag:'seco',n:[376,12.8,77,0.6]},{name:'Gnocchis de patata',base:200,n:[165,4,34,1]},
     {name:'Legumbres cocidas',base:350,tag:'cocido',n:[115,8,18,0.8]}
@@ -97,7 +97,7 @@ function getExportFileName(prefix) {
 // ============================================================
 
 // Reference kcal per slot (averages at base amounts) for unselected slots
-var REF_SLOT_KCAL = { breakfast:455, lunchCarb:448, lunchProtein:227, dinnerCarb:346, dinnerProtein:252 };
+var REF_SLOT_KCAL = { breakfast:455, lunchCarb:480, lunchProtein:227, dinnerCarb:370, dinnerProtein:252 };
 // Extras: verduras + aceite scale with ratio; fruta is fixed (1 piece per meal)
 var EXTRAS_SCALED_BASE = extrasNutr.verduras[0]*200/100 + extrasNutr.aceite[0]*EXTRAS_OIL_ML/100; // ~95
 var EXTRAS_FIXED_KCAL = extrasNutr.fruta[0]; // 80 per meal, not scaled
