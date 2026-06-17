@@ -1427,6 +1427,17 @@ body {
     margin-bottom: 1px;
 }
 
+.supp-note {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    padding: 10px 14px;
+    margin-top: 8px;
+    background: rgba(240, 184, 64, 0.06);
+    border-radius: var(--radius-xs);
+    border: 1px dashed var(--border);
+    line-height: 1.45;
+}
+
 /* ========== DIET SUMMARY ========== */
 .diet-summary-card {
     background: var(--card-bg);

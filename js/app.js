@@ -45,11 +45,11 @@ var extrasNutr = { verduras:[25,2,4,0.3], aceite:[900,0,0,100], fruta:[80,0.5,20
 var EXTRAS_OIL_ML = 5; // 5ml aceite oliva por comida (según entrenador)
 
 var supplements = [
-    {icon:'💪',title:'Creatina',desc:'8g todos los días',tip:'8g/día crónicos para mantener saturación intramuscular. Mejora resíntesis de ATP y fuerza. No es necesaria fase de carga.'},
-    {icon:'🐟',title:'Omega 3',desc:'2 pastillas/día (1 desayuno + 1 comida)',tip:'Dosis de 2-3g/día EPA+DHA atenúan DOMS y reducen inflamación (ISSN 2024).'},
-    {icon:'🧲',title:'Magnesio',desc:'2 pastillas antes de dormir (300mg)',tip:'300mg/día (2×150mg cáps. ESN). Cofactor del ATP, mejora calidad del sueño profundo y reduce lactato.'},
-    {icon:'⚡',title:'Zinc',desc:'2 pastillas antes de dormir (30mg)',tip:'30mg/día (2×15mg cáps. ESN). Apoyo inmunitario, recuperación muscular y mantenimiento hormonal.'},
-    {icon:'😴',title:'Melatonina',desc:'Opcional, para favorecer el descanso',tip:'Mejora sprint anaeróbico al día siguiente, acelera recuperación y reduce marcadores de daño muscular.'}
+    {icon:'💪',title:'Creatina',desc:'5g todos los días',tip:'La creatina monohidrato (3-5g/día) es el suplemento con más evidencia para mejorar fuerza y masa muscular (Kreider et al., ISSN 2017). Solo tiene sentido si entrenas fuerza.',requiresTraining:true},
+    {icon:'🐟',title:'Omega 3',desc:'2 pastillas/día (1 desayuno + 1 comida)',tip:'2-3g/día EPA+DHA. Beneficios cardiovasculares, antiinflamatorios y para la salud cognitiva en toda la población (Philpott et al., 2019; AHA 2019).'},
+    {icon:'🧲',title:'Magnesio',desc:'2 pastillas antes de dormir (300mg)',tip:'El 50% de la población no alcanza la ingesta diaria recomendada. 300mg/día mejora calidad del sueño y función muscular (DiNicolantonio et al., 2018).'},
+    {icon:'⚡',title:'Zinc',desc:'2 pastillas antes de dormir (30mg)',tip:'Apoya el sistema inmune y la recuperación. Deficiencia común en deportistas y en dietas restrictivas (Prasad, 2013). 30mg/día está dentro del rango seguro (<40mg UL).'},
+    {icon:'😴',title:'Melatonina',desc:'Opcional, para favorecer el descanso',tip:'0.5-3mg antes de dormir. Útil si tienes problemas para conciliar el sueño. La evidencia muestra que mejora la latencia del sueño (Ferracioli-Oda et al., 2013).'}
 ];
 
 var goalLabels = { cut:'Perder grasa', recomp:'Recomposición corporal', maintain:'Mantener peso', bulk:'Ganar masa muscular' };
@@ -437,10 +437,18 @@ function renderMealTable(cid, cd, pd, cs, ps, mt) {
 }
 
 function renderSupplements() {
-    document.getElementById('supplements-list').innerHTML = supplements.map(function(s) {
+    var trains = document.getElementById('calc-trains') && document.getElementById('calc-trains').value === 'yes';
+    var filtered = supplements.filter(function(s) {
+        return !s.requiresTraining || trains;
+    });
+    var html = filtered.map(function(s) {
         var tipHtml = s.tip ? '<button class="supp-tooltip-btn" data-supptip="'+s.title+'">?</button>' : '';
         return '<div class="supplement-card"><span class="supplement-icon">'+s.icon+'</span><div class="supplement-text"><strong>'+s.title+'</strong>'+s.desc+tipHtml+'</div></div>';
     }).join('');
+    if (!trains) {
+        html += '<div class="supp-note">💡 <em>La creatina solo se recomienda si entrenas fuerza. Omega 3, magnesio y zinc tienen beneficios para la salud general independientemente del ejercicio.</em></div>';
+    }
+    document.getElementById('supplements-list').innerHTML = html;
 }
 
 function updateExtras() {
@@ -2434,7 +2442,10 @@ function buildWhatsAppText() {
 
     text += '━━━━━━━━━━━━━━━━━━━━\n\n';
     text += '💊 *SUPLEMENTOS*\n';
-    text += '  • 💪 Creatina: 8g/día\n';
+    var waTrains = document.getElementById('calc-trains') && document.getElementById('calc-trains').value === 'yes';
+    if (waTrains) {
+        text += '  • 💪 Creatina: 5g/día\n';
+    }
     text += '  • 🐟 Omega 3: 2 pastillas/día\n';
     text += '  • 🧲 Magnesio: 300mg antes de dormir\n';
     text += '  • ⚡ Zinc: 30mg antes de dormir\n';
@@ -2442,7 +2453,7 @@ function buildWhatsAppText() {
     // Recommendations summary
     text += '\n━━━━━━━━━━━━━━━━━━━━\n\n';
     text += '💡 *RECOMENDACIONES*\n';
-    var trains = document.getElementById('calc-trains') && document.getElementById('calc-trains').value === 'yes';
+    var trains = waTrains;
     var stepsEl = document.getElementById('calc-steps');
     var stepsUnknown = document.getElementById('calc-steps-unknown');
     var lowSteps = (!stepsEl || !stepsEl.value || parseInt(stepsEl.value) < 8000) || (stepsUnknown && stepsUnknown.checked);
