@@ -786,11 +786,15 @@ body {
 .meal-tables {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0;
+    gap: 12px;
+    padding: 12px;
 }
 
 .meal-table-wrapper {
-    border-right: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    background: var(--bg);
 }
 
 .meal-table-wrapper:last-child {
@@ -798,12 +802,13 @@ body {
 }
 
 .meal-table-header {
-    padding: 9px 16px;
+    padding: 10px 16px;
     font-size: 0.72rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     text-align: center;
+    border-bottom: 1px solid var(--border);
 }
 
 .meal-table-header.carbs {
@@ -1830,7 +1835,6 @@ body {
 
     .meal-table-wrapper {
         border-right: none;
-        border-bottom: 1px solid var(--border);
     }
 
     .meal-table-wrapper:last-child {
