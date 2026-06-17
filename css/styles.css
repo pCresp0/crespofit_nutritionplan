@@ -3258,6 +3258,17 @@ body {
     color: var(--text-muted);
 }
 
+.ob-explanation a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 2px;
+}
+
+.ob-explanation a:hover {
+    text-decoration-style: solid;
+}
+
 /* Onboarding tips */
 .ob-tips {
     margin-top: 14px;
