@@ -107,6 +107,20 @@ var supplements = [
     {icon:'😴',title:'Melatonina',desc:'Opcional, para favorecer el descanso',tip:'0.5-3mg antes de dormir. Útil si tienes problemas para conciliar el sueño. La evidencia muestra que mejora la latencia del sueño (Ferracioli-Oda et al., 2013).'}
 ];
 
+// Protein category mapping: index → category (same order as lunchProteins/dinnerProteins)
+// 0:Pollo, 1:Pescado blanco, 2:Salmón, 3:Pavo, 4:Hamburguesa pollo, 5:Huevo, 6:Lomo, 7:Ternera
+var proteinCategory = ['poultry','fish','fish','poultry','poultry','egg','redmeat','redmeat'];
+
+function getProteinPrefs() {
+    var prefs = {};
+    var checks = document.querySelectorAll('#pref-protein input[type="checkbox"]');
+    checks.forEach(function(cb) { prefs[cb.value] = cb.checked; });
+    // If none selected, treat all as selected
+    var anyChecked = Object.keys(prefs).some(function(k) { return prefs[k]; });
+    if (!anyChecked) { Object.keys(prefs).forEach(function(k) { prefs[k] = true; }); }
+    return prefs;
+}
+
 var goalLabels = { cut:'Perder grasa', recomp:'Recomposición corporal', maintain:'Mantener peso', bulk:'Ganar masa muscular' };
 var goalIcons = { cut:'🔥', recomp:'🔄', maintain:'⚖️', bulk:'💪' };
 
@@ -1689,6 +1703,7 @@ function generateWeeklyPlan() {
     var usedLunchProt = [];
     var usedDinnerCarb = [];
     var usedDinnerProt = [];
+    var prefs = getProteinPrefs();
 
     function pickRandom(arr, used, maxRepeat) {
         // Try to avoid recent picks
@@ -1711,6 +1726,30 @@ function generateWeeklyPlan() {
         return pick;
     }
 
+    function pickProtein(arr, used, maxRepeat) {
+        // Build available list (not over max repeat)
+        var available = [];
+        for (var i = 0; i < arr.length; i++) {
+            var count = 0;
+            for (var j = 0; j < used.length; j++) { if (used[j] === i) count++; }
+            if (count < (maxRepeat || 1)) available.push(i);
+        }
+        if (available.length === 0) {
+            available = [];
+            for (var i = 0; i < arr.length; i++) {
+                if (used.length === 0 || i !== used[used.length - 1]) available.push(i);
+            }
+            if (available.length === 0) available = [0];
+        }
+        // Filter by preferences: keep only preferred categories
+        var preferred = available.filter(function(i) { return prefs[proteinCategory[i]]; });
+        // Use preferred if any available, otherwise fall back to all available
+        var pool = preferred.length > 0 ? preferred : available;
+        var pick = pool[Math.floor(Math.random() * pool.length)];
+        used.push(pick);
+        return pick;
+    }
+
     // Max repeats: allow each item at most ceil(7/arrayLength) times
     var bMax = Math.ceil(7 / breakfastOptions.length);
     var lcMax = Math.ceil(7 / lunchCarbs.length);
@@ -1722,7 +1761,7 @@ function generateWeeklyPlan() {
         var sel = {
             breakfast: pickRandom(breakfastOptions, usedBreakfast, bMax),
             lunchCarb: pickRandom(lunchCarbs, usedLunchCarb, lcMax),
-            lunchProtein: pickRandom(lunchProteins, usedLunchProt, lpMax),
+            lunchProtein: pickProtein(lunchProteins, usedLunchProt, lpMax),
             dinnerCarb: null,
             dinnerProtein: null
         };
@@ -1753,6 +1792,9 @@ function generateWeeklyPlan() {
         if (dinnerProtCandidates.length === 0) {
             for (var pi = 0; pi < dinnerProteins.length; pi++) dinnerProtCandidates.push(pi);
         }
+        // Filter by protein preferences
+        var prefDP = dinnerProtCandidates.filter(function(pi) { return prefs[proteinCategory[pi]]; });
+        if (prefDP.length > 0) dinnerProtCandidates = prefDP;
         // Prefer less-used candidates
         var bestDP = dinnerProtCandidates.filter(function(pi) {
             var count = 0;
@@ -2295,6 +2337,12 @@ function saveAllState() {
             var el = document.getElementById(id); if (el) calcData[id] = el.value;
         });
         calcData['calc-steps-unknown'] = document.getElementById('calc-steps-unknown').checked ? 'true' : 'false';
+        // Save protein preferences
+        var protPrefs = {};
+        document.querySelectorAll('#pref-protein input[type="checkbox"]').forEach(function(cb) {
+            protPrefs[cb.value] = cb.checked;
+        });
+        calcData['pref-protein'] = protPrefs;
         localStorage.setItem('dietAppV2', JSON.stringify({
             kcal: currentKcal,
             recommended: recommendedKcal,
@@ -2339,6 +2387,13 @@ function loadState() {
                 document.getElementById('calc-steps-unknown').checked = true;
                 document.getElementById('calc-steps').disabled = true;
                 document.getElementById('steps-hint').textContent = 'No pasa nada, se calculará sin pasos.';
+            }
+            // Restore protein preferences
+            if (data.calc['pref-protein']) {
+                var pp = data.calc['pref-protein'];
+                document.querySelectorAll('#pref-protein input[type="checkbox"]').forEach(function(cb) {
+                    if (pp.hasOwnProperty(cb.value)) cb.checked = pp[cb.value];
+                });
             }
         }
         return true;
