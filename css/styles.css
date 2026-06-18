@@ -450,7 +450,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 8px;
     padding: 10px 6px;
     border: none;
     background: transparent;
@@ -3104,7 +3104,7 @@ body {
     .main-tab {
         padding: 8px 4px;
         font-size: 0.78rem;
-        gap: 3px;
+        gap: 6px;
     }
 
     .tab-icon {

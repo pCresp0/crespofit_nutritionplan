@@ -3577,58 +3577,38 @@ var trainerTabsObserver = null;
 function setupTrainerTabsVisibility() {
     if (trainerTabsObserver) trainerTabsObserver.disconnect();
     var extrasSection = document.querySelector('.trainer-extras-section');
-    var suppsSection = document.querySelector('.trainer-supplements-section');
-    var nutritionSection = document.getElementById('trainer-nutrition');
     var tabsNav = document.querySelector('.trainer-tabs-nav');
-    if (!tabsNav || (!extrasSection && !suppsSection && !nutritionSection)) return;
+    if (!tabsNav || !extrasSection) return;
+    // Only trigger when the section reaches the top 15% of viewport (near the sticky tabs)
     trainerTabsObserver = new IntersectionObserver(function(entries) {
-        var targets = [];
-        if (extrasSection) targets.push(extrasSection);
-        if (suppsSection) targets.push(suppsSection);
-        if (nutritionSection) targets.push(nutritionSection);
-        var shouldHide = targets.some(function(t) {
-            var rect = t.getBoundingClientRect();
-            return rect.top < window.innerHeight && rect.bottom > 0;
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                tabsNav.classList.add('tabs-hidden');
+            } else {
+                tabsNav.classList.remove('tabs-hidden');
+            }
         });
-        if (shouldHide) {
-            tabsNav.classList.add('tabs-hidden');
-        } else {
-            tabsNav.classList.remove('tabs-hidden');
-        }
-    }, { threshold: 0 });
-    if (extrasSection) trainerTabsObserver.observe(extrasSection);
-    if (suppsSection) trainerTabsObserver.observe(suppsSection);
-    if (nutritionSection) trainerTabsObserver.observe(nutritionSection);
+    }, { threshold: 0, rootMargin: '0px 0px -85% 0px' });
+    trainerTabsObserver.observe(extrasSection);
 }
 
 var publicTabsObserver = null;
 function setupPublicTabsVisibility() {
     if (publicTabsObserver) publicTabsObserver.disconnect();
     var nutritionSection = document.getElementById('nutrition-summary');
-    var supplementsSection = document.querySelector('.supplements-section');
     var tabsNav = document.querySelector('.main-tabs-nav:not(.trainer-tabs-nav)');
-    if (!tabsNav || (!nutritionSection && !supplementsSection)) return;
+    if (!tabsNav || !nutritionSection) return;
+    // Only trigger when the section reaches the top 15% of viewport (near the sticky tabs)
     publicTabsObserver = new IntersectionObserver(function(entries) {
-        var anyVisible = false;
         entries.forEach(function(entry) {
-            if (entry.isIntersecting) anyVisible = true;
+            if (entry.isIntersecting) {
+                tabsNav.classList.add('tabs-hidden');
+            } else {
+                tabsNav.classList.remove('tabs-hidden');
+            }
         });
-        // Check all observed targets
-        var targets = [];
-        if (nutritionSection) targets.push(nutritionSection);
-        if (supplementsSection) targets.push(supplementsSection);
-        var shouldHide = targets.some(function(t) {
-            var rect = t.getBoundingClientRect();
-            return rect.top < window.innerHeight && rect.bottom > 0;
-        });
-        if (shouldHide) {
-            tabsNav.classList.add('tabs-hidden');
-        } else {
-            tabsNav.classList.remove('tabs-hidden');
-        }
-    }, { threshold: 0 });
-    if (nutritionSection) publicTabsObserver.observe(nutritionSection);
-    if (supplementsSection) publicTabsObserver.observe(supplementsSection);
+    }, { threshold: 0, rootMargin: '0px 0px -85% 0px' });
+    publicTabsObserver.observe(nutritionSection);
 }
 
 function renderTrainerValidator() {
