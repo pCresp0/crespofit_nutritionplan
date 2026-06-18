@@ -1,6 +1,6 @@
 # 🍽️ Mi Plan Nutricional
 
-**Planificador de dieta personal** con cantidades auto-ajustadas, calculadora de gasto calórico y suplementación basada en evidencia científica.
+Herramienta web de planificación nutricional personalizada. Calcula tu gasto calórico, elige tus comidas y obtén un plan con cantidades exactas ajustadas a tu objetivo — todo basado en evidencia científica.
 
 ## 👉 [Abrir la app](https://pcresp0.github.io/dieta_gym_PCB/)
 
@@ -10,143 +10,120 @@
 
 ---
 
-## Funcionalidades
+## Por qué existe este proyecto
 
-### 🎚️ Selector de calorías
-- Rango de **1500 a 3500 kcal** en pasos de 100
-- Slider visual + botones +/−
-- Todas las cantidades se recalculan al instante
+Nació de un plan nutricional real diseñado por un entrenador personal certificado. El problema era que ese plan venía en un PDF estático con cantidades fijas a 2500 kcal — si querías ajustar las calorías, tenías que recalcular todo a mano.
 
-### 🍳 Planificación de comidas
-- **6 opciones de desayuno** con tarjetas seleccionables (yogur/QFB, tostadas, cereales, tortitas, yogures proteicos, bocadillo)
-- **Comida y cena** con tablas de hidratos y proteínas (elige 1 de cada)
-- **Extras obligatorios** por comida: ~200g verduras + 15ml AOVE + 1 fruta
-- Gramajes escalados automáticamente según las kcal elegidas
+Esta app automatiza ese proceso: introduces tus datos, eliges tu objetivo y tus comidas favoritas, y las cantidades se ajustan automáticamente con un sistema de escalado inteligente que prioriza la proteína según tu objetivo (perder grasa, ganar músculo, etc.).
 
-### 📊 Resumen nutricional
-- Calorías totales con desglose base (extras obligatorios) vs. elegido
-- Barras de macros a **dos colores**: segmento base + segmento selección
-- Porcentajes de proteínas, carbohidratos y grasas
-- Leyenda visual para diferenciar cada componente
+Todo está fundamentado en ciencia. Las fórmulas, los objetivos proteicos, las dosis de suplementos y las recomendaciones están respaldados por publicaciones revisadas por pares (ISSN, meta-análisis, ensayos clínicos). El documento completo de fundamentos está en [Fundamentos_Nutricionales.md](Fundamentos_Nutricionales.md).
 
-### 🧮 Calculadora TDEE
-- Fórmula de **Mifflin-St Jeor** (TMB)
-- Factor de actividad diaria (sedentario → muy activo)
-- Configuración de entreno: tipo, días/semana, duración, intensidad
-- Barra visual de **déficit / mantenimiento / superávit**
-- Recomendación calórica según objetivo (perder grasa, mantener, ganar masa)
-- Tooltips informativos con explicación de cada concepto
+---
 
-### 💊 Suplementación
-- Dosis exactas basadas en productos específicos (ESN)
-- **Creatina** monohidrato: 5g/día
-- **Omega-3** (ESN): 3 cáps/día → 1200mg EPA + 900mg DHA
-- **Magnesio** (ESN Complex): 3 cáps/día (complejo 4-en-1)
-- **Zinc** (ESN): 1 cáp/día → 25mg
-- **Melatonina**: 6-10mg pre-sueño
-- Tooltips con evidencia científica (ISSN, meta-análisis)
+## Qué hace
 
-### 🏋️ Modo Entrenador (oculto)
-- Acceso secreto: mantener pulsado "Mi Plan Nutricional" 1.2s
-- Muestra el plan fijo a 2500 kcal con gramajes exactos del entrenador
-- Invisible para usuarios comunes
+### Onboarding personalizado
 
-### ⚙️ Onboarding personalizado
-- Wizard de configuración inicial en 4 pasos
-- Calcula automáticamente las kcal recomendadas
-- Permite elegir objetivo: perder grasa / mantener / ganar masa
+Un wizard de 6 pasos que recoge tus datos (edad, peso, altura, composición corporal, hábitos, nivel de actividad) y calcula automáticamente tus calorías recomendadas según tu objetivo. Incluye estimación de % de grasa corporal ajustada por masa muscular y experiencia de entrenamiento, recomendación de objetivo basada en tu perfil, y tips personalizados.
 
-### 🎨 Otros
-- **Tema claro/oscuro** con toggle
-- **Responsive**: optimizado para móvil y escritorio
-- **Persistencia**: todo se guarda en localStorage
-- **Barra de validación** que indica qué falta por seleccionar
-- **Avisos calóricos** cuando te alejas mucho de lo recomendado
-- **Contador de visitas** en el footer
+### Planificación de comidas
+
+7 opciones de desayuno, 9 fuentes de hidratos y 8 fuentes de proteínas para comida y cena. Cada comida incluye extras obligatorios (verduras, aceite de oliva, fruta). Las cantidades se recalculan en tiempo real con un sistema de doble ratio que prioriza alcanzar el objetivo proteico sin pasarse de calorías.
+
+### Resumen nutricional
+
+Desglose de macros (proteínas, carbos, grasas) en gramos, porcentaje calórico y g/kg de peso corporal. Indicador de lo que falta por seleccionar y tooltips con recomendaciones.
+
+### Dieta aleatoria y plan semanal
+
+Generación de menú completo al instante o plan de 7 días variados con variedad de alimentos y evitando repeticiones.
+
+### Exportación
+
+Exportar como imagen PNG o PDF. Compartir por WhatsApp.
+
+### Suplementación basada en evidencia
+
+Creatina, omega 3, magnesio, zinc y melatonina con dosis específicas y tooltips que explican la evidencia detrás de cada uno (ISSN Position Stands, meta-análisis).
+
+### Otros
+
+Tema claro/oscuro, diseño responsive, persistencia en localStorage, modo entrenador con el plan original a 2500 kcal, disclaimer con referencias científicas y avisos contextuales.
 
 ---
 
 ## Arquitectura
 
-Single Page Application estática — **sin backend, sin frameworks, sin dependencias**.
+Single Page Application estática — sin backend, sin frameworks, sin dependencias externas. Todo se ejecuta en el navegador.
 
 ```
-dieta_gym_PCB/
-├── index.html              ← Estructura HTML (onboarding + app + modales)
+crespofit_nutritionplan/
+├── index.html                    ← Estructura: onboarding, app, modales
 ├── css/
-│   └── styles.css          ← ~2500 líneas: variables CSS, grid, flexbox, responsive
+│   └── styles.css                ← Estilos: variables CSS, temas claro/oscuro, responsive
 ├── js/
-│   └── app.js              ← ~800 líneas: datos, lógica, renderizado, persistencia
+│   └── app.js                    ← Lógica: datos nutricionales, escalado, TDEE, renderizado, exportación
 ├── img/
-│   ├── og-image.png        ← Open Graph para compartir
-│   ├── favicon.png         ← Favicon 192x192
-│   └── apple-touch-icon.png
+│   ├── og-image.png              ← Open Graph para compartir
+│   ├── cabecera.png              ← Fondo del header
+│   ├── favicon.png               ← Favicon 192×192
+│   ├── apple-touch-icon.png      ← Icono iOS
+│   └── whatsapp-svgrepo-com.svg  ← Icono de compartir
 ├── Fundamentos_Nutricionales.md  ← Documento científico de referencia
 └── README.md
 ```
 
-### Stack
-
 | Tecnología | Uso |
 |---|---|
 | HTML5 | Estructura semántica, meta tags OG, PWA-ready |
-| CSS3 | Variables, Grid, Flexbox, `@media`, temas con `data-theme` |
-| JavaScript (ES5 compatible) | Lógica, datos, renderizado dinámico — 0 dependencias |
-| localStorage | Persistencia de estado (selecciones, calculadora, tema) |
-| GitHub Pages | Hosting estático gratuito |
+| CSS3 | Variables, Grid, Flexbox, temas con `data-theme`, responsive |
+| JavaScript (ES5) | Lógica completa, renderizado dinámico — 0 dependencias |
+| localStorage | Persistencia de selecciones, calculadora y tema |
+| GitHub Pages | Hosting estático |
 
-### Cómo funciona
+### Decisiones de diseño
 
-**Escalado de cantidades:**
-```
-ratio = kcal_seleccionadas / 2500
-cantidad = redondear_a_5(cantidad_base × ratio)
-```
-
-**Cálculo TDEE (Mifflin-St Jeor):**
-```
-TMB♂ = (10 × peso) + (6.25 × altura) − (5 × edad) + 5
-TMB♀ = (10 × peso) + (6.25 × altura) − (5 × edad) − 161
-NEAT  = TMB × factor_actividad
-TDEE  = NEAT + (kcal_entreno × días/semana ÷ 7)
-```
-
-**Renderizado:** Todo se genera dinámicamente desde arrays de datos en JS. Cada cambio dispara un re-render selectivo de las secciones afectadas.
-
-**Persistencia:** `localStorage` con claves `dietAppV2` (estado app), `dietAppCalc` (calculadora), `dietTheme` (tema).
+- **Sin frameworks:** la app es deliberadamente vanilla JS/CSS/HTML. No necesita build, no tiene dependencias que mantener, y se puede desplegar abriendo el HTML directamente.
+- **Escalado con prioridad proteica:** en lugar de un ratio uniforme, el sistema resuelve un sistema de ecuaciones para que las fuentes de proteína escalen independientemente de los hidratos, priorizando alcanzar el objetivo proteico del usuario según su peso y objetivo.
+- **Cálculo TDEE con Mifflin-St Jeor:** la fórmula más precisa para población general según la ADA. Se complementa con estimación de gasto por pasos diarios y por sesiones de entrenamiento (10 tipos × 3 intensidades).
+- **Estimación de grasa corporal:** fórmula de Deurenberg (1991) como base, ajustada por masa muscular autopercibida y experiencia de entrenamiento, ya que el IMC sobreestima el % graso en personas musculadas (Esco et al., 2015).
+- **Persistencia en localStorage:** tres claves separadas (`dietAppV2` para estado, `dietAppCalc` para calculadora, `dietTheme` para tema) para que cada parte sea independiente.
 
 ---
 
 ## Base científica
 
-Las recomendaciones de suplementación y los cálculos se basan en:
+Las recomendaciones se fundamentan en publicaciones revisadas por pares:
 
-- **ISSN** (International Society of Sports Nutrition) — Position Stands
-- **Mifflin-St Jeor** (1990) — Fórmula de TMB más precisa para población general
-- **Jäger et al. 2017** — Creatina: 3-5g/día crónicos
-- **ISSN 2024** — Omega-3: 2-3g EPA+DHA para reducir DOMS
-- **Dominguez et al. 2025** — Magnesio orgánico: cofactor ATP, calidad sueño
+- **ISSN Position Stands** — Referencia en nutrición deportiva
+- **Mifflin-St Jeor (1990)** — Fórmula de TMB más precisa para población general
+- **Helms et al. (2014)** — Proteína óptima en déficit calórico
+- **Jäger et al. (2017)** — Creatina y proteína en ejercicio
+- **Barakat et al. (2020)** — Recomposición corporal simultánea
+- **Deurenberg et al. (1991)** — Estimación de % grasa desde IMC
+- **Esco et al. (2015)** — Discrepancia BMI-BF% en personas entrenadas
+- **Paluch et al. (2022)** — Beneficios de pasos diarios sobre mortalidad
+- **Trexler et al. (2014)** — Adaptación metabólica al déficit calórico
+- **Dominguez et al. (2025)** — Magnesio: cofactor ATP, calidad del sueño
 
-Documento completo: [`Fundamentos_Nutricionales.md`](Fundamentos_Nutricionales.md)
+Documento completo con todas las referencias: [Fundamentos_Nutricionales.md](Fundamentos_Nutricionales.md)
 
 ---
 
 ## Desarrollo local
 
 ```bash
-git clone https://github.com/pCresp0/dieta_gym_PCB.git
-cd dieta_gym_PCB
-python3 -m http.server 8080
-open http://localhost:8080
+git clone https://github.com/pCresp0/crespofit_nutritionplan.git
+cd crespofit_nutritionplan
 ```
 
-Sin `npm install`, sin build, sin dependencias. También puedes abrir `index.html` directamente.
+Abre `index.html` en el navegador. No necesita instalación, build ni servidor.
 
 ---
 
 ## Autor
 
-**Pablo Crespo** · [LinkedIn](https://www.linkedin.com/in/pablocrespobellido/) · [GitHub](https://github.com/pCresp0)
+**Pablo Crespo Bellido** · [LinkedIn](https://www.linkedin.com/in/pablocrespobellido/) · [GitHub](https://github.com/pCresp0)
 
 ---
 

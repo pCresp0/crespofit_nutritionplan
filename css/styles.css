@@ -3299,9 +3299,16 @@ body {
     font-size: 1.05rem;
     font-weight: 700;
     color: var(--primary-dark);
-    margin-bottom: 16px;
+    margin-bottom: 6px;
     padding-bottom: 10px;
     border-bottom: 2px solid var(--border);
+}
+
+.step-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    line-height: 1.4;
 }
 
 .onboarding-next, .onboarding-back {

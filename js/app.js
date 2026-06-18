@@ -2,6 +2,12 @@
 // DIET DATA - Base amounts for 2500 kcal
 // ============================================================
 
+// HTML entity escaping to prevent XSS when inserting user input into innerHTML
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 // App modal helpers (replace browser alert/confirm)
 function showAppAlert(message, callback) {
     var overlay = document.getElementById('app-modal-overlay');
@@ -515,7 +521,7 @@ function renderInfoBanner() {
     var absDiff = Math.abs(diff);
     var pctDiff = Math.abs(Math.round(diff / userTdee * 100));
 
-    var namePrefix = userName ? userName + ', c' : 'C';
+    var namePrefix = userName ? escapeHtml(userName) + ', c' : 'C';
     var goalDescs = {
         cut: namePrefix + 'omes por debajo de lo que quemas para <strong>perder grasa</strong> manteniendo músculo.',
         recomp: namePrefix + 'omes ligeramente por debajo de lo que quemas para <strong>ganar músculo y perder grasa</strong> a la vez.',
@@ -859,6 +865,24 @@ function estimateBodyFatFromBMI() {
     // Deurenberg formula (age optional for estimate)
     var ageVal = (age && age >= 18) ? age : 25;
     var estimatedBf = (1.20 * bmi) + (0.23 * ageVal) - (10.8 * sexFactor) - 5.4;
+
+    // Adjust for muscularity and training experience
+    // BMI-based formulas overestimate BF% in muscular individuals by 3-5%
+    // (Esco et al., 2015; Jackson et al., 2002; Piers et al., 2000)
+    var muscEl = document.getElementById('calc-muscularity');
+    var muscVal = muscEl ? muscEl.value : '';
+    var muscAdj = 0;
+    if (muscVal === 'low') muscAdj = 1.5;
+    else if (muscVal === 'high') muscAdj = -3;
+    else if (muscVal === 'very-high') muscAdj = -5;
+
+    var expEl = document.getElementById('calc-experience');
+    var expVal = expEl ? expEl.value : '';
+    var expAdj = 0;
+    if (expVal === 'intermediate') expAdj = -1;
+    else if (expVal === 'advanced') expAdj = -2;
+
+    estimatedBf += muscAdj + expAdj;
     estimatedBf = Math.max(5, Math.min(50, estimatedBf));
 
     // Find closest silhouette
@@ -881,14 +905,19 @@ function estimateBodyFatFromBMI() {
 
     var hint = document.getElementById('silhouette-hint');
     if (hint) {
-        hint.innerHTML = 'Estimación según tus datos (IMC ' + bmi.toFixed(1) + '). <strong>Puedes cambiarlo</strong> si no te representa.';
+        var factors = ['IMC ' + bmi.toFixed(1)];
+        if (muscVal === 'high' || muscVal === 'very-high') factors.push('masa muscular');
+        if (expVal === 'intermediate' || expVal === 'advanced') factors.push('experiencia');
+        hint.innerHTML = 'Estimación según tus datos (' + factors.join(', ') + '). <strong>Puedes cambiarlo</strong> si no te representa.';
     }
 }
 
 document.getElementById('calc-height').addEventListener('input', estimateBodyFatFromBMI);
 document.getElementById('calc-weight').addEventListener('input', estimateBodyFatFromBMI);
+document.getElementById('calc-muscularity').addEventListener('change', estimateBodyFatFromBMI);
+document.getElementById('calc-experience').addEventListener('change', estimateBodyFatFromBMI);
 
-function validateStep2() {
+function validateStep4() {
     return document.getElementById('calc-activity').value !== '';
 }
 
@@ -1013,13 +1042,19 @@ document.getElementById('next-1').addEventListener('click', function() {
 });
 
 document.getElementById('back-2').addEventListener('click', function() { showStep(1); });
-document.getElementById('next-2').addEventListener('click', function() {
-    if (!validateStep2()) { showAppAlert('Selecciona tu nivel de actividad diaria.'); return; }
-    showGoalRecommendation();
-    showStep(3);
-});
+document.getElementById('next-2').addEventListener('click', function() { showStep(3); });
 
 document.getElementById('back-3').addEventListener('click', function() { showStep(2); });
+document.getElementById('next-3').addEventListener('click', function() { showStep(4); });
+
+document.getElementById('back-4').addEventListener('click', function() { showStep(3); });
+document.getElementById('next-4').addEventListener('click', function() {
+    if (!validateStep4()) { showAppAlert('Selecciona tu nivel de actividad diaria.'); return; }
+    showGoalRecommendation();
+    showStep(5);
+});
+
+document.getElementById('back-5').addEventListener('click', function() { showStep(4); });
 
 // Goal selection
 document.getElementById('goal-cards').addEventListener('click', function(e) {
@@ -1028,7 +1063,7 @@ document.getElementById('goal-cards').addEventListener('click', function(e) {
     document.querySelectorAll('.goal-card').forEach(function(c){c.classList.remove('selected');});
     card.classList.add('selected');
     userGoal = card.dataset.goal;
-    document.getElementById('next-3').classList.remove('disabled');
+    document.getElementById('next-5').classList.remove('disabled');
 });
 
 function getGoalMismatchWarning(recommended, chosen) {
@@ -1084,10 +1119,10 @@ function getGoalMismatchWarning(recommended, chosen) {
     return msg;
 }
 
-function proceedToStep4() {
+function proceedToStep6() {
     var result = calculateTDEE();
     if (!result) { showAppAlert('Error calculando TDEE.'); return false; }
-    var btn = document.getElementById('next-3');
+    var btn = document.getElementById('next-5');
     delete btn.dataset.confirmed;
     userTdee = result.tdee;
     recommendedKcal = getRecommendedKcal(result.tdee, userGoal);
@@ -1097,7 +1132,7 @@ function proceedToStep4() {
     return true;
 }
 
-document.getElementById('next-3').addEventListener('click', function() {
+document.getElementById('next-5').addEventListener('click', function() {
     if (!userGoal) return;
 
     // Check if user chose a different goal than recommended
@@ -1114,7 +1149,7 @@ document.getElementById('next-3').addEventListener('click', function() {
         }
     }
 
-    if (!proceedToStep4()) return;
+    if (!proceedToStep6()) return;
 
     var deficitAbs = userTdee - recommendedKcal;
     var surplusAbs = recommendedKcal - userTdee;
@@ -1126,7 +1161,7 @@ document.getElementById('next-3').addEventListener('click', function() {
             'Para <strong>perder grasa</strong> necesitas un <strong>déficit calórico</strong>: ingerir menos calorías de las que gastas. ' +
             'Te recomendamos un <strong>déficit moderado del 20%</strong> (~' + deficitAbs + ' kcal/día menos). ' +
             'La evidencia científica muestra que déficits del 15-25% son óptimos para perder grasa preservando masa muscular ' +
-            '<em>(<a href="https://pubmed.ncbi.nlm.nih.gov/24864135/" target="_blank" rel="noopener">Helms et al., 2014</a>; <a href="https://pubmed.ncbi.nlm.nih.gov/25028999/" target="_blank" rel="noopener">Trexler et al., 2014</a>)</em>. ' +
+            '<em>(<a href="https://pubmed.ncbi.nlm.nih.gov/24864135/" target="_blank" rel="noopener noreferrer">Helms et al., 2014</a>; <a href="https://pubmed.ncbi.nlm.nih.gov/25028999/" target="_blank" rel="noopener noreferrer">Trexler et al., 2014</a>)</em>. ' +
             'Déficits más agresivos aumentan la pérdida de músculo y reducen la adherencia.';
     } else if (userGoal === 'recomp') {
         document.getElementById('ob-goal-label').textContent = '🔄 Recomendado';
@@ -1135,7 +1170,7 @@ document.getElementById('next-3').addEventListener('click', function() {
             'La <strong>recomposición corporal</strong> busca ganar músculo y perder grasa a la vez. ' +
             'Se consigue con un <strong>déficit mínimo (~5%)</strong>, alta proteína (1.6-2.2g/kg) y entrenamiento de fuerza. ' +
             'Estudios demuestran que personas con experiencia intermedia pueden lograrlo con alta adherencia al entrenamiento ' +
-            '<em>(<a href="https://pubmed.ncbi.nlm.nih.gov/32217577/" target="_blank" rel="noopener">Barakat et al., 2020</a>)</em>. Es un proceso más lento que bulk+cut pero mejora la composición corporal sin fases extremas.';
+            '<em>(<a href="https://pubmed.ncbi.nlm.nih.gov/32217577/" target="_blank" rel="noopener noreferrer">Barakat et al., 2020</a>)</em>. Es un proceso más lento que bulk+cut pero mejora la composición corporal sin fases extremas.';
     } else if (userGoal === 'bulk') {
         document.getElementById('ob-goal-label').textContent = '💪 Recomendado';
         document.getElementById('ob-rec-sub').textContent = 'kcal/día · Superávit del ~15%';
@@ -1143,7 +1178,7 @@ document.getElementById('next-3').addEventListener('click', function() {
             'Para <strong>ganar masa muscular</strong> necesitas un <strong>superávit calórico</strong>: comer por encima de tu gasto. ' +
             'Te recomendamos un <strong>superávit moderado del 15%</strong> (~' + surplusAbs + ' kcal/día más). ' +
             'Un superávit controlado maximiza la síntesis proteica minimizando la ganancia de grasa ' +
-            '<em>(<a href="https://pubmed.ncbi.nlm.nih.gov/31182742/" target="_blank" rel="noopener">Slater et al., 2019</a>)</em>. Superávits excesivos no aceleran la ganancia muscular, solo acumulan más grasa.';
+            '<em>(<a href="https://pubmed.ncbi.nlm.nih.gov/31182742/" target="_blank" rel="noopener noreferrer">Slater et al., 2019</a>)</em>. Superávits excesivos no aceleran la ganancia muscular, solo acumulan más grasa.';
     } else {
         document.getElementById('ob-goal-label').textContent = '⚖️ Recomendado';
         document.getElementById('ob-rec-sub').textContent = 'kcal/día · Mantenimiento';
@@ -1189,7 +1224,7 @@ document.getElementById('next-3').addEventListener('click', function() {
             icon: '🚶',
             title: 'Camina más: la herramienta más infravalorada',
             text: 'Caminar es la forma más fácil y sostenible de aumentar tu gasto calórico diario (NEAT). ' +
-                  'Una meta-análisis de 15 estudios (<em><a href="https://pubmed.ncbi.nlm.nih.gov/35247352/" target="_blank" rel="noopener">Paluch et al., Lancet 2022</a></em>) demuestra que cada ' +
+                  'Una meta-análisis de 15 estudios (<em><a href="https://pubmed.ncbi.nlm.nih.gov/35247352/" target="_blank" rel="noopener noreferrer">Paluch et al., Lancet 2022</a></em>) demuestra que cada ' +
                   '<strong>2.000 pasos/día adicionales</strong> reducen la mortalidad un 8-11%. ' +
                   '<strong>10.000 pasos/día</strong> pueden suponer ~300-500 kcal extra sin estrés articular ni fatiga. ' +
                   'Intenta caminar al trabajo, usar escaleras o pasear 15-20 min después de comer (esto además mejora la glucosa postprandial).'
@@ -1203,7 +1238,7 @@ document.getElementById('next-3').addEventListener('click', function() {
             title: 'Proteína alta: clave en déficit',
             text: 'En déficit calórico, la proteína es tu mejor aliada para <strong>preservar masa muscular</strong>. ' +
                   'Se recomienda ingerir entre <strong>1.6-2.4g de proteína por kg</strong> de peso corporal al día ' +
-                  '<em>(<a href="https://pubmed.ncbi.nlm.nih.gov/28698222/" target="_blank" rel="noopener">Jäger et al., ISSN 2017</a>)</em>. Esta dieta ya está diseñada con alta proteína para proteger tu músculo.'
+                  '<em>(<a href="https://pubmed.ncbi.nlm.nih.gov/28698222/" target="_blank" rel="noopener noreferrer">Jäger et al., ISSN 2017</a>)</em>. Esta dieta ya está diseñada con alta proteína para proteger tu músculo.'
         });
     }
 
@@ -1250,13 +1285,13 @@ document.getElementById('next-3').addEventListener('click', function() {
         if (alcoholLevel === 'occasional') {
             tipText = 'Tu consumo es <strong>bajo-moderado</strong>. Aun así, el alcohol aporta ~' + alcoholDailyKcal + ' kcal/día de media ' +
                       'que este plan ya descuenta de tu presupuesto calórico de comida. El alcohol <strong>inhibe la oxidación de grasas</strong> temporalmente ' +
-                      '<em>(<a href="https://pubmed.ncbi.nlm.nih.gov/1318281/" target="_blank" rel="noopener">Suter et al., 1992</a>)</em> y reduce la síntesis proteica muscular un 24-37% ' +
-                      '<em>(<a href="https://pubmed.ncbi.nlm.nih.gov/24533082/" target="_blank" rel="noopener">Parr et al., 2014</a>)</em>. Si puedes reducirlo, mejor; si no, es preferible concentrarlo en 1-2 días sin entrenamiento.';
+                      '<em>(<a href="https://pubmed.ncbi.nlm.nih.gov/1318281/" target="_blank" rel="noopener noreferrer">Suter et al., 1992</a>)</em> y reduce la síntesis proteica muscular un 24-37% ' +
+                      '<em>(<a href="https://pubmed.ncbi.nlm.nih.gov/24533082/" target="_blank" rel="noopener noreferrer">Parr et al., 2014</a>)</em>. Si puedes reducirlo, mejor; si no, es preferible concentrarlo en 1-2 días sin entrenamiento.';
         } else {
             tipText = 'Tu consumo es <strong>' + (alcoholLevel === 'moderate' ? 'moderado' : 'frecuente') + '</strong>, lo que supone ~<strong>' + alcoholDailyKcal + ' kcal/día</strong> extra de media. ' +
                       'Hemos ajustado tu presupuesto de comida para compensar esas calorías. Pero el impacto va más allá de las calorías: ' +
-                      'el alcohol <strong>inhibe la quema de grasa</strong> durante horas <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/1318281/" target="_blank" rel="noopener">Suter et al., 1992</a>)</em>, ' +
-                      'reduce la <strong>síntesis proteica muscular</strong> un 24-37% <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/24533082/" target="_blank" rel="noopener">Parr et al., 2014</a>)</em>, ' +
+                      'el alcohol <strong>inhibe la quema de grasa</strong> durante horas <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/1318281/" target="_blank" rel="noopener noreferrer">Suter et al., 1992</a>)</em>, ' +
+                      'reduce la <strong>síntesis proteica muscular</strong> un 24-37% <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/24533082/" target="_blank" rel="noopener noreferrer">Parr et al., 2014</a>)</em>, ' +
                       'y empeora la calidad del sueño (que es clave para la recuperación). ' +
                       'Reducir a ≤2 días/semana con ≤2 bebidas por ocasión mejoraría significativamente tus resultados.';
         }
@@ -1275,7 +1310,7 @@ document.getElementById('next-3').addEventListener('click', function() {
             title: 'Caminar es tu ejercicio estrella',
             text: 'A partir de los 60, caminar es la actividad con <strong>mejor relación beneficio/riesgo</strong>. ' +
                   'No necesitas 10.000 pasos: a partir de <strong>6.000-8.000 pasos/día</strong> ya se observan reducciones significativas ' +
-                  'en mortalidad por todas las causas <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/35247352/" target="_blank" rel="noopener">Paluch et al., Lancet 2022</a>)</em>. ' +
+                  'en mortalidad por todas las causas <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/35247352/" target="_blank" rel="noopener noreferrer">Paluch et al., Lancet 2022</a>)</em>. ' +
                   'Empieza con paseos cortos (15-20 min) y ve aumentando gradualmente. Pasear después de comer además mejora la glucosa postprandial.'
         });
     }
@@ -1284,7 +1319,7 @@ document.getElementById('next-3').addEventListener('click', function() {
     tips.push({
         icon: '📅',
         title: 'La constancia es lo que funciona',
-        text: (userName ? userName + ', no' : 'No') + ' existe la dieta perfecta, solo la que puedes <strong>mantener a largo plazo</strong>. ' +
+        text: (userName ? escapeHtml(userName) + ', no' : 'No') + ' existe la dieta perfecta, solo la que puedes <strong>mantener a largo plazo</strong>. ' +
               'Los cambios se ven en semanas, no en días. Pésate siempre en las mismas condiciones (mañana, en ayunas) ' +
               'y compara <strong>medias semanales</strong>, no el día a día. ' +
               'Si algún día te sales del plan, simplemente retómalo al día siguiente.'
@@ -1301,13 +1336,13 @@ document.getElementById('next-3').addEventListener('click', function() {
     }).join('');
 
     document.getElementById('ob-tips').innerHTML =
-        '<h3 class="ob-tips-heading">💡 Recomendaciones ' + (userName ? 'para ' + userName : 'para ti') + '</h3>' +
+        '<h3 class="ob-tips-heading">💡 Recomendaciones ' + (userName ? 'para ' + escapeHtml(userName) : 'para ti') + '</h3>' +
         '<div class="ob-tips-grid">' + tipsHTML + '</div>';
 
-    showStep(4);
+    showStep(6);
 });
 
-document.getElementById('back-4').addEventListener('click', function() { showStep(3); });
+document.getElementById('back-6').addEventListener('click', function() { showStep(5); });
 
 // ---- Disclaimer ----
 function populateDisclaimer() {
@@ -1321,9 +1356,9 @@ function populateDisclaimer() {
                 '<p>Tu consumo de alcohol supone aproximadamente <strong>~' + dailyKcal + ' kcal/día</strong> de media que hemos descontado de tu presupuesto de comida. ' +
                 'La evidencia científica muestra que:</p>' +
                 '<ul class="disclaimer-refs">' +
-                '<li>El alcohol <strong>inhibe la oxidación de grasas</strong> durante 4-8 horas tras su consumo <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/1318281/" target="_blank" rel="noopener">Suter et al., Am J Clin Nutr 1992</a>)</em></li>' +
-                '<li>Reduce la <strong>síntesis proteica muscular</strong> un 24-37% incluso con ingesta proteica adecuada <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/24533082/" target="_blank" rel="noopener">Parr et al., PLoS ONE 2014</a>)</em></li>' +
-                '<li>El mayor estudio global (<a href="https://pubmed.ncbi.nlm.nih.gov/30146330/" target="_blank" rel="noopener">GBD 2018, Lancet</a>) concluye que el nivel de consumo que <strong>minimiza riesgos para la salud es cero</strong></li>' +
+                '<li>El alcohol <strong>inhibe la oxidación de grasas</strong> durante 4-8 horas tras su consumo <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/1318281/" target="_blank" rel="noopener noreferrer">Suter et al., Am J Clin Nutr 1992</a>)</em></li>' +
+                '<li>Reduce la <strong>síntesis proteica muscular</strong> un 24-37% incluso con ingesta proteica adecuada <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/24533082/" target="_blank" rel="noopener noreferrer">Parr et al., PLoS ONE 2014</a>)</em></li>' +
+                '<li>El mayor estudio global (<a href="https://pubmed.ncbi.nlm.nih.gov/30146330/" target="_blank" rel="noopener noreferrer">GBD 2018, Lancet</a>) concluye que el nivel de consumo que <strong>minimiza riesgos para la salud es cero</strong></li>' +
                 '<li>Si decides beber, limitar a <strong>≤2 bebidas, ≤2 días/semana</strong>, preferiblemente en días sin entrenamiento, minimiza el impacto</li>' +
                 '</ul>';
         } else {
@@ -1367,10 +1402,11 @@ document.getElementById('start-plan').addEventListener('click', function() {
 // Reconfigure
 document.getElementById('reconfigure-btn').addEventListener('click', function() {
     // Clear all fields EXCEPT: name, sex, age, height, weight
-    // Step 1: silhouette, experience, diet-history, appetite
+    // Step 1: silhouette, experience, muscularity, diet-history, appetite
     document.getElementById('calc-bf').value = '';
     document.querySelectorAll('.silhouette-option.selected').forEach(function(el) { el.classList.remove('selected'); });
     document.getElementById('calc-experience').value = '';
+    document.getElementById('calc-muscularity').value = '';
     document.getElementById('calc-diet-history').value = '';
     document.getElementById('calc-appetite').value = '';
 
@@ -1393,9 +1429,10 @@ document.getElementById('reconfigure-btn').addEventListener('click', function() 
     var alcoholHint = document.getElementById('alcohol-hint');
     if (alcoholHint) alcoholHint.textContent = '';
 
-    // Step 3: goal
+    // Step 5: goal
     document.querySelectorAll('.goal-card.selected').forEach(function(el) { el.classList.remove('selected'); });
     userGoal = '';
+    document.getElementById('next-5').classList.add('disabled');
 
     // Clear all meal selections (breakfast, lunch, dinner)
     selections = { breakfast:null, lunchCarb:null, lunchProtein:null, dinnerCarb:null, dinnerProtein:null };
@@ -1424,7 +1461,7 @@ function updateSliderRange() {
     if (titleEl && userGoal) {
         var goalName = goalLabels[userGoal] || 'tu objetivo';
         if (userName) {
-            var safeName = userName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            var safeName = escapeHtml(userName);
             titleEl.innerHTML = '<span class="user-name">' + safeName + '</span>, tu plan de ' + goalName.toLowerCase();
         } else {
             titleEl.textContent = 'Tu plan de ' + goalName.toLowerCase();
@@ -2075,9 +2112,9 @@ var macroTooltips = {
                 '<p>' + rec.detail + '</p>' +
                 '<p class="macro-tip-source">📚 Estudios</p>' +
                 '<ul class="macro-tip-links">' +
-                '<li><a href="https://bjsm.bmj.com/content/52/6/376" target="_blank" rel="noopener">Morton et al. 2018 – Protein &amp; muscle mass (BJSM)</a></li>' +
-                '<li><a href="https://jissn.biomedcentral.com/articles/10.1186/1550-2783-11-20" target="_blank" rel="noopener">Helms et al. 2014 – Natural bodybuilding (JISSN)</a></li>' +
-                '<li><a href="https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0177-8" target="_blank" rel="noopener">Jäger et al. 2017 – ISSN Protein Position Stand</a></li>' +
+                '<li><a href="https://bjsm.bmj.com/content/52/6/376" target="_blank" rel="noopener noreferrer">Morton et al. 2018 – Protein &amp; muscle mass (BJSM)</a></li>' +
+                '<li><a href="https://jissn.biomedcentral.com/articles/10.1186/1550-2783-11-20" target="_blank" rel="noopener noreferrer">Helms et al. 2014 – Natural bodybuilding (JISSN)</a></li>' +
+                '<li><a href="https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0177-8" target="_blank" rel="noopener noreferrer">Jäger et al. 2017 – ISSN Protein Position Stand</a></li>' +
                 '</ul>';
         }
     },
@@ -2101,8 +2138,8 @@ var macroTooltips = {
                 '<p>' + rec.detail + '</p>' +
                 '<p class="macro-tip-source">📚 Estudios</p>' +
                 '<ul class="macro-tip-links">' +
-                '<li><a href="https://pubmed.ncbi.nlm.nih.gov/26891166/" target="_blank" rel="noopener">Thomas et al. 2016 – ACSM Nutrition &amp; Performance</a></li>' +
-                '<li><a href="https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0189-4" target="_blank" rel="noopener">Kerksick et al. 2017 – ISSN Nutrient Timing</a></li>' +
+                '<li><a href="https://pubmed.ncbi.nlm.nih.gov/26891166/" target="_blank" rel="noopener noreferrer">Thomas et al. 2016 – ACSM Nutrition &amp; Performance</a></li>' +
+                '<li><a href="https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0189-4" target="_blank" rel="noopener noreferrer">Kerksick et al. 2017 – ISSN Nutrient Timing</a></li>' +
                 '</ul>';
         }
     },
@@ -2126,9 +2163,9 @@ var macroTooltips = {
                 '<p>' + rec.detail + '</p>' +
                 '<p class="macro-tip-source">📚 Estudios</p>' +
                 '<ul class="macro-tip-links">' +
-                '<li><a href="https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0177-8" target="_blank" rel="noopener">Jäger et al. 2017 – ISSN Position Stand</a></li>' +
-                '<li><a href="https://pubmed.ncbi.nlm.nih.gov/29182451/" target="_blank" rel="noopener">Hector &amp; Phillips 2018 – Protein &amp; fat loss (IJSNEM)</a></li>' +
-                '<li><a href="https://pubmed.ncbi.nlm.nih.gov/25550171/" target="_blank" rel="noopener">Volek et al. 2015 – Dietary fat &amp; performance</a></li>' +
+                '<li><a href="https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0177-8" target="_blank" rel="noopener noreferrer">Jäger et al. 2017 – ISSN Position Stand</a></li>' +
+                '<li><a href="https://pubmed.ncbi.nlm.nih.gov/29182451/" target="_blank" rel="noopener noreferrer">Hector &amp; Phillips 2018 – Protein &amp; fat loss (IJSNEM)</a></li>' +
+                '<li><a href="https://pubmed.ncbi.nlm.nih.gov/25550171/" target="_blank" rel="noopener noreferrer">Volek et al. 2015 – Dietary fat &amp; performance</a></li>' +
                 '</ul>';
         }
     }
@@ -3111,7 +3148,7 @@ function buildWhatsAppText() {
 document.getElementById('share-whatsapp-btn').addEventListener('click', function() {
     var text = buildWhatsAppText();
     var url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(text);
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
 });
 
 function buildExportCanvas() {
@@ -3497,7 +3534,7 @@ function exportDiet(format) {
 
 function openBlobInNewTab(blob) {
     var url = URL.createObjectURL(blob);
-    var w = window.open(url, '_blank');
+    var w = window.open(url, '_blank', 'noopener');
     if (!w) {
         // Popup blocked — try direct location
         window.location.href = url;

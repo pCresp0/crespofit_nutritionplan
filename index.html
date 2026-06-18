@@ -2,8 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#D4A017">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Mi Plan Nutricional</title>
@@ -28,9 +30,10 @@
             <h1 class="onboarding-title">🍽️ Mi Plan Nutricional</h1>
             <p class="onboarding-subtitle">Configura tu perfil para calcular tus calorías recomendadas y personalizar tu plan.</p>
 
-            <!-- STEP 1: Datos personales -->
+            <!-- STEP 1: Datos básicos -->
             <div class="onboarding-step active" id="step-1">
-                <h2 class="step-title">1. Tus datos</h2>
+                <h2 class="step-title">1. Sobre ti</h2>
+                <p class="step-desc">Empecemos con lo básico para calcular tu metabolismo.</p>
                 <div class="calc-form">
                     <div class="calc-row">
                         <div class="calc-field full-width">
@@ -62,14 +65,15 @@
                             <input type="number" id="calc-weight" min="35" max="200" step="0.1" placeholder="80">
                         </div>
                     </div>
-                    <div class="calc-row">
-                        <div class="calc-field full-width">
-                            <label>¿Cómo te ves? <span class="label-optional">(estima tu % grasa)</span></label>
-                            <p class="calc-hint silhouette-hint" id="silhouette-hint">Selecciona la silueta que más se parezca a tu cuerpo actual.</p>
-                            <div class="silhouette-grid" id="silhouette-grid"></div>
-                            <input type="hidden" id="calc-bf" value="">
-                        </div>
-                    </div>
+                </div>
+                <button class="onboarding-next" id="next-1">Siguiente →</button>
+            </div>
+
+            <!-- STEP 2: Composición corporal -->
+            <div class="onboarding-step" id="step-2">
+                <h2 class="step-title">2. Tu cuerpo</h2>
+                <p class="step-desc">Esto nos ayuda a estimar tu composición corporal y ajustar las cantidades.</p>
+                <div class="calc-form">
                     <div class="calc-row">
                         <div class="calc-field full-width">
                             <label for="calc-experience">¿Cuánto tiempo llevas entrenando?</label>
@@ -82,6 +86,38 @@
                             </select>
                         </div>
                     </div>
+                    <div class="calc-row">
+                        <div class="calc-field full-width">
+                            <label for="calc-muscularity">¿Cómo describirías tu masa muscular?</label>
+                            <select id="calc-muscularity">
+                                <option value="">-- Selecciona --</option>
+                                <option value="low">Poca · Nunca he hecho pesas ni deporte de fuerza</option>
+                                <option value="normal">Normal · Algo de tono muscular</option>
+                                <option value="high">Bastante · Se me notan los músculos</option>
+                                <option value="very-high">Mucha · Estoy bastante musculoso/a</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="calc-row">
+                        <div class="calc-field full-width">
+                            <label>¿Cómo te ves? <span class="label-optional">(estima tu % grasa)</span></label>
+                            <p class="calc-hint silhouette-hint" id="silhouette-hint">Selecciona la silueta que más se parezca a tu cuerpo actual.</p>
+                            <div class="silhouette-grid" id="silhouette-grid"></div>
+                            <input type="hidden" id="calc-bf" value="">
+                        </div>
+                    </div>
+                </div>
+                <div class="step-buttons">
+                    <button class="onboarding-back" id="back-2">← Atrás</button>
+                    <button class="onboarding-next" id="next-2">Siguiente →</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Hábitos -->
+            <div class="onboarding-step" id="step-3">
+                <h2 class="step-title">3. Tus hábitos</h2>
+                <p class="step-desc">Conocer tu historial y hábitos nos permite personalizar mejor el plan.</p>
+                <div class="calc-form">
                     <div class="calc-row">
                         <div class="calc-field full-width">
                             <label for="calc-diet-history">¿Has hecho dieta antes?</label>
@@ -105,13 +141,29 @@
                             </select>
                         </div>
                     </div>
+                    <div class="calc-row">
+                        <div class="calc-field full-width">
+                            <label for="calc-alcohol">¿Consumes alcohol habitualmente?</label>
+                            <select id="calc-alcohol">
+                                <option value="none" selected>No bebo alcohol</option>
+                                <option value="occasional">Ocasional · 1-2 días/semana, 1-2 bebidas</option>
+                                <option value="moderate">Moderado · 3-4 días/semana</option>
+                                <option value="frequent">Frecuente · 5+ días/semana</option>
+                            </select>
+                            <span class="calc-hint" id="alcohol-hint"></span>
+                        </div>
+                    </div>
                 </div>
-                <button class="onboarding-next" id="next-1">Siguiente →</button>
+                <div class="step-buttons">
+                    <button class="onboarding-back" id="back-3">← Atrás</button>
+                    <button class="onboarding-next" id="next-3">Siguiente →</button>
+                </div>
             </div>
 
-            <!-- STEP 2: Actividad y entreno -->
-            <div class="onboarding-step" id="step-2">
-                <h2 class="step-title">2. Tu actividad</h2>
+            <!-- STEP 4: Actividad -->
+            <div class="onboarding-step" id="step-4">
+                <h2 class="step-title">4. Tu actividad</h2>
+                <p class="step-desc">Tu nivel de movimiento diario determina cuántas calorías quemas.</p>
                 <div class="calc-form">
                     <div class="calc-row">
                         <div class="calc-field full-width">
@@ -196,28 +248,17 @@
                             </div>
                         </div>
                     </div>
-                    <div class="calc-row">
-                        <div class="calc-field full-width">
-                            <label for="calc-alcohol">¿Consumes alcohol habitualmente?</label>
-                            <select id="calc-alcohol">
-                                <option value="none" selected>No bebo alcohol</option>
-                                <option value="occasional">Ocasional · 1-2 días/semana, 1-2 bebidas</option>
-                                <option value="moderate">Moderado · 3-4 días/semana</option>
-                                <option value="frequent">Frecuente · 5+ días/semana</option>
-                            </select>
-                            <span class="calc-hint" id="alcohol-hint"></span>
-                        </div>
-                    </div>
                 </div>
                 <div class="step-buttons">
-                    <button class="onboarding-back" id="back-2">← Atrás</button>
-                    <button class="onboarding-next" id="next-2">Siguiente →</button>
+                    <button class="onboarding-back" id="back-4">← Atrás</button>
+                    <button class="onboarding-next" id="next-4">Siguiente →</button>
                 </div>
             </div>
 
-            <!-- STEP 3: Objetivo -->
-            <div class="onboarding-step" id="step-3">
-                <h2 class="step-title">3. Tu objetivo</h2>
+            <!-- STEP 5: Objetivo -->
+            <div class="onboarding-step" id="step-5">
+                <h2 class="step-title">5. Tu objetivo</h2>
+                <p class="step-desc">¿Qué quieres conseguir con tu alimentación?</p>
                 <p class="goal-recommendation" id="goal-recommendation" style="display:none;"></p>
                 <div class="goal-cards" id="goal-cards">
                     <div class="goal-card" data-goal="cut">
@@ -242,14 +283,14 @@
                     </div>
                 </div>
                 <div class="step-buttons">
-                    <button class="onboarding-back" id="back-3">← Atrás</button>
-                    <button class="onboarding-next disabled" id="next-3">Ver mi plan →</button>
+                    <button class="onboarding-back" id="back-5">← Atrás</button>
+                    <button class="onboarding-next disabled" id="next-5">Ver mi plan →</button>
                 </div>
             </div>
 
-            <!-- STEP 4: Resultados -->
-            <div class="onboarding-step" id="step-4">
-                <h2 class="step-title">4. Tu plan recomendado</h2>
+            <!-- STEP 6: Resultados -->
+            <div class="onboarding-step" id="step-6">
+                <h2 class="step-title">6. Tu plan recomendado</h2>
                 <div class="onboarding-results">
                     <div class="ob-result-row">
                         <div class="ob-result-card">
@@ -267,7 +308,7 @@
                     <div class="ob-tips" id="ob-tips"></div>
                 </div>
                 <div class="step-buttons">
-                    <button class="onboarding-back" id="back-4">← Atrás</button>
+                    <button class="onboarding-back" id="back-6">← Atrás</button>
                     <button class="onboarding-next cta" id="start-plan">🚀 Empezar con mi plan</button>
                 </div>
             </div>
@@ -277,6 +318,8 @@
                 <span class="progress-dot" data-step="2"></span>
                 <span class="progress-dot" data-step="3"></span>
                 <span class="progress-dot" data-step="4"></span>
+                <span class="progress-dot" data-step="5"></span>
+                <span class="progress-dot" data-step="6"></span>
             </div>
         </div>
     </div>
@@ -444,22 +487,22 @@
                 <div class="disclaimer-body" id="disclaimer-details-body">
                     <div class="disclaimer-block">
                         <h4>🍽️ La mejor dieta es la que puedes mantener</h4>
-                        <p>La adherencia es el <strong>factor #1</strong> que predice el éxito de una dieta <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/15632335/" target="_blank" rel="noopener">Dansinger et al., JAMA 2005</a>)</em>. Las dietas demasiado restrictivas aumentan el hambre, la ansiedad y la probabilidad de atracones <em>(<a href="https://doi.org/10.1037/0003-066X.40.2.193" target="_blank" rel="noopener">Polivy &amp; Herman, 1985</a>)</em>. Este plan usa un déficit moderado y alimentos reales que puedes comer a largo plazo sin sufrimiento.</p>
+                        <p>La adherencia es el <strong>factor #1</strong> que predice el éxito de una dieta <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/15632335/" target="_blank" rel="noopener noreferrer">Dansinger et al., JAMA 2005</a>)</em>. Las dietas demasiado restrictivas aumentan el hambre, la ansiedad y la probabilidad de atracones <em>(<a href="https://doi.org/10.1037/0003-066X.40.2.193" target="_blank" rel="noopener noreferrer">Polivy &amp; Herman, 1985</a>)</em>. Este plan usa un déficit moderado y alimentos reales que puedes comer a largo plazo sin sufrimiento.</p>
                     </div>
                     <div class="disclaimer-block">
                         <h4>🚶 Caminar: tu mejor aliado</h4>
-                        <p>Caminar es la forma de ejercicio más segura y sostenible para cualquier edad. Una meta-análisis de 15 estudios demostró que cada <strong>2.000 pasos/día adicionales</strong> reducen la mortalidad por todas las causas un 8-11% <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/35247352/" target="_blank" rel="noopener">Paluch et al., Lancet 2022</a>)</em>. No necesitas correr ni levantar pesas para mejorar tu salud: solo caminar más de lo que lo haces ahora ya marca una diferencia significativa.</p>
+                        <p>Caminar es la forma de ejercicio más segura y sostenible para cualquier edad. Una meta-análisis de 15 estudios demostró que cada <strong>2.000 pasos/día adicionales</strong> reducen la mortalidad por todas las causas un 8-11% <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/35247352/" target="_blank" rel="noopener noreferrer">Paluch et al., Lancet 2022</a>)</em>. No necesitas correr ni levantar pesas para mejorar tu salud: solo caminar más de lo que lo haces ahora ya marca una diferencia significativa.</p>
                     </div>
                     <div class="disclaimer-block" id="disclaimer-alcohol"></div>
                     <div class="disclaimer-block">
                         <h4>🔬 Base científica de este plan</h4>
                         <p>Las recomendaciones se basan en:</p>
                         <ul class="disclaimer-refs">
-                            <li><strong>Déficit 15-20%:</strong> Óptimo para perder grasa preservando músculo <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/24864135/" target="_blank" rel="noopener">Helms et al., 2014</a>; <a href="https://pubmed.ncbi.nlm.nih.gov/31247944/" target="_blank" rel="noopener">Iraki et al., 2019</a>)</em></li>
-                            <li><strong>Proteína 1.6-2.4 g/kg:</strong> Rango para preservar masa muscular en déficit <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/28698222/" target="_blank" rel="noopener">Jäger et al., ISSN 2017</a>)</em></li>
-                            <li><strong>Entrenamiento de fuerza:</strong> Estímulo imprescindible para retener músculo <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/29414855/" target="_blank" rel="noopener">Morton et al., 2018</a>)</em></li>
-                            <li><strong>Fórmula Mifflin-St Jeor:</strong> La más precisa para población general <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/15883556/" target="_blank" rel="noopener">Frankenfield et al., 2005</a>)</em></li>
-                            <li><strong>NEAT y pasos:</strong> El gasto por actividad no-ejercicio es el componente más variable del TDEE <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/16443883/" target="_blank" rel="noopener">Levine et al., 2006</a>)</em></li>
+                            <li><strong>Déficit 15-20%:</strong> Óptimo para perder grasa preservando músculo <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/24864135/" target="_blank" rel="noopener noreferrer">Helms et al., 2014</a>; <a href="https://pubmed.ncbi.nlm.nih.gov/31247944/" target="_blank" rel="noopener noreferrer">Iraki et al., 2019</a>)</em></li>
+                            <li><strong>Proteína 1.6-2.4 g/kg:</strong> Rango para preservar masa muscular en déficit <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/28698222/" target="_blank" rel="noopener noreferrer">Jäger et al., ISSN 2017</a>)</em></li>
+                            <li><strong>Entrenamiento de fuerza:</strong> Estímulo imprescindible para retener músculo <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/29414855/" target="_blank" rel="noopener noreferrer">Morton et al., 2018</a>)</em></li>
+                            <li><strong>Fórmula Mifflin-St Jeor:</strong> La más precisa para población general <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/15883556/" target="_blank" rel="noopener noreferrer">Frankenfield et al., 2005</a>)</em></li>
+                            <li><strong>NEAT y pasos:</strong> El gasto por actividad no-ejercicio es el componente más variable del TDEE <em>(<a href="https://pubmed.ncbi.nlm.nih.gov/16443883/" target="_blank" rel="noopener noreferrer">Levine et al., 2006</a>)</em></li>
                         </ul>
                     </div>
                     <div class="disclaimer-block disclaimer-warning">
@@ -485,7 +528,7 @@
 
         <footer class="footer">
             <div class="footer-content">
-                <p class="footer-author">Web desarrollada por <strong>Pablo Crespo</strong></p>
+                <p class="footer-author">Web desarrollada por <strong>Pablo Crespo Bellido</strong></p>
                 <div class="footer-socials">
                     <a href="https://www.linkedin.com/in/pablocrespobellido/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="footer-social-link">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
@@ -496,9 +539,9 @@
                     </a>
                 </div>
                 <button class="footer-about-btn" id="footer-about-btn">Sobre la web</button>
-                <p class="footer-copy">&copy; 2026 &middot; Pablo Crespo</p>
+                <p class="footer-copy">&copy; 2026 &middot; Pablo Crespo Bellido</p>
                 <div class="footer-visits">
-                    <img src="https://hits.sh/pcresp0.github.io/dieta_gym_PCB.svg?label=visitas&color=6B7280&labelColor=374151" alt="Contador de visitas">
+                    <img src="https://hits.sh/pcresp0.github.io/dieta_gym_PCB.svg?label=visitas&color=6B7280&labelColor=374151" alt="Contador de visitas" referrerpolicy="no-referrer">
                 </div>
             </div>
         </footer>
@@ -545,7 +588,7 @@
                 </ul>
 
                 <h3>🌐 Hosting</h3>
-                <p>Alojada gratuitamente en <strong>GitHub Pages</strong>. El código fuente es público en <a href="https://github.com/pCresp0/dieta_gym_PCB" target="_blank" rel="noopener">GitHub</a>.</p>
+                <p>Alojada gratuitamente en <strong>GitHub Pages</strong>. El código fuente es público en <a href="https://github.com/pCresp0/dieta_gym_PCB" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
             </div>
         </div>
     </div>
