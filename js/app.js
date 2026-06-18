@@ -3576,37 +3576,59 @@ function renderTrainerContent() {
 var trainerTabsObserver = null;
 function setupTrainerTabsVisibility() {
     if (trainerTabsObserver) trainerTabsObserver.disconnect();
-    var suppSection = document.querySelector('.trainer-supplements-section');
+    var extrasSection = document.querySelector('.trainer-extras-section');
+    var suppsSection = document.querySelector('.trainer-supplements-section');
+    var nutritionSection = document.getElementById('trainer-nutrition');
     var tabsNav = document.querySelector('.trainer-tabs-nav');
-    if (!suppSection || !tabsNav) return;
+    if (!tabsNav || (!extrasSection && !suppsSection && !nutritionSection)) return;
     trainerTabsObserver = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-            if (entry.isIntersecting) {
-                tabsNav.classList.add('tabs-hidden');
-            } else {
-                tabsNav.classList.remove('tabs-hidden');
-            }
+        var targets = [];
+        if (extrasSection) targets.push(extrasSection);
+        if (suppsSection) targets.push(suppsSection);
+        if (nutritionSection) targets.push(nutritionSection);
+        var shouldHide = targets.some(function(t) {
+            var rect = t.getBoundingClientRect();
+            return rect.top < window.innerHeight && rect.bottom > 0;
         });
+        if (shouldHide) {
+            tabsNav.classList.add('tabs-hidden');
+        } else {
+            tabsNav.classList.remove('tabs-hidden');
+        }
     }, { threshold: 0 });
-    trainerTabsObserver.observe(suppSection);
+    if (extrasSection) trainerTabsObserver.observe(extrasSection);
+    if (suppsSection) trainerTabsObserver.observe(suppsSection);
+    if (nutritionSection) trainerTabsObserver.observe(nutritionSection);
 }
 
 var publicTabsObserver = null;
 function setupPublicTabsVisibility() {
     if (publicTabsObserver) publicTabsObserver.disconnect();
-    var suppSection = document.querySelector('.supplements-section');
+    var nutritionSection = document.getElementById('nutrition-summary');
+    var supplementsSection = document.querySelector('.supplements-section');
     var tabsNav = document.querySelector('.main-tabs-nav:not(.trainer-tabs-nav)');
-    if (!suppSection || !tabsNav) return;
+    if (!tabsNav || (!nutritionSection && !supplementsSection)) return;
     publicTabsObserver = new IntersectionObserver(function(entries) {
+        var anyVisible = false;
         entries.forEach(function(entry) {
-            if (entry.isIntersecting) {
-                tabsNav.classList.add('tabs-hidden');
-            } else {
-                tabsNav.classList.remove('tabs-hidden');
-            }
+            if (entry.isIntersecting) anyVisible = true;
         });
+        // Check all observed targets
+        var targets = [];
+        if (nutritionSection) targets.push(nutritionSection);
+        if (supplementsSection) targets.push(supplementsSection);
+        var shouldHide = targets.some(function(t) {
+            var rect = t.getBoundingClientRect();
+            return rect.top < window.innerHeight && rect.bottom > 0;
+        });
+        if (shouldHide) {
+            tabsNav.classList.add('tabs-hidden');
+        } else {
+            tabsNav.classList.remove('tabs-hidden');
+        }
     }, { threshold: 0 });
-    publicTabsObserver.observe(suppSection);
+    if (nutritionSection) publicTabsObserver.observe(nutritionSection);
+    if (supplementsSection) publicTabsObserver.observe(supplementsSection);
 }
 
 function renderTrainerValidator() {
