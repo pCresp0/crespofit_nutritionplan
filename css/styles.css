@@ -4388,8 +4388,14 @@ body {
     border-radius: var(--radius-sm);
     cursor: pointer;
     user-select: none;
-    transition: background var(--transition);
+    transition: background var(--transition), border-radius var(--transition);
     margin-bottom: 0;
+}
+
+.trainer-extras-section.extras-open .trainer-extras-toggle {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-color: transparent;
 }
 
 .trainer-extras-toggle:hover {
@@ -4432,12 +4438,21 @@ body {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.35s ease, padding 0.35s ease;
-    padding: 0 16px;
+    padding: 0;
+    border: 1.5px solid transparent;
+    border-top: none;
+    border-left-width: 3px;
+    border-bottom-left-radius: var(--radius-sm);
+    border-bottom-right-radius: var(--radius-sm);
 }
 
 .trainer-extras-body.open {
     max-height: 800px;
-    padding: 14px 0 0;
+    padding: 14px 14px 12px;
+    border-color: var(--border);
+    border-left-color: var(--accent);
+    border-top: none;
+    background: var(--card-bg);
 }
 
 .trainer-extras-desc {
