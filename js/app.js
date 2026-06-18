@@ -2006,8 +2006,23 @@ function checkAutoAdvancePublic() {
     if (allComplete) {
         setTimeout(function() {
             showMealCompleteToast('¡Dieta completa! Aquí tienes tu resumen');
+            // Remove scroll handler that fights with our scroll, hide tabs permanently
+            if (publicTabsScrollHandler) {
+                window.removeEventListener('scroll', publicTabsScrollHandler);
+                publicTabsScrollHandler = null;
+            }
+            var tabsNav = document.querySelector('.main-tabs-nav:not(.trainer-tabs-nav)');
+            if (tabsNav) {
+                tabsNav.style.transition = 'none';
+                tabsNav.classList.add('tabs-hidden');
+                tabsNav.offsetHeight; // force reflow
+                tabsNav.style.transition = '';
+            }
             var summary = document.getElementById('nutrition-summary');
-            if (summary) summary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (summary) {
+                var top = summary.getBoundingClientRect().top + window.pageYOffset - 16;
+                window.scrollTo({ top: top, behavior: 'smooth' });
+            }
         }, 400);
         return;
     }
@@ -2042,7 +2057,8 @@ function randomDiet() {
     setTimeout(function() {
         var summary = document.getElementById('diet-summary');
         if (summary && summary.innerHTML) {
-            summary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            var top = summary.getBoundingClientRect().top + window.pageYOffset - 16;
+            window.scrollTo({ top: top, behavior: 'smooth' });
         }
     }, 100);
 }
@@ -3694,7 +3710,11 @@ function checkAutoAdvanceTrainer() {
         setTimeout(function() {
             showMealCompleteToast('¡Dieta completa! Aquí tienes tu resumen');
             var summary = document.getElementById('trainer-nutrition');
-            if (summary) summary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            var summary = document.getElementById('trainer-nutrition');
+            if (summary) {
+                var top = summary.getBoundingClientRect().top + window.pageYOffset - 16;
+                window.scrollTo({ top: top, behavior: 'smooth' });
+            }
         }, 400);
         return;
     }
