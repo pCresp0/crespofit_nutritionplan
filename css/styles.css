@@ -186,6 +186,22 @@ body {
     z-index: 100;
     box-shadow: var(--header-shadow);
     border-bottom: 2px solid var(--accent);
+    position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('../img/cabecera.png') center/cover no-repeat;
+    opacity: 0.10;
+    filter: blur(2px);
+    pointer-events: none;
+}
+
+[data-theme="dark"] .header::before {
+    opacity: 0.08;
 }
 
 .header-content {
@@ -194,6 +210,7 @@ body {
     margin: 0 auto;
     text-align: center;
     padding-top: 0;
+    z-index: 1;
 }
 
 .header h1 {
@@ -202,6 +219,11 @@ body {
     margin-bottom: 4px;
     letter-spacing: -0.01em;
     opacity: 0.95;
+}
+
+.header h1 .user-name {
+    font-style: italic;
+    font-weight: 800;
 }
 
 .kcal-selector {

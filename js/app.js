@@ -1362,7 +1362,8 @@ function updateSliderRange() {
     if (titleEl && userGoal) {
         var goalName = goalLabels[userGoal] || 'tu objetivo';
         if (userName) {
-            titleEl.textContent = 'Plan de ' + userName + ' para ' + goalName.toLowerCase();
+            var safeName = userName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            titleEl.innerHTML = 'Plan de <span class="user-name">' + safeName + '</span> para ' + goalName.toLowerCase();
         } else {
             titleEl.textContent = 'Mi plan personalizado para ' + goalName.toLowerCase();
         }
