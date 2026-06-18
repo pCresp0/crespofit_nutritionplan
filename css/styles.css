@@ -4641,6 +4641,65 @@ body {
     color: #2ecc71;
 }
 
+.tmti-fix-btn {
+    background: none;
+    border: 1px solid #f39c12;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.65rem;
+    cursor: pointer;
+    margin-left: 4px;
+    padding: 0;
+    vertical-align: middle;
+    line-height: 1;
+    transition: background 0.2s;
+}
+
+.tmti-fix-btn:hover {
+    background: rgba(243, 156, 18, 0.15);
+}
+
+.macro-fix-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.macro-fix-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--card-bg, rgba(255,255,255,0.05));
+    font-size: 0.82rem;
+}
+
+.macro-fix-meal {
+    font-weight: 600;
+    color: var(--text-muted, #999);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    width: 100%;
+}
+
+.macro-fix-swap {
+    flex: 1;
+}
+
+.macro-fix-add {
+    flex: 1;
+}
+
+.macro-fix-diff {
+    font-weight: 700;
+    color: #2ecc71;
+    white-space: nowrap;
+}
+
 /* ========== RESPONSIVE ONBOARDING ========== */
 @media (max-width: 640px) {
     /* Prevent iOS zoom on input focus */

@@ -3454,12 +3454,171 @@ function renderMacroTargetItem(label, cls, current, target, remain) {
     var pct = target > 0 ? Math.min(100, Math.round(current / target * 100)) : 100;
     var statusCls = remain <= 0 ? 'target-reached' : 'target-pending';
     var remainText = remain > 0 ? 'Faltan ' + Math.round(remain) + 'g' : '\u2713 Alcanzado';
+    var fixBtn = remain > 0 ? ' <button class="tmti-fix-btn" data-macro="' + cls + '" title="Ver cómo cuadrarlo">💡</button>' : '';
     return '<div class="trainer-macro-target-item ' + statusCls + '">' +
         '<div class="tmti-label">' + label + '</div>' +
         '<div class="tmti-bar-wrap"><div class="tmti-bar tmti-bar-' + cls + '" style="width:' + pct + '%"></div></div>' +
         '<div class="tmti-values"><span>' + Math.round(current) + 'g</span><span class="tmti-target">/ ' + target + 'g</span></div>' +
-        '<div class="tmti-remain ' + statusCls + '">' + remainText + '</div>' +
+        '<div class="tmti-remain ' + statusCls + '">' + remainText + fixBtn + '</div>' +
     '</div>';
+}
+
+function getMacroIndex(macro) {
+    if (macro === 'protein') return 1;
+    if (macro === 'carbs') return 2;
+    if (macro === 'fat') return 3;
+    return -1;
+}
+
+function generateMacroSuggestions(macro) {
+    var mi = getMacroIndex(macro);
+    var macroLabel = macro === 'protein' ? 'proteína' : (macro === 'carbs' ? 'carbohidratos' : 'grasas');
+    var suggestions = [];
+
+    // Calculate current macro from each slot
+    function slotMacro(data, idx) {
+        if (idx === null) return 0;
+        return data[idx].n[mi] * data[idx].base / 100;
+    }
+
+    // 1. Suggest swaps in lunch carbs
+    if (trainerSelections.lunchCarb !== null) {
+        var currentItem = lunchCarbs[trainerSelections.lunchCarb];
+        var currentMacro = currentItem.n[mi] * currentItem.base / 100;
+        lunchCarbs.forEach(function(alt, idx) {
+            if (idx === trainerSelections.lunchCarb) return;
+            var altMacro = alt.n[mi] * alt.base / 100;
+            var diff = altMacro - currentMacro;
+            if (diff > 1) {
+                suggestions.push({ type: 'swap', meal: 'Comida', slot: 'hidrato', from: currentItem.name, to: alt.name, diff: Math.round(diff) });
+            }
+        });
+    }
+
+    // 2. Suggest swaps in lunch proteins
+    if (trainerSelections.lunchProtein !== null) {
+        var currentItem = lunchProteins[trainerSelections.lunchProtein];
+        var currentMacro = currentItem.n[mi] * currentItem.base / 100;
+        lunchProteins.forEach(function(alt, idx) {
+            if (idx === trainerSelections.lunchProtein) return;
+            var altMacro = alt.n[mi] * alt.base / 100;
+            var diff = altMacro - currentMacro;
+            if (diff > 1) {
+                suggestions.push({ type: 'swap', meal: 'Comida', slot: 'proteína', from: currentItem.name, to: alt.name, diff: Math.round(diff) });
+            }
+        });
+    }
+
+    // 3. Suggest swaps in dinner carbs
+    if (trainerSelections.dinnerCarb !== null) {
+        var currentItem = dinnerCarbs[trainerSelections.dinnerCarb];
+        var currentMacro = currentItem.n[mi] * currentItem.base / 100;
+        dinnerCarbs.forEach(function(alt, idx) {
+            if (idx === trainerSelections.dinnerCarb) return;
+            var altMacro = alt.n[mi] * alt.base / 100;
+            var diff = altMacro - currentMacro;
+            if (diff > 1) {
+                suggestions.push({ type: 'swap', meal: 'Cena', slot: 'hidrato', from: currentItem.name, to: alt.name, diff: Math.round(diff) });
+            }
+        });
+    }
+
+    // 4. Suggest swaps in dinner proteins
+    if (trainerSelections.dinnerProtein !== null) {
+        var currentItem = dinnerProteins[trainerSelections.dinnerProtein];
+        var currentMacro = currentItem.n[mi] * currentItem.base / 100;
+        dinnerProteins.forEach(function(alt, idx) {
+            if (idx === trainerSelections.dinnerProtein) return;
+            var altMacro = alt.n[mi] * alt.base / 100;
+            var diff = altMacro - currentMacro;
+            if (diff > 1) {
+                suggestions.push({ type: 'swap', meal: 'Cena', slot: 'proteína', from: currentItem.name, to: alt.name, diff: Math.round(diff) });
+            }
+        });
+    }
+
+    // 5. Suggest swaps in breakfast
+    if (trainerSelections.breakfast !== null) {
+        var currentItem = breakfastOptions[trainerSelections.breakfast];
+        var currentMacro = currentItem.macros[mi];
+        breakfastOptions.forEach(function(alt, idx) {
+            if (idx === trainerSelections.breakfast) return;
+            var altMacro = alt.macros[mi];
+            var diff = altMacro - currentMacro;
+            if (diff > 1) {
+                suggestions.push({ type: 'swap', meal: 'Desayuno', slot: '', from: currentItem.name, to: alt.name, diff: Math.round(diff) });
+            }
+        });
+    }
+
+    // 6. Suggest adding extra food to fill the gap
+    var targetMacros = calculateTrainerMacros();
+    var targetPg = Math.round(TRAINER_TARGET_KCAL * TRAINER_MACRO_TARGETS.protein / 100 / 4);
+    var targetCg = Math.round(TRAINER_TARGET_KCAL * TRAINER_MACRO_TARGETS.carbs / 100 / 4);
+    var targetFg = Math.round(TRAINER_TARGET_KCAL * TRAINER_MACRO_TARGETS.fat / 100 / 9);
+    var targetG = macro === 'protein' ? targetPg : (macro === 'carbs' ? targetCg : targetFg);
+    var currentG = macro === 'protein' ? targetMacros.protein : (macro === 'carbs' ? targetMacros.carbs : targetMacros.fat);
+    var deficit = targetG - currentG;
+
+    if (deficit > 0) {
+        // Find foods rich in this macro
+        var addOptions = [];
+        trainerFoodCatalog.forEach(function(food) {
+            var macroPerG = food.n[mi];
+            if (macroPerG > 5) { // at least 5g per 100g
+                var gramsNeeded = Math.round(deficit / macroPerG * 100);
+                if (gramsNeeded > 0 && gramsNeeded <= 500) {
+                    addOptions.push({ name: food.name, grams: gramsNeeded, macroGain: deficit });
+                }
+            }
+        });
+        // Sort by least grams needed
+        addOptions.sort(function(a, b) { return a.grams - b.grams; });
+        addOptions.slice(0, 3).forEach(function(opt) {
+            suggestions.push({ type: 'add', food: opt.name, grams: opt.grams, diff: Math.round(opt.macroGain) });
+        });
+    }
+
+    // Sort swaps by biggest improvement
+    suggestions.sort(function(a, b) { return b.diff - a.diff; });
+
+    return { macro: macroLabel, deficit: Math.round(deficit), suggestions: suggestions.slice(0, 8) };
+}
+
+function showMacroFixTooltip(macro) {
+    var data = generateMacroSuggestions(macro);
+    var title = '\ud83d\udca1 C\u00f3mo conseguir ' + data.deficit + 'g m\u00e1s de ' + data.macro;
+    var html = '';
+
+    if (data.suggestions.length === 0) {
+        html = '<p>No hay sugerencias disponibles con la selección actual.</p>';
+    } else {
+        var swaps = data.suggestions.filter(function(s) { return s.type === 'swap'; });
+        var adds = data.suggestions.filter(function(s) { return s.type === 'add'; });
+
+        if (swaps.length > 0) {
+            html += '<h4 style="margin-top:0">\ud83d\udd04 Cambios posibles</h4><div class="macro-fix-list">';
+            swaps.forEach(function(s) {
+                html += '<div class="macro-fix-item"><span class="macro-fix-meal">' + s.meal + (s.slot ? ' (' + s.slot + ')' : '') + '</span>' +
+                    '<span class="macro-fix-swap">' + s.from + ' \u2192 <strong>' + s.to + '</strong></span>' +
+                    '<span class="macro-fix-diff">+' + s.diff + 'g</span></div>';
+            });
+            html += '</div>';
+        }
+
+        if (adds.length > 0) {
+            html += '<h4>\u2795 A\u00f1adir alimento extra</h4><div class="macro-fix-list">';
+            adds.forEach(function(s) {
+                html += '<div class="macro-fix-item"><span class="macro-fix-add">A\u00f1adir <strong>' + s.grams + 'g ' + s.food + '</strong></span>' +
+                    '<span class="macro-fix-diff">+' + s.diff + 'g</span></div>';
+            });
+            html += '</div>';
+        }
+    }
+
+    document.getElementById('tooltip-title').textContent = title;
+    document.getElementById('tooltip-body').innerHTML = html;
+    document.getElementById('tooltip-overlay').style.display = '';
 }
 
 function renderTrainerContent() {
@@ -3848,6 +4007,12 @@ document.addEventListener('click', function(e) {
 document.addEventListener('click', function(e) {
     if (e.target.id === 'trainer-exit-btn' || e.target.closest('#trainer-exit-btn')) {
         exitTrainerMode();
+    }
+    // Macro fix button
+    var fixBtn = e.target.closest('.tmti-fix-btn');
+    if (fixBtn) {
+        e.stopPropagation();
+        showMacroFixTooltip(fixBtn.dataset.macro);
     }
     // About modal
     if (e.target.id === 'footer-about-btn' || e.target.closest('#footer-about-btn')) {
