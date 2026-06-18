@@ -555,8 +555,17 @@ body {
 
 /* Body timeline needs more room (variable item count per goal) */
 #body-timeline .how-it-works-body {
-    max-height: 1200px;
-    overflow-y: auto;
+    max-height: none;
+    overflow: visible;
+    transition: padding 0.3s ease, opacity 0.3s ease;
+}
+
+#body-timeline.collapsed .how-it-works-body {
+    max-height: 0;
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
 }
 
 .how-steps {
