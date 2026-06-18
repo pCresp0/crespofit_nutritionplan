@@ -113,13 +113,47 @@ var proteinCategory = ['poultry','fish','fish','poultry','poultry','egg','redmea
 
 function getProteinPrefs() {
     var prefs = {};
-    var checks = document.querySelectorAll('#pref-protein input[type="checkbox"]');
-    checks.forEach(function(cb) { prefs[cb.value] = cb.checked; });
-    // If none selected, treat all as selected
+    var chips = document.querySelectorAll('#pref-protein .pref-chip:not(.pref-chip-all)');
+    chips.forEach(function(chip) { prefs[chip.dataset.value] = chip.classList.contains('active'); });
+    // If none selected or "all" is active, treat all as selected
     var anyChecked = Object.keys(prefs).some(function(k) { return prefs[k]; });
     if (!anyChecked) { Object.keys(prefs).forEach(function(k) { prefs[k] = true; }); }
     return prefs;
 }
+
+// Protein preference chip toggle logic
+(function() {
+    var container = document.getElementById('pref-protein');
+    if (!container) return;
+    container.addEventListener('click', function(e) {
+        var chip = e.target.closest('.pref-chip');
+        if (!chip) return;
+
+        if (chip.classList.contains('pref-chip-all')) {
+            // "Me da igual" → activate all
+            var allActive = chip.classList.contains('active');
+            container.querySelectorAll('.pref-chip').forEach(function(c) {
+                if (allActive) {
+                    c.classList.remove('active');
+                } else {
+                    c.classList.add('active');
+                }
+            });
+        } else {
+            // Toggle individual chip
+            chip.classList.toggle('active');
+            // Update "Me da igual" state
+            var allChip = container.querySelector('.pref-chip-all');
+            var individual = container.querySelectorAll('.pref-chip:not(.pref-chip-all)');
+            var allOn = true;
+            individual.forEach(function(c) { if (!c.classList.contains('active')) allOn = false; });
+            if (allChip) {
+                if (allOn) { allChip.classList.add('active'); }
+                else { allChip.classList.remove('active'); }
+            }
+        }
+    });
+})();
 
 var goalLabels = { cut:'Perder grasa', recomp:'Recomposición corporal', maintain:'Mantener peso', bulk:'Ganar masa muscular' };
 var goalIcons = { cut:'🔥', recomp:'🔄', maintain:'⚖️', bulk:'💪' };
@@ -2564,8 +2598,8 @@ function saveAllState() {
         calcData['calc-steps-unknown'] = document.getElementById('calc-steps-unknown').checked ? 'true' : 'false';
         // Save protein preferences
         var protPrefs = {};
-        document.querySelectorAll('#pref-protein input[type="checkbox"]').forEach(function(cb) {
-            protPrefs[cb.value] = cb.checked;
+        document.querySelectorAll('#pref-protein .pref-chip:not(.pref-chip-all)').forEach(function(chip) {
+            protPrefs[chip.dataset.value] = chip.classList.contains('active');
         });
         calcData['pref-protein'] = protPrefs;
         localStorage.setItem('dietAppV2', JSON.stringify({
@@ -2616,9 +2650,22 @@ function loadState() {
             // Restore protein preferences
             if (data.calc['pref-protein']) {
                 var pp = data.calc['pref-protein'];
-                document.querySelectorAll('#pref-protein input[type="checkbox"]').forEach(function(cb) {
-                    if (pp.hasOwnProperty(cb.value)) cb.checked = pp[cb.value];
+                document.querySelectorAll('#pref-protein .pref-chip:not(.pref-chip-all)').forEach(function(chip) {
+                    if (pp.hasOwnProperty(chip.dataset.value)) {
+                        if (pp[chip.dataset.value]) chip.classList.add('active');
+                        else chip.classList.remove('active');
+                    }
                 });
+                // Update "Me da igual" state
+                var allChip = document.querySelector('#pref-protein .pref-chip-all');
+                if (allChip) {
+                    var allOn = true;
+                    document.querySelectorAll('#pref-protein .pref-chip:not(.pref-chip-all)').forEach(function(c) {
+                        if (!c.classList.contains('active')) allOn = false;
+                    });
+                    if (allOn) allChip.classList.add('active');
+                    else allChip.classList.remove('active');
+                }
             }
         }
         return true;

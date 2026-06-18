@@ -2530,25 +2530,40 @@ body {
 .pref-checks {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 16px;
+    gap: 8px;
     margin-top: 6px;
 }
 
-.pref-check {
-    display: flex;
+.pref-chip {
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
+    gap: 4px;
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
     color: var(--text-secondary);
     cursor: pointer;
     user-select: none;
+    transition: all 0.15s ease;
+    font-family: inherit;
 }
 
-.pref-check input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--accent);
-    cursor: pointer;
+.pref-chip:hover {
+    border-color: var(--border-hover);
+    background: var(--row-hover);
+}
+
+.pref-chip.active {
+    border-color: var(--accent);
+    background: rgba(212, 160, 23, 0.12);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.pref-chip-all {
+    font-style: italic;
 }
 
 .calc-hint {
