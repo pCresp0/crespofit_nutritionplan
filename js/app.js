@@ -1928,8 +1928,8 @@ document.addEventListener('click', function(e) {
             setTimeout(function() {
                 var rect = protHeader.getBoundingClientRect();
                 var offset = 60;
-                // Only scroll if protein header is not already visible
-                if (rect.top > window.innerHeight || rect.top < offset) {
+                // Scroll if protein header is not comfortably visible (top third of viewport)
+                if (rect.top < offset || rect.top > window.innerHeight * 0.5) {
                     window.scrollBy({ top: rect.top - offset, behavior: 'smooth' });
                 }
             }, 100);
@@ -3787,8 +3787,8 @@ document.addEventListener('click', function(e) {
                     setTimeout(function() {
                         var rect = protSection.getBoundingClientRect();
                         var offset = 60;
-                        // Only scroll if protein section is not already visible
-                        if (rect.top > window.innerHeight || rect.top < offset) {
+                        // Scroll if protein section is not comfortably visible (top half of viewport)
+                        if (rect.top < offset || rect.top > window.innerHeight * 0.5) {
                             window.scrollBy({ top: rect.top - offset, behavior: 'smooth' });
                         }
                     }, 100);
