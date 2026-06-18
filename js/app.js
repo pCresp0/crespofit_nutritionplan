@@ -1353,9 +1353,41 @@ document.getElementById('start-plan').addEventListener('click', function() {
 
 // Reconfigure
 document.getElementById('reconfigure-btn').addEventListener('click', function() {
+    // Clear all fields EXCEPT: name, sex, age, height, weight
+    // Step 1: silhouette, experience, diet-history, appetite
+    document.getElementById('calc-bf').value = '';
+    document.querySelectorAll('.silhouette-option.selected').forEach(function(el) { el.classList.remove('selected'); });
+    document.getElementById('calc-experience').value = '';
+    document.getElementById('calc-diet-history').value = '';
+    document.getElementById('calc-appetite').value = '';
+
+    // Step 2: activity, steps, training, alcohol
+    document.getElementById('calc-activity').value = '';
+    var stepsEl = document.getElementById('calc-steps');
+    if (stepsEl) stepsEl.value = '';
+    var stepsUnknown = document.getElementById('calc-steps-unknown');
+    if (stepsUnknown) stepsUnknown.checked = false;
+    var stepsHint = document.getElementById('steps-hint');
+    if (stepsHint) stepsHint.textContent = '';
+    document.getElementById('calc-trains').value = 'no';
+    var trainingDetails = document.getElementById('calc-training-details');
+    if (trainingDetails) trainingDetails.classList.add('hidden');
+    document.getElementById('calc-train-type').value = 'strength';
+    document.getElementById('calc-train-days').value = '4';
+    document.getElementById('calc-train-duration').value = '60';
+    document.getElementById('calc-train-intensity').value = 'medium';
+    document.getElementById('calc-alcohol').value = 'none';
+    var alcoholHint = document.getElementById('alcohol-hint');
+    if (alcoholHint) alcoholHint.textContent = '';
+
+    // Step 3: goal
+    document.querySelectorAll('.goal-card.selected').forEach(function(el) { el.classList.remove('selected'); });
+    userGoal = '';
+
+    // Show onboarding at step 2 (since basic data is kept)
     document.getElementById('app-wrapper').style.display = 'none';
     document.getElementById('onboarding').style.display = '';
-    showStep(1);
+    showStep(2);
 });
 
 // ============================================================
