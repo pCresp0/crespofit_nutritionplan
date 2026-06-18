@@ -4745,6 +4745,12 @@ body {
     transform: translateX(-50%) translateY(0);
 }
 
+.tab-toast-success {
+    background: var(--deficit-bg);
+    border-color: var(--deficit-color);
+    color: var(--deficit-color);
+}
+
 /* ============================================================
    NUTRITION MISSING
    ============================================================ */

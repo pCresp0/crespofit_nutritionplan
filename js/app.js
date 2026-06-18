@@ -1908,6 +1908,7 @@ document.getElementById('breakfast-grid').addEventListener('click', function(e) 
     var idx = parseInt(card.dataset.index);
     selections.breakfast = selections.breakfast === idx ? null : idx;
     renderAll(); saveAllState();
+    checkAutoAdvancePublic();
 });
 
 document.addEventListener('click', function(e) {
@@ -1916,6 +1917,7 @@ document.addEventListener('click', function(e) {
     var key = meal==='lunch'?(type==='carb'?'lunchCarb':'lunchProtein'):(type==='carb'?'dinnerCarb':'dinnerProtein');
     selections[key] = selections[key]===idx?null:idx;
     renderAll(); saveAllState();
+    checkAutoAdvancePublic();
 });
 
 document.querySelectorAll('[data-toggle]').forEach(function(h) {
@@ -1967,6 +1969,34 @@ function showTabToast(msg) {
     document.body.appendChild(toast);
     setTimeout(function() { toast.classList.add('show'); }, 10);
     setTimeout(function() { toast.classList.remove('show'); setTimeout(function() { toast.remove(); }, 300); }, 3000);
+}
+
+function showMealCompleteToast(msg) {
+    var existing = document.querySelector('.tab-toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.className = 'tab-toast tab-toast-success';
+    toast.innerHTML = '✅ ' + msg;
+    document.body.appendChild(toast);
+    setTimeout(function() { toast.classList.add('show'); }, 10);
+    setTimeout(function() { toast.classList.remove('show'); setTimeout(function() { toast.remove(); }, 300); }, 3000);
+}
+
+function checkAutoAdvancePublic() {
+    var activeTab = document.querySelector('.main-tab[data-tab].active');
+    var currentTab = activeTab ? activeTab.dataset.tab : null;
+
+    if (currentTab === 'breakfast' && selections.breakfast !== null) {
+        setTimeout(function() {
+            showMealCompleteToast('Desayuno elegido — vamos con la comida');
+            activateTab('lunch', true);
+        }, 400);
+    } else if (currentTab === 'lunch' && selections.lunchCarb !== null && selections.lunchProtein !== null) {
+        setTimeout(function() {
+            showMealCompleteToast('Comida completa — vamos con la cena');
+            activateTab('dinner', true);
+        }, 400);
+    }
 }
 
 // Random diet
@@ -3554,7 +3584,7 @@ function renderTrainerValidator() {
         var items = checks.map(function(c) {
             var cls = c.done ? 'validator-item done' : 'validator-item missing';
             var icon = c.done ? '✓' : '○';
-            var tab = c.key === 'breakfast' ? 'breakfast' : (c.key.indexOf('lunch') === 0 ? 'lunch' : 'dinner');
+            var tab = c.label === 'Desayuno' ? 'breakfast' : (c.label.indexOf('Comida') === 0 ? 'lunch' : 'dinner');
             return '<span class="' + cls + '" data-goto-tab="' + tab + '" style="cursor:pointer"><span class="vi-icon">' + icon + '</span>' + c.label + '</span>';
         }).join('');
         bar.innerHTML = '<div class="validator-items">' + items + '</div>';
@@ -3573,6 +3603,20 @@ document.addEventListener('click', function(e) {
         switchTrainerTab(tabBtn.dataset.trainerTab);
     }
 });
+
+function checkAutoAdvanceTrainer() {
+    if (currentTrainerTab === 'breakfast' && trainerSelections.breakfast !== null) {
+        setTimeout(function() {
+            showMealCompleteToast('Desayuno elegido — vamos con la comida');
+            switchTrainerTab('lunch');
+        }, 400);
+    } else if (currentTrainerTab === 'lunch' && trainerSelections.lunchCarb !== null && trainerSelections.lunchProtein !== null) {
+        setTimeout(function() {
+            showMealCompleteToast('Comida completa — vamos con la cena');
+            switchTrainerTab('dinner');
+        }, 400);
+    }
+}
 
 // Trainer selection — prevent scroll-triggered selections on mobile
 var trainerTouchStartY = 0;
@@ -3625,6 +3669,7 @@ document.addEventListener('click', function(e) {
         var idx = parseInt(card.dataset.trainerIndex);
         trainerSelections.breakfast = trainerSelections.breakfast === idx ? null : idx;
         renderTrainerContent();
+        checkAutoAdvanceTrainer();
         return;
     }
     // Meal table rows
@@ -3638,6 +3683,7 @@ document.addEventListener('click', function(e) {
             : (type === 'carb' ? 'dinnerCarb' : 'dinnerProtein');
         trainerSelections[key] = trainerSelections[key] === idx2 ? null : idx2;
         renderTrainerContent();
+        checkAutoAdvanceTrainer();
         return;
     }
 });
