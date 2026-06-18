@@ -2215,9 +2215,9 @@ body {
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    max-width: 600px;
+    max-width: 820px;
     width: 100%;
-    max-height: 85vh;
+    max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0,0,0,0.4);
 }
