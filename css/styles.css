@@ -3057,9 +3057,9 @@ body {
     }
 
     .header-buttons .trainer-toggle {
-        width: 32px;
-        height: 32px;
-        font-size: 0.95rem;
+        height: 30px;
+        font-size: 0.7rem;
+        padding: 0 10px;
     }
 
     .header-buttons .theme-toggle {
@@ -3342,22 +3342,25 @@ body {
     position: absolute;
     top: 16px;
     left: 16px;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
+    height: 36px;
+    border-radius: 18px;
     border: 2px solid rgba(255,255,255,0.3);
     background: rgba(255,255,255,0.1);
     color: white;
-    font-size: 1.1rem;
+    font-size: 0.78rem;
+    font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 4px;
+    padding: 0 14px;
     transition: all var(--transition);
     backdrop-filter: blur(4px);
     z-index: 10;
-    padding: 0;
     line-height: 1;
+    white-space: nowrap;
+    font-family: inherit;
 }
 
 .theme-toggle:hover,
