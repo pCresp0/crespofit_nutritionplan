@@ -599,43 +599,7 @@ body {
     margin-bottom: 16px;
 }
 
-.info-banner-goal-strip {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: var(--radius-sm);
-    background: linear-gradient(135deg, rgba(212, 160, 23, 0.12) 0%, rgba(232, 167, 53, 0.08) 100%);
-    border: 1.5px solid var(--accent);
-    cursor: pointer;
-    transition: background var(--transition), transform 0.15s ease;
-    margin-bottom: 10px;
-}
 
-.info-banner-goal-strip:hover {
-    background: linear-gradient(135deg, rgba(212, 160, 23, 0.18) 0%, rgba(232, 167, 53, 0.12) 100%);
-    transform: translateY(-1px);
-}
-
-.info-banner-goal-strip .info-goal-icon {
-    font-size: 1.4rem;
-}
-
-.info-banner-goal-strip .info-goal-text {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--accent);
-}
-
-.info-banner-goal-strip .info-goal-edit {
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: var(--text-muted);
-    margin-left: 4px;
-    opacity: 0.7;
-}
 
 .info-banner-card {
     background: var(--card-bg);
@@ -648,15 +612,7 @@ body {
     gap: 14px;
 }
 
-.info-goal-icon {
-    font-size: 1.2rem;
-}
 
-.info-goal-text {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--accent);
-}
 
 .info-banner-metrics {
     display: flex;
@@ -806,46 +762,7 @@ body {
 }
 
 /* Goal Picker in tooltip */
-.goal-picker-title {
-    font-size: 0.85rem;
-    font-weight: 700;
-    margin-bottom: 12px;
-    text-align: center;
-    opacity: 0.7;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
 
-.goal-picker-option {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    border: 2px solid var(--border);
-    border-radius: var(--radius-sm);
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all var(--transition);
-    background: var(--card-bg);
-}
-
-.goal-picker-option:hover {
-    border-color: var(--accent);
-    background: rgba(212, 160, 23, 0.05);
-}
-
-.goal-picker-selected {
-    border-color: var(--accent);
-    background: rgba(212, 160, 23, 0.1);
-}
-
-.goal-picker-icon {
-    font-size: 1.3rem;
-}
-
-.goal-picker-text strong {
-    font-size: 0.85rem;
-}
 
 /* ========== CALC PANEL ========== */
 .calc-panel {
@@ -2977,20 +2894,6 @@ body {
 
     .info-banner {
         margin-bottom: 12px;
-    }
-
-    .info-banner-goal-strip {
-        padding: 10px 12px;
-        gap: 8px;
-        margin-bottom: 8px;
-    }
-
-    .info-banner-goal-strip .info-goal-icon {
-        font-size: 1.2rem;
-    }
-
-    .info-banner-goal-strip .info-goal-text {
-        font-size: 0.9rem;
     }
 
     .info-banner-card {

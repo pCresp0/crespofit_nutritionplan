@@ -484,11 +484,6 @@ function renderInfoBanner() {
     }
 
     el.innerHTML =
-        '<div class="info-banner-goal-strip" id="info-goal-picker">' +
-            '<span class="info-goal-icon">' + goalIcons[userGoal] + '</span>' +
-            '<span class="info-goal-text">' + goalLabels[userGoal] + '</span>' +
-            '<span class="info-goal-edit">✎ Cambiar</span>' +
-        '</div>' +
         '<div class="info-banner-card">' +
             '<div class="info-banner-metrics">' +
                 '<div class="info-metric">' +
@@ -510,11 +505,6 @@ function renderInfoBanner() {
             '<p class="info-banner-explain">' + goalDescs[userGoal] + '</p>' +
             '<button class="info-whatis-btn" id="info-whatis-btn">¿Qué es el TDEE?</button>' +
         '</div>';
-
-    // Goal quick-change click
-    document.getElementById('info-goal-picker').addEventListener('click', function(e) {
-        showGoalPicker();
-    });
 
     // TDEE explainer
     document.getElementById('info-whatis-btn').addEventListener('click', function(e) {
@@ -593,40 +583,7 @@ function renderInfoBanner() {
     });
 }
 
-function showGoalPicker() {
-    var goals = ['cut', 'recomp', 'maintain', 'bulk'];
-    var html = '<div class="goal-picker-title">Cambiar objetivo</div>';
-    goals.forEach(function(g) {
-        var sel = g === userGoal ? ' goal-picker-selected' : '';
-        html += '<div class="goal-picker-option'+sel+'" data-goal="'+g+'">' +
-            '<span class="goal-picker-icon">'+goalIcons[g]+'</span>' +
-            '<div class="goal-picker-text"><strong>'+goalLabels[g]+'</strong></div>' +
-            '</div>';
-    });
 
-    document.getElementById('tooltip-title').textContent = '';
-    document.getElementById('tooltip-body').innerHTML = html;
-    document.getElementById('tooltip-overlay').style.display = '';
-
-    // Attach handlers
-    document.querySelectorAll('.goal-picker-option').forEach(function(opt) {
-        opt.addEventListener('click', function() {
-            var newGoal = this.dataset.goal;
-            if (newGoal === userGoal) {
-                document.getElementById('tooltip-overlay').style.display = 'none';
-                return;
-            }
-            userGoal = newGoal;
-            recommendedKcal = getRecommendedKcal(userTdee, userGoal);
-            currentKcal = recommendedKcal;
-            document.getElementById('tooltip-overlay').style.display = 'none';
-            document.getElementById('kcal-display').textContent = currentKcal;
-            updateSliderRange();
-            renderAll();
-            saveAllState();
-        });
-    });
-}
 
 function renderNutritionSummary() {
     var container = document.getElementById('nutrition-summary');
