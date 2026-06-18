@@ -86,7 +86,8 @@ var lunchProteins = [
     {name:'Pollo',base:200,n:[110,23,0,1.5]},{name:'Pavo',base:220,n:[105,24,0,1]},{name:'Hamburguesa de pollo',base:180,n:[150,17,4,7]},
     {name:'Huevo (2 completos) + claras',base:100,unit:'ml claras',n:[196,24,1.5,10]},
     {name:'Lomo adobado',base:200,n:[150,20,1,7]},{name:'Ternera',base:160,n:[155,22,0,7]},
-    {name:'Merluza',base:250,n:[82,17,0,1]},{name:'Lenguado',base:250,n:[78,16,0,1.2]},{name:'Salmón',base:125,n:[208,20,0,13]}
+    {name:'Merluza',base:250,n:[82,17,0,1]},{name:'Lenguado',base:250,n:[78,16,0,1.2]},{name:'Salmón',base:125,n:[208,20,0,13]},
+    {name:'Atún al natural (3 latas)',base:168,n:[100,23,0,1]}
 ];
 var dinnerCarbs = [
     {name:'Arroz blanco',base:100,tag:'seco',n:[350,7,78,0.6]},
@@ -101,7 +102,8 @@ var dinnerProteins = [
     {name:'Pollo',base:200,n:[110,23,0,1.5]},{name:'Pavo',base:220,n:[105,24,0,1]},{name:'Hamburguesa de pollo',base:180,n:[150,17,4,7]},
     {name:'Huevo (2 yemas) + claras',base:100,unit:'ml claras',n:[196,24,1.5,10]},
     {name:'Lomo adobado',base:200,n:[150,20,1,7]},{name:'Ternera',base:160,n:[155,22,0,7]},
-    {name:'Merluza',base:250,n:[82,17,0,1]},{name:'Lenguado',base:250,n:[78,16,0,1.2]},{name:'Salmón',base:125,n:[208,20,0,13]}
+    {name:'Merluza',base:250,n:[82,17,0,1]},{name:'Lenguado',base:250,n:[78,16,0,1.2]},{name:'Salmón',base:125,n:[208,20,0,13]},
+    {name:'Atún al natural (3 latas)',base:168,n:[100,23,0,1]}
 ];
 
 var extrasNutr = { verduras:[25,2,4,0.3], aceite:[900,0,0,100], fruta:[80,0.5,20,0.2] };
@@ -116,8 +118,8 @@ var supplements = [
 ];
 
 // Protein category mapping: index → category (same order as lunchProteins/dinnerProteins)
-// 0:Pollo, 1:Pavo, 2:Hamburguesa pollo, 3:Huevo, 4:Lomo, 5:Ternera, 6:Merluza, 7:Lenguado, 8:Salmón
-var proteinCategory = ['poultry','poultry','poultry','egg','redmeat','redmeat','fish','fish','fish'];
+// 0:Pollo, 1:Pavo, 2:Hamburguesa pollo, 3:Huevo, 4:Lomo, 5:Ternera, 6:Merluza, 7:Lenguado, 8:Salmón, 9:Atún
+var proteinCategory = ['poultry','poultry','poultry','egg','redmeat','redmeat','fish','fish','fish','fish'];
 
 function getProteinPrefs() {
     var prefs = {};
@@ -3335,6 +3337,7 @@ var trainerFoodCatalog = [
     {name:'Merluza',cat:'Proteínas',n:[82,17,0,1],unit:'g'},
     {name:'Lenguado',cat:'Proteínas',n:[78,16,0,1.2],unit:'g'},
     {name:'Salmón',cat:'Proteínas',n:[208,20,0,13],unit:'g'},
+    {name:'Atún al natural',cat:'Proteínas',n:[100,23,0,1],unit:'g'},
     // Otros
     {name:'Verduras',cat:'Otros',n:[25,2,4,0.3],unit:'g'},
     {name:'Fruta',cat:'Otros',n:[80,0.5,20,0.2],unit:'g'},
