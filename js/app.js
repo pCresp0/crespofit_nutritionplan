@@ -811,8 +811,8 @@ function renderAll() {
 // ============================================================
 // TABS
 // ============================================================
-function activateTab(name) {
-    document.querySelectorAll('.main-tab').forEach(function(t){t.classList.remove('active');});
+function activateTab(name, scroll) {
+    document.querySelectorAll('.main-tab[data-tab]').forEach(function(t){t.classList.remove('active');});
     document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
     var btn = document.querySelector('.main-tab[data-tab="'+name+'"]');
     var panel = document.getElementById('tab-'+name);
@@ -820,8 +820,8 @@ function activateTab(name) {
     if (panel) panel.classList.add('active');
 
     // Scroll so the tab panel content is visible right below the sticky tabs nav
-    if (panel) {
-        var tabsNav = document.querySelector('.main-tabs-nav');
+    if (scroll && panel) {
+        var tabsNav = document.querySelector('.main-tabs-nav:not(.trainer-tabs-nav)');
         var navH = tabsNav ? tabsNav.offsetHeight : 0;
         var panelTop = panel.getBoundingClientRect().top + window.scrollY;
         window.scrollTo({ top: panelTop - navH - 4, behavior: 'smooth' });
@@ -1927,16 +1927,17 @@ document.querySelectorAll('[data-toggle]').forEach(function(h) {
     });
 });
 
-document.querySelectorAll('.main-tab').forEach(function(tab) {
+document.querySelectorAll('.main-tab[data-tab]').forEach(function(tab) {
     tab.addEventListener('click', function() {
         var target = this.dataset.tab;
-        var currentTab = document.querySelector('.main-tab.active');
+        if (!target) return;
+        var currentTab = document.querySelector('.main-tab[data-tab].active');
         var current = currentTab ? currentTab.dataset.tab : null;
         if (current && current !== target) {
             var warning = getTabIncompleteWarning(current);
             if (warning) showTabToast(warning);
         }
-        activateTab(target);
+        activateTab(target, true);
     });
 });
 
@@ -2995,7 +2996,7 @@ function renderValidator() {
 // Validator bar: click to navigate to tab
 document.getElementById('selection-validator').addEventListener('click', function(e) {
     var item = e.target.closest('[data-goto-tab]');
-    if (item) activateTab(item.getAttribute('data-goto-tab'));
+    if (item) activateTab(item.getAttribute('data-goto-tab'), true);
 });
 
 // ============================================================
