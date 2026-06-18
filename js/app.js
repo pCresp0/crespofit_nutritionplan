@@ -896,6 +896,7 @@ function showStep(n) {
         d.classList.toggle('active', parseInt(d.dataset.step) <= n);
         d.classList.toggle('current', parseInt(d.dataset.step) === n);
     });
+    window.scrollTo(0, 0);
 }
 
 function highlightInvalidFields(ids) {
