@@ -553,6 +553,12 @@ body {
     opacity: 0;
 }
 
+/* Body timeline needs more room (variable item count per goal) */
+#body-timeline .how-it-works-body {
+    max-height: 1200px;
+    overflow-y: auto;
+}
+
 .how-steps {
     list-style: none;
     counter-reset: step;
