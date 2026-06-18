@@ -2007,10 +2007,9 @@ function checkAutoAdvancePublic() {
     if (allComplete) {
         setTimeout(function() {
             showMealCompleteToast('¡Dieta completa! Aquí tienes tu resumen');
-            // Remove scroll handler that fights with our scroll, hide tabs permanently
+            // Temporarily disable scroll handler during scroll animation
             if (publicTabsScrollHandler) {
                 window.removeEventListener('scroll', publicTabsScrollHandler);
-                publicTabsScrollHandler = null;
             }
             var tabsNav = document.querySelector('.main-tabs-nav:not(.trainer-tabs-nav)');
             if (tabsNav) {
@@ -2024,6 +2023,8 @@ function checkAutoAdvancePublic() {
                 var top = summary.getBoundingClientRect().top + window.pageYOffset - 16;
                 window.scrollTo({ top: top, behavior: 'smooth' });
             }
+            // Re-setup handler after scroll animation completes
+            setTimeout(function() { setupPublicTabsVisibility(); }, 1000);
         }, 400);
         return;
     }
@@ -3710,10 +3711,9 @@ function checkAutoAdvanceTrainer() {
     if (allComplete) {
         setTimeout(function() {
             showMealCompleteToast('¡Dieta completa! Aquí tienes tu resumen');
-            // Remove scroll handler that fights with our scroll, hide tabs permanently
+            // Temporarily disable scroll handler during scroll animation
             if (trainerTabsScrollHandler) {
                 window.removeEventListener('scroll', trainerTabsScrollHandler);
-                trainerTabsScrollHandler = null;
             }
             var tabsNav = document.querySelector('.trainer-tabs-nav');
             if (tabsNav) {
@@ -3727,6 +3727,8 @@ function checkAutoAdvanceTrainer() {
                 var top = summary.getBoundingClientRect().top + window.pageYOffset - 16;
                 window.scrollTo({ top: top, behavior: 'smooth' });
             }
+            // Re-setup handler after scroll animation completes
+            setTimeout(function() { setupTrainerTabsVisibility(); }, 1000);
         }, 400);
         return;
     }
