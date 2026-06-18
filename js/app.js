@@ -884,7 +884,7 @@ function validateStep1() {
     var w = document.getElementById('calc-weight').value;
     var invalid = [];
     if (!age || parseFloat(age) < 18 || parseFloat(age) > 99) invalid.push('calc-age');
-    if (!h || parseFloat(h) <= 0) invalid.push('calc-height');
+    if (!h || parseFloat(h) < 100 || parseFloat(h) > 230) invalid.push('calc-height');
     if (!w || parseFloat(w) <= 0) invalid.push('calc-weight');
     if (invalid.length) highlightInvalidFields(invalid);
     return invalid.length === 0;
@@ -1157,6 +1157,17 @@ document.getElementById('next-1').addEventListener('click', function() {
     }
     if (age && age > 99) {
         showAppAlert('¡' + age + ' años! Eres un ejemplo de vida 🎉 Pero las fórmulas nutricionales no están validadas para mayores de 99 años — las estimaciones no serían fiables. Te recomendamos consultar con tu médico o nutricionista para un plan personalizado.');
+        return;
+    }
+    var height = parseFloat(document.getElementById('calc-height').value);
+    if (height && height < 100) {
+        showAppAlert('📏 ¿' + height + ' cm? ¡No intentes engañarme! 😄 Ni el hobbit más pequeño de la Comarca mide menos de 1 metro. Pon tu altura real para que el plan tenga sentido.');
+        highlightInvalidFields(['calc-height']);
+        return;
+    }
+    if (height && height > 230) {
+        showAppAlert('🦒 ¿' + height + ' cm? ¡No me engañes! El hombre más alto de la historia, Robert Wadlow, medía 272 cm y necesitaba ayuda para caminar. Si mides más de 2.30m deberías estar jugando en la NBA, no usando una app de nutrición 🏀😂<br><br>Pon tu altura real, anda.');
+        highlightInvalidFields(['calc-height']);
         return;
     }
     if (!validateStep1()) { showAppAlert('Rellena todos los campos (edad, altura y peso) para continuar.'); return; }
