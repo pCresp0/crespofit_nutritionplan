@@ -1475,6 +1475,27 @@ function randomDiet() {
     }
 })();
 
+// Info tooltip on mobile (long press to show, tap elsewhere to hide)
+(function() {
+    var infoTimer = null;
+    document.querySelectorAll('.random-diet-btn[data-info]').forEach(function(btn) {
+        btn.addEventListener('touchstart', function(e) {
+            infoTimer = setTimeout(function() {
+                document.querySelectorAll('.random-diet-btn.show-info').forEach(function(b) { b.classList.remove('show-info'); });
+                btn.classList.add('show-info');
+                e.preventDefault();
+            }, 400);
+        });
+        btn.addEventListener('touchend', function() { clearTimeout(infoTimer); });
+        btn.addEventListener('touchmove', function() { clearTimeout(infoTimer); });
+    });
+    document.addEventListener('touchstart', function(e) {
+        if (!e.target.closest('.random-diet-btn[data-info]')) {
+            document.querySelectorAll('.random-diet-btn.show-info').forEach(function(b) { b.classList.remove('show-info'); });
+        }
+    });
+})();
+
 // ============================================================
 // WEEKLY DIET GENERATION & EXPORT
 // ============================================================

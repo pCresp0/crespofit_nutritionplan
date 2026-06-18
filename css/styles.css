@@ -1652,23 +1652,44 @@ body {
 }
 
 .diet-btn-wrapper {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
 }
 
-.diet-btn-info {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    cursor: help;
-    opacity: 0.6;
-    transition: opacity 0.2s;
-    line-height: 1;
+.random-diet-btn[data-info]::after {
+    content: attr(data-info);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.95);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 0.72rem;
+    font-weight: 400;
+    line-height: 1.4;
+    padding: 8px 12px;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    white-space: normal;
+    width: max-content;
+    max-width: 220px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 50;
 }
 
-.diet-btn-info:hover {
+.random-diet-btn[data-info]:hover::after {
     opacity: 1;
-    color: var(--accent);
+    transform: translateX(-50%) scale(1);
+}
+
+.random-diet-btn[data-info].show-info::after {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
 }
 
 .random-diet-btn {
