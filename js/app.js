@@ -2432,7 +2432,8 @@ function renderValidator() {
         var items = checks.map(function(c) {
             var cls = c.done ? 'validator-item done' : 'validator-item missing';
             var icon = c.done ? '✓' : '○';
-            return '<span class="' + cls + '"><span class="vi-icon">' + icon + '</span>' + c.label + '</span>';
+            var tab = c.key === 'breakfast' ? 'breakfast' : (c.key.indexOf('lunch') === 0 ? 'lunch' : 'dinner');
+            return '<span class="' + cls + '" data-goto-tab="' + tab + '" style="cursor:pointer"><span class="vi-icon">' + icon + '</span>' + c.label + '</span>';
         }).join('');
         bar.innerHTML = '<div class="validator-items">' + items + '</div>';
     }
@@ -2446,6 +2447,12 @@ function renderValidator() {
     // Render diet summary when complete
     renderDietSummary();
 }
+
+// Validator bar: click to navigate to tab
+document.getElementById('selection-validator').addEventListener('click', function(e) {
+    var item = e.target.closest('[data-goto-tab]');
+    if (item) activateTab(item.getAttribute('data-goto-tab'));
+});
 
 // ============================================================
 // DIET SUMMARY (shown when all meals selected)
@@ -2946,7 +2953,8 @@ function renderTrainerValidator() {
         var items = checks.map(function(c) {
             var cls = c.done ? 'validator-item done' : 'validator-item missing';
             var icon = c.done ? '✓' : '○';
-            return '<span class="' + cls + '"><span class="vi-icon">' + icon + '</span>' + c.label + '</span>';
+            var tab = c.key === 'breakfast' ? 'breakfast' : (c.key.indexOf('lunch') === 0 ? 'lunch' : 'dinner');
+            return '<span class="' + cls + '" data-goto-tab="' + tab + '" style="cursor:pointer"><span class="vi-icon">' + icon + '</span>' + c.label + '</span>';
         }).join('');
         bar.innerHTML = '<div class="validator-items">' + items + '</div>';
     }
