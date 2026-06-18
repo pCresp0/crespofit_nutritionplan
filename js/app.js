@@ -1751,6 +1751,7 @@ document.getElementById('start-plan').addEventListener('click', function() {
     populateDisclaimer();
     populateBodyTimeline();
     saveAllState();
+    setupPublicTabsVisibility();
 
     // Show welcome modal on first visit
     if (!localStorage.getItem('welcomeModalSeen')) {
@@ -1798,6 +1799,7 @@ document.getElementById('dev-skip-btn').addEventListener('click', function() {
     populateDisclaimer();
     populateBodyTimeline();
     saveAllState();
+    setupPublicTabsVisibility();
 });
 
 document.getElementById('welcome-modal-ok').addEventListener('click', function() {
@@ -2959,6 +2961,7 @@ function init() {
         activateTab(getDefaultTab());
         populateDisclaimer();
         populateBodyTimeline();
+        setupPublicTabsVisibility();
         window.scrollTo(0, 0);
     } else {
         document.getElementById('onboarding').style.display = '';
@@ -3553,7 +3556,7 @@ function renderTrainerContent() {
     html += '</div>'; // end section
 
     // Suplementos (siempre visible, fuera de tabs)
-    html += '<div class="trainer-section"><h3>\ud83d\udc8a Suplementación</h3><div class="trainer-supps">';
+    html += '<div class="trainer-section trainer-supplements-section"><h3>\ud83d\udc8a Suplementación</h3><div class="trainer-supps">';
     supplements.forEach(function(s) {
         html += '<div class="trainer-supp">' + s.icon + ' <strong>' + s.title + '</strong> — ' + s.desc + '</div>';
     });
@@ -3573,9 +3576,9 @@ function renderTrainerContent() {
 var trainerTabsObserver = null;
 function setupTrainerTabsVisibility() {
     if (trainerTabsObserver) trainerTabsObserver.disconnect();
-    var extrasSection = document.querySelector('.trainer-extras-section');
+    var suppSection = document.querySelector('.trainer-supplements-section');
     var tabsNav = document.querySelector('.trainer-tabs-nav');
-    if (!extrasSection || !tabsNav) return;
+    if (!suppSection || !tabsNav) return;
     trainerTabsObserver = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
             if (entry.isIntersecting) {
@@ -3585,7 +3588,25 @@ function setupTrainerTabsVisibility() {
             }
         });
     }, { threshold: 0 });
-    trainerTabsObserver.observe(extrasSection);
+    trainerTabsObserver.observe(suppSection);
+}
+
+var publicTabsObserver = null;
+function setupPublicTabsVisibility() {
+    if (publicTabsObserver) publicTabsObserver.disconnect();
+    var suppSection = document.querySelector('.supplements-section');
+    var tabsNav = document.querySelector('.main-tabs-nav:not(.trainer-tabs-nav)');
+    if (!suppSection || !tabsNav) return;
+    publicTabsObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                tabsNav.classList.add('tabs-hidden');
+            } else {
+                tabsNav.classList.remove('tabs-hidden');
+            }
+        });
+    }, { threshold: 0 });
+    publicTabsObserver.observe(suppSection);
 }
 
 function renderTrainerValidator() {

@@ -4341,7 +4341,7 @@ body {
 }
 
 /* Trainer extra foods section */
-.trainer-tabs-nav.tabs-hidden {
+.main-tabs-nav.tabs-hidden {
     opacity: 0;
     pointer-events: none;
     max-height: 0;
