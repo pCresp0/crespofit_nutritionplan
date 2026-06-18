@@ -1482,8 +1482,9 @@ function randomDiet() {
     var toggle = document.getElementById('how-it-works-toggle');
     if (!section || !toggle) return;
 
-    // Restore collapsed state
-    if (localStorage.getItem('howItWorksCollapsed') === '1') {
+    // Start collapsed unless user explicitly opened it before
+    var stored = localStorage.getItem('howItWorksCollapsed');
+    if (stored !== '0') {
         section.classList.add('collapsed');
     }
 

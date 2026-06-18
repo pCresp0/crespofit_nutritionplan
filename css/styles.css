@@ -492,7 +492,8 @@ body {
 .how-it-works {
     background: var(--card-bg);
     border: 1.5px solid var(--border);
-    border-radius: var(--radius);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
     margin-bottom: 16px;
     overflow: hidden;
     box-shadow: var(--shadow-sm);
@@ -502,7 +503,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 16px;
+    padding: 10px 14px;
     cursor: pointer;
     user-select: none;
     transition: background var(--transition);
@@ -513,18 +514,18 @@ body {
 }
 
 .how-icon {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
 }
 
 .how-title {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     font-weight: 600;
     color: var(--text-primary);
     flex: 1;
 }
 
 .how-chevron {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
     transition: transform 0.2s;
 }
@@ -534,9 +535,9 @@ body {
 }
 
 .how-it-works-body {
-    padding: 0 16px 14px;
+    padding: 0 14px 12px;
     transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.2s;
-    max-height: 300px;
+    max-height: 260px;
     opacity: 1;
     overflow: hidden;
 }
@@ -553,33 +554,30 @@ body {
     counter-reset: step;
     padding: 0;
     margin: 0;
+    display: grid;
+    gap: 6px;
 }
 
 .how-steps li {
     counter-increment: step;
     position: relative;
-    padding-left: 28px;
-    margin-bottom: 8px;
-    font-size: 0.82rem;
-    line-height: 1.45;
+    padding-left: 26px;
+    font-size: 0.78rem;
+    line-height: 1.4;
     color: var(--text-secondary);
-}
-
-.how-steps li:last-child {
-    margin-bottom: 0;
 }
 
 .how-steps li::before {
     content: counter(step);
     position: absolute;
     left: 0;
-    top: 1px;
-    width: 20px;
-    height: 20px;
+    top: 0;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    background: var(--primary);
+    background: var(--accent);
     color: white;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 700;
     display: flex;
     align-items: center;
