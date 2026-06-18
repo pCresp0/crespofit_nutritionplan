@@ -1928,21 +1928,6 @@ document.addEventListener('click', function(e) {
     var key = meal==='lunch'?(type==='carb'?'lunchCarb':'lunchProtein'):(type==='carb'?'dinnerCarb':'dinnerProtein');
     selections[key] = selections[key]===idx?null:idx;
     renderAll(); saveAllState();
-    // Auto-scroll to protein section when a carb is selected and protein is missing
-    var protKey = meal === 'lunch' ? 'lunchProtein' : 'dinnerProtein';
-    if (type === 'carb' && selections[key] !== null && selections[protKey] === null) {
-        var containerId = meal === 'lunch' ? 'lunch-tables' : 'dinner-tables';
-        var protHeader = document.getElementById(containerId).querySelector('.meal-table-header.protein');
-        if (protHeader) {
-            setTimeout(function() {
-                var rect = protHeader.getBoundingClientRect();
-                var offset = 60;
-                if (rect.top < offset || rect.top > window.innerHeight * 0.5) {
-                    window.scrollBy({ top: rect.top - offset, behavior: 'smooth' });
-                }
-            }, 100);
-        }
-    }
     checkAutoAdvancePublic();
 });
 
@@ -2009,13 +1994,25 @@ function showMealCompleteToast(msg) {
 }
 
 function checkAutoAdvancePublic() {
-    var allComplete = selections.breakfast !== null && selections.lunchCarb !== null && selections.lunchProtein !== null && selections.dinnerCarb !== null && selections.dinnerProtein !== null;
+    // Ordered sequence: breakfast → lunchCarb → lunchProtein → dinnerCarb → dinnerProtein
+    var steps = [
+        { key:'breakfast', tab:'breakfast', label:'Desayuno' },
+        { key:'lunchCarb', tab:'lunch', label:'Comida HC', section:'carbs' },
+        { key:'lunchProtein', tab:'lunch', label:'Comida Prot', section:'protein' },
+        { key:'dinnerCarb', tab:'dinner', label:'Cena HC', section:'carbs' },
+        { key:'dinnerProtein', tab:'dinner', label:'Cena Prot', section:'protein' }
+    ];
 
-    // If all 5 selections are complete, go to summary immediately
-    if (allComplete) {
+    // Find the first unfilled step
+    var nextStep = null;
+    for (var i = 0; i < steps.length; i++) {
+        if (selections[steps[i].key] === null) { nextStep = steps[i]; break; }
+    }
+
+    // All 5 complete → scroll to summary
+    if (!nextStep) {
         setTimeout(function() {
             showMealCompleteToast('¡Dieta completa! Aquí tienes tu resumen');
-            // Temporarily disable scroll handler during scroll animation
             if (publicTabsScrollHandler) {
                 window.removeEventListener('scroll', publicTabsScrollHandler);
             }
@@ -2023,7 +2020,7 @@ function checkAutoAdvancePublic() {
             if (tabsNav) {
                 tabsNav.style.transition = 'none';
                 tabsNav.classList.add('tabs-hidden');
-                tabsNav.offsetHeight; // force reflow
+                tabsNav.offsetHeight;
                 tabsNav.style.transition = '';
             }
             var summary = document.getElementById('nutrition-summary');
@@ -2031,25 +2028,50 @@ function checkAutoAdvancePublic() {
                 var top = summary.getBoundingClientRect().top + window.pageYOffset - 16;
                 window.scrollTo({ top: top, behavior: 'smooth' });
             }
-            // Re-setup handler after scroll animation completes
             setTimeout(function() { setupPublicTabsVisibility(); }, 1000);
         }, 400);
         return;
     }
 
-    var activeTab = document.querySelector('.main-tab[data-tab].active');
-    var currentTab = activeTab ? activeTab.dataset.tab : null;
+    // Get current public tab
+    var activeTabEl = document.querySelector('.main-tab[data-tab].active');
+    var currentTab = activeTabEl ? activeTabEl.dataset.tab : null;
 
-    if (currentTab === 'breakfast' && selections.breakfast !== null) {
+    // Need to change tab?
+    if (nextStep.tab !== currentTab) {
+        var msgs = {
+            'breakfast': 'Falta el desayuno',
+            'lunch': nextStep.key === 'lunchCarb' ? 'Vamos con la comida' : 'Falta la proteína de la comida',
+            'dinner': nextStep.key === 'dinnerCarb' ? 'Vamos con la cena' : 'Falta la proteína de la cena'
+        };
         setTimeout(function() {
-            showMealCompleteToast('Desayuno elegido — vamos con la comida');
-            activateTab('lunch', true);
+            showMealCompleteToast(msgs[nextStep.tab]);
+            activateTab(nextStep.tab, true);
+            if (nextStep.section === 'protein') {
+                setTimeout(function() {
+                    scrollToPublicSection(nextStep.tab, 'protein');
+                }, 500);
+            }
         }, 400);
-    } else if (currentTab === 'lunch' && selections.lunchCarb !== null && selections.lunchProtein !== null) {
+    } else if (nextStep.section === 'protein') {
+        // Same tab, scroll to protein section
         setTimeout(function() {
-            showMealCompleteToast('Comida completa — vamos con la cena');
-            activateTab('dinner', true);
-        }, 400);
+            scrollToPublicSection(nextStep.tab, 'protein');
+        }, 100);
+    }
+}
+
+function scrollToPublicSection(meal, sectionType) {
+    var containerId = meal === 'lunch' ? 'lunch-tables' : 'dinner-tables';
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    var header = container.querySelector('.meal-table-header.' + sectionType);
+    if (header) {
+        var rect = header.getBoundingClientRect();
+        var offset = 60;
+        if (rect.top < offset || rect.top > window.innerHeight * 0.5) {
+            window.scrollBy({ top: rect.top - offset, behavior: 'smooth' });
+        }
     }
 }
 
