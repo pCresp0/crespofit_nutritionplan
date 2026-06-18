@@ -1355,6 +1355,7 @@ document.getElementById('start-plan').addEventListener('click', function() {
     currentKcal = recommendedKcal;
     document.getElementById('onboarding').style.display = 'none';
     document.getElementById('app-wrapper').style.display = '';
+    document.getElementById('selection-validator').classList.remove('hidden');
     document.getElementById('kcal-display').textContent = currentKcal;
     window.scrollTo(0, 0);
     updateSliderRange();
@@ -1400,6 +1401,7 @@ document.getElementById('reconfigure-btn').addEventListener('click', function() 
     // Show onboarding at step 2 (since basic data is kept)
     document.getElementById('app-wrapper').style.display = 'none';
     document.getElementById('onboarding').style.display = '';
+    document.getElementById('selection-validator').classList.add('hidden');
     showStep(2);
 });
 
@@ -2297,6 +2299,7 @@ function init() {
     if (hasState) {
         document.getElementById('onboarding').style.display = 'none';
         document.getElementById('app-wrapper').style.display = '';
+        document.getElementById('selection-validator').classList.remove('hidden');
         document.getElementById('kcal-display').textContent = currentKcal;
         updateSliderRange();
         renderAll();
@@ -2306,6 +2309,7 @@ function init() {
     } else {
         document.getElementById('onboarding').style.display = '';
         document.getElementById('app-wrapper').style.display = 'none';
+        document.getElementById('selection-validator').classList.add('hidden');
         showStep(1);
     }
 }

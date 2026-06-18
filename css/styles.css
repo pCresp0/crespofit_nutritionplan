@@ -3233,7 +3233,7 @@ body {
 
 @media (min-width: 768px) {
     .onboarding-card {
-        max-width: 720px;
+        max-width: 860px;
         padding: 36px 36px 28px;
     }
 }
