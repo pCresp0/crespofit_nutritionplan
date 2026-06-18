@@ -883,7 +883,7 @@ function validateStep1() {
     var h = document.getElementById('calc-height').value;
     var w = document.getElementById('calc-weight').value;
     var invalid = [];
-    if (!age || parseFloat(age) < 18 || parseFloat(age) > 122) invalid.push('calc-age');
+    if (!age || parseFloat(age) < 18 || parseFloat(age) > 99) invalid.push('calc-age');
     if (!h || parseFloat(h) <= 0) invalid.push('calc-height');
     if (!w || parseFloat(w) <= 0) invalid.push('calc-weight');
     if (invalid.length) highlightInvalidFields(invalid);
@@ -1153,6 +1153,10 @@ document.getElementById('next-1').addEventListener('click', function() {
     }
     if (age && age > 122) {
         showAppAlert('🏆 ¡¿' + age + ' años?! El récord mundial de longevidad lo tiene Jeanne Calment con 122 años (1875-1997). ¡Deberías llamar al Libro Guinness de los Récords porque acabas de batir el récord de la historia de la humanidad! 📞🎉<br><br>Pon tu edad real para que pueda calcular bien tu plan 😄');
+        return;
+    }
+    if (age && age > 99) {
+        showAppAlert('¡' + age + ' años! Eres un ejemplo de vida 🎉 Pero las fórmulas nutricionales no están validadas para mayores de 99 años — las estimaciones no serían fiables. Te recomendamos consultar con tu médico o nutricionista para un plan personalizado.');
         return;
     }
     if (!validateStep1()) { showAppAlert('Rellena todos los campos (edad, altura y peso) para continuar.'); return; }
