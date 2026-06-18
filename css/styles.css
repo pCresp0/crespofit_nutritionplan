@@ -204,36 +204,38 @@ body {
     opacity: 0.08;
 }
 
-.header-content {
-    position: relative;
-    max-width: var(--max-width);
-    margin: 0 auto;
-    text-align: center;
-    padding-top: 0;
-    z-index: 1;
-}
-
-.header-buttons {
+.header-row {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
     gap: 8px;
-    margin-bottom: 0;
     position: relative;
     z-index: 1;
 }
 
-.header h1 {
-    font-size: 1.25rem;
+.header-row h1 {
+    flex: 1;
+    text-align: center;
+    font-size: 1.15rem;
     font-weight: 700;
-    margin: 0 0 2px;
+    margin: 0;
     letter-spacing: -0.01em;
     opacity: 0.95;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
-.header h1 .user-name {
+.header-row h1 .user-name {
     font-style: italic;
     font-weight: 800;
+}
+
+.header-kcal {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    padding: 2px 0 0;
 }
 
 .kcal-selector {
@@ -3042,36 +3044,43 @@ body {
 /* ========== RESPONSIVE ========== */
 @media (max-width: 640px) {
     .header {
-        padding: 8px 12px 6px;
+        padding: 6px 10px 4px;
         text-align: center;
     }
 
-    .header-buttons {
-        gap: 8px;
-        margin-bottom: 4px;
+    .header-row {
+        gap: 6px;
     }
 
-    .header-buttons .trainer-toggle,
-    .header-buttons .reconfigure-btn {
-        height: 30px;
-        font-size: 0.7rem;
-        padding: 0 10px;
+    .header-row .btn-label {
+        display: none;
     }
 
-    .header-buttons .theme-toggle {
-        width: 30px;
-        height: 30px;
+    .header-row .trainer-toggle,
+    .header-row .reconfigure-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        padding: 0;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    .header-row .theme-toggle {
+        width: 32px;
+        height: 32px;
         font-size: 0.9rem;
+        flex-shrink: 0;
     }
 
-    .header-content {
-        padding-top: 0;
-        width: 100%;
+    .header-row h1 {
+        font-size: 0.95rem;
+        white-space: normal;
+        line-height: 1.2;
     }
 
-    .header h1 {
-        font-size: 1.05rem;
-        margin-bottom: 4px;
+    .header-kcal {
+        padding: 1px 0 0;
     }
 
     .kcal-number {
@@ -3322,7 +3331,7 @@ body {
     z-index: 10;
     padding: 0;
     line-height: 1;
-    margin-left: auto;
+    flex-shrink: 0;
 }
 
 .trainer-toggle {
@@ -3345,6 +3354,7 @@ body {
     line-height: 1;
     white-space: nowrap;
     font-family: inherit;
+    flex-shrink: 0;
 }
 
 .theme-toggle:hover,
@@ -4059,6 +4069,7 @@ body {
     z-index: 10;
     line-height: 1;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .reconfigure-btn:hover {
