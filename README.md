@@ -19,7 +19,7 @@
 
 ### 🍳 Planificación de comidas
 - **6 opciones de desayuno** con tarjetas seleccionables (yogur/QFB, tostadas, cereales, tortitas, yogures proteicos, bocadillo)
-- **Almuerzo y cena** con tablas de hidratos y proteínas (elige 1 de cada)
+- **Comida y cena** con tablas de hidratos y proteínas (elige 1 de cada)
 - **Extras obligatorios** por comida: ~200g verduras + 15ml AOVE + 1 fruta
 - Gramajes escalados automáticamente según las kcal elegidas
 

@@ -642,15 +642,15 @@ function renderNutritionSummary() {
     var pp=tg>0?Math.round(p/tg*100):0, cp=tg>0?Math.round(c/tg*100):0, fp=tg>0?100-pp-cp:0;
     var meals=[];
     if (selections.breakfast!==null) meals.push('Desayuno');
-    if (selections.lunchCarb!==null||selections.lunchProtein!==null) meals.push('Almuerzo');
+    if (selections.lunchCarb!==null||selections.lunchProtein!==null) meals.push('Comida');
     if (selections.dinnerCarb!==null||selections.dinnerProtein!==null) meals.push('Cena');
     var complete = selections.breakfast!==null && selections.lunchCarb!==null && selections.lunchProtein!==null && selections.dinnerCarb!==null && selections.dinnerProtein!==null;
     var missingHtml = '';
     if (!complete) {
         var missingItems = [];
         if (selections.breakfast === null) missingItems.push('Desayuno');
-        if (selections.lunchCarb === null) missingItems.push('Almuerzo: hidrato');
-        if (selections.lunchProtein === null) missingItems.push('Almuerzo: prote\u00edna');
+        if (selections.lunchCarb === null) missingItems.push('Comida: hidrato');
+        if (selections.lunchProtein === null) missingItems.push('Comida: prote\u00edna');
         if (selections.dinnerCarb === null) missingItems.push('Cena: hidrato');
         if (selections.dinnerProtein === null) missingItems.push('Cena: prote\u00edna');
         missingHtml = '<div class="nutrition-missing">\u26a0\ufe0f Falta: ' + missingItems.join(' \u00b7 ') + '</div>';
@@ -1483,7 +1483,7 @@ function getTabIncompleteWarning(tab) {
         var missing = [];
         if (selections.lunchCarb === null) missing.push('hidrato');
         if (selections.lunchProtein === null) missing.push('proteína');
-        if (missing.length > 0) return 'Falta ' + missing.join(' y ') + ' en el almuerzo';
+        if (missing.length > 0) return 'Falta ' + missing.join(' y ') + ' en el comida';
     }
     if (tab === 'dinner') {
         var missing = [];
@@ -1878,7 +1878,7 @@ function buildWeeklyExportCanvas(plan) {
         var dayContentLines = 0;
         dayContentLines += 1; // Desayuno header
         dayContentLines += bOpt.items.length; // Breakfast items
-        dayContentLines += 1; // Almuerzo header
+        dayContentLines += 1; // Comida header
         dayContentLines += 1; // Lunch carb
         dayContentLines += 1; // Lunch protein
         dayContentLines += 1; // Lunch extras
@@ -1943,7 +1943,7 @@ function buildWeeklyExportCanvas(plan) {
 
         ctx.fillStyle = accent;
         ctx.font = 'bold 17px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-        ctx.fillText('🍲 Almuerzo', pad + 20, mealY);
+        ctx.fillText('🍲 Comida', pad + 20, mealY);
         mealY += lineH;
 
         ctx.fillStyle = textLight;
@@ -2323,8 +2323,8 @@ function renderValidator() {
 
     var checks = [
         { key: 'breakfast', label: 'Desayuno', done: selections.breakfast !== null },
-        { key: 'lunchCarb', label: 'Almuerzo HC', done: selections.lunchCarb !== null },
-        { key: 'lunchProtein', label: 'Almuerzo Prot', done: selections.lunchProtein !== null },
+        { key: 'lunchCarb', label: 'Comida HC', done: selections.lunchCarb !== null },
+        { key: 'lunchProtein', label: 'Comida Prot', done: selections.lunchProtein !== null },
         { key: 'dinnerCarb', label: 'Cena HC', done: selections.dinnerCarb !== null },
         { key: 'dinnerProtein', label: 'Cena Prot', done: selections.dinnerProtein !== null }
     ];
@@ -2484,7 +2484,7 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
 
     // Lunch
     html += '<div class="summary-meal">' +
-        '<div class="summary-meal-header">🍲 Almuerzo <span class="summary-meal-kcal">' + lunchKcal + ' kcal</span></div>' +
+        '<div class="summary-meal-header">🍲 Comida <span class="summary-meal-kcal">' + lunchKcal + ' kcal</span></div>' +
         '<ul class="summary-meal-items">' + lunchItems.map(function(i){ return '<li>'+i+'</li>'; }).join('') + '</ul>' +
         suppHTML('lunch') +
         '</div>';
@@ -2598,7 +2598,7 @@ function renderTrainerNutrition() {
 
     var meals = [];
     if (trainerSelections.breakfast !== null) meals.push('Desayuno');
-    if (trainerSelections.lunchCarb !== null || trainerSelections.lunchProtein !== null) meals.push('Almuerzo');
+    if (trainerSelections.lunchCarb !== null || trainerSelections.lunchProtein !== null) meals.push('Comida');
     if (trainerSelections.dinnerCarb !== null || trainerSelections.dinnerProtein !== null) meals.push('Cena');
     var complete = trainerSelections.breakfast !== null && trainerSelections.lunchCarb !== null && trainerSelections.lunchProtein !== null && trainerSelections.dinnerCarb !== null && trainerSelections.dinnerProtein !== null;
 
@@ -2640,8 +2640,8 @@ function renderTrainerContent() {
     });
     html += '</div>';
 
-    // Almuerzo
-    html += '<div class="trainer-section"><h3>\ud83c\udf72 Almuerzo</h3>';
+    // Comida
+    html += '<div class="trainer-section"><h3>\ud83c\udf72 Comida</h3>';
     html += '<div class="trainer-subsection"><h4>\ud83c\udf3e Hidratos (elige 1)</h4><table class="trainer-table"><tbody>';
     lunchCarbs.forEach(function(item, idx) {
         var sel = trainerSelections.lunchCarb === idx ? ' class="trainer-row-selected"' : '';
@@ -2838,7 +2838,7 @@ function buildWhatsAppText() {
     text += '\n━━━━━━━━━━━━━━━━━━━━\n\n';
 
     text += getBreakfastText() + '\n\n';
-    text += getMealText('ALMUERZO', '🍲', lunchCarbs, lunchProteins, selections.lunchCarb, selections.lunchProtein) + '\n\n';
+    text += getMealText('COMIDA', '🍲', lunchCarbs, lunchProteins, selections.lunchCarb, selections.lunchProtein) + '\n\n';
     text += getMealText('CENA', '🌙', dinnerCarbs, dinnerProteins, selections.dinnerCarb, selections.dinnerProtein) + '\n\n';
 
     text += '━━━━━━━━━━━━━━━━━━━━\n\n';
@@ -3116,7 +3116,7 @@ function buildExportCanvas() {
         lItems.push({ name: 'Verduras / ensalada', amount: '~' + vegG + 'g' });
         lItems.push({ name: 'Aceite de oliva', amount: oilMl + 'ml' });
         lItems.push({ name: '1 pieza de fruta', amount: '' });
-        curY = drawMealSection('Almuerzo', lItems, curY);
+        curY = drawMealSection('Comida', lItems, curY);
     }
 
     // Dinner
