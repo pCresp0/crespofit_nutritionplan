@@ -3765,6 +3765,7 @@ function renderTrainerContent() {
         var u = item.unit || 'g';
         html += '<tr class="'+(s?'selected':'')+'" data-trainer-meal="lunch" data-trainer-type="protein" data-trainer-index="'+idx+'"><td>'+item.name+'</td><td>'+item.base+' '+u+'</td></tr>';
     });
+    html += '<tr class="note-row"><td colspan="2">Escurrir bien las latas de aceite de oliva</td></tr>';
     html += '</tbody></table></div>';
     html += '</div></div>'; // end meal-tables + meal-card
 
@@ -3798,6 +3799,7 @@ function renderTrainerContent() {
         var u = item.unit || 'g';
         html += '<tr class="'+(s?'selected':'')+'" data-trainer-meal="dinner" data-trainer-type="protein" data-trainer-index="'+idx+'"><td>'+item.name+'</td><td>'+item.base+' '+u+'</td></tr>';
     });
+    html += '<tr class="note-row"><td colspan="2">Escurrir bien las latas de aceite de oliva</td></tr>';
     html += '</tbody></table></div>';
     html += '</div></div>'; // end meal-tables + meal-card
 
