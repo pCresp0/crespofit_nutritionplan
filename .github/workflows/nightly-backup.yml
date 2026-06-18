@@ -1,0 +1,44 @@
+name: Nightly Backup
+
+on:
+  schedule:
+    # Todos los días a las 23:55 hora España peninsular (UTC+2 verano / UTC+1 invierno)
+    # 21:55 UTC cubre CEST (23:55 en verano), en invierno serían las 22:55 local
+    - cron: '55 21 * * *'
+  workflow_dispatch: # Permite lanzarlo manualmente desde GitHub
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0 # Historial completo para contar commits del día
+
+      - name: Check for today's commits and create backup
+        run: |
+          TODAY=$(date -u +%Y-%m-%d)
+
+          # Contar commits en main de hoy (UTC)
+          COMMIT_COUNT=$(git log --oneline --since="${TODAY}T00:00:00Z" --until="${TODAY}T23:59:59Z" --format="%H" | wc -l)
+
+          if [ "$COMMIT_COUNT" -eq 0 ]; then
+            echo "No commits today on main. Skipping backup."
+            exit 0
+          fi
+
+          BRANCH_NAME="backup/${TODAY}_${COMMIT_COUNT}commits"
+
+          echo "Creating backup branch: $BRANCH_NAME ($COMMIT_COUNT commits today)"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git branch "$BRANCH_NAME"
+          git push origin "$BRANCH_NAME"
+
+          echo "✅ Backup branch '$BRANCH_NAME' created and pushed."
