@@ -883,7 +883,7 @@ function validateStep1() {
     var h = document.getElementById('calc-height').value;
     var w = document.getElementById('calc-weight').value;
     var invalid = [];
-    if (!age || parseFloat(age) < 18 || parseFloat(age) > 99) invalid.push('calc-age');
+    if (!age || parseFloat(age) < 18 || parseFloat(age) > 122) invalid.push('calc-age');
     if (!h || parseFloat(h) <= 0) invalid.push('calc-height');
     if (!w || parseFloat(w) <= 0) invalid.push('calc-weight');
     if (invalid.length) highlightInvalidFields(invalid);
@@ -912,11 +912,16 @@ function validateStep1() {
                 'Te recomendamos consultar con un médico o nutricionista especializado en adolescentes antes de seguir cualquier plan de alimentación.';
             hint.classList.add('age-warning');
             hint.classList.remove('age-elder');
+        } else if (val && val > 122) {
+            hint.innerHTML = '🏆 ¡¿' + val + ' años?! ¡Madre mía! El récord mundial de longevidad lo tiene Jeanne Calment con 122 años (1875-1997). ' +
+                '¡Deberías llamar al Libro Guinness de los Récords ahora mismo porque esto es histórico! 📞🎉 ' +
+                'Mientras tanto, pon tu edad real para que pueda calcular bien tu plan 😄';
+            hint.classList.add('age-warning');
+            hint.classList.remove('age-elder');
         } else if (val && val > 99) {
             hint.innerHTML = '🎉 ¡' + val + ' años! Enhorabuena, de verdad — llegar hasta aquí es un logro increíble y dice mucho de ti. ' +
                 'Ninguna app de nutrición puede mejorar lo que tus años de vida ya demuestran. ' +
-                'Sigue disfrutando de la vida como hasta ahora y hazle caso a tu médico, que es quien mejor te conoce. ' +
-                '¡Eres una inspiración! 💪';
+                'Sigue disfrutando y haciéndole caso a tu médico. ¡Eres una inspiración! 💪';
             hint.classList.remove('age-warning');
             hint.classList.add('age-elder');
         } else {
@@ -1146,8 +1151,8 @@ document.getElementById('next-1').addEventListener('click', function() {
         showAppAlert('Este plan está diseñado para adultos (18+). Si eres menor de 18, tu cuerpo aún está en desarrollo y tus necesidades nutricionales son diferentes. Consulta con un médico o nutricionista antes de seguir cualquier dieta.');
         return;
     }
-    if (age && age > 99) {
-        showAppAlert('¡' + age + ' años! Eres un ejemplo de vida. Sinceramente, no necesitas ninguna app — lo que has hecho hasta ahora te ha funcionado de maravilla. Sigue disfrutando y haciéndole caso a tu médico. ¡Larga vida! 🎉');
+    if (age && age > 122) {
+        showAppAlert('🏆 ¡¿' + age + ' años?! El récord mundial de longevidad lo tiene Jeanne Calment con 122 años (1875-1997). ¡Deberías llamar al Libro Guinness de los Récords porque acabas de batir el récord de la historia de la humanidad! 📞🎉<br><br>Pon tu edad real para que pueda calcular bien tu plan 😄');
         return;
     }
     if (!validateStep1()) { showAppAlert('Rellena todos los campos (edad, altura y peso) para continuar.'); return; }
