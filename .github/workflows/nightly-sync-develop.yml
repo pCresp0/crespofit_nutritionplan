@@ -1,0 +1,31 @@
+name: Nightly Sync develop ← main
+
+on:
+  schedule:
+    # Todos los días a las 23:50 hora España peninsular (21:50 UTC)
+    - cron: '50 21 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout develop
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+
+      - name: Merge main into develop
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin main
+          git merge origin/main --no-edit
+
+          git push origin develop
+
+          echo "✅ develop synced with main."
