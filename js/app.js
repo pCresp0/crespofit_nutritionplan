@@ -1917,8 +1917,24 @@ document.addEventListener('click', function(e) {
     var row = e.target.closest('tr[data-meal]'); if (!row) return;
     var meal = row.dataset.meal, type = row.dataset.type, idx = parseInt(row.dataset.index);
     var key = meal==='lunch'?(type==='carb'?'lunchCarb':'lunchProtein'):(type==='carb'?'dinnerCarb':'dinnerProtein');
+    var wasNull = selections[key] === null;
     selections[key] = selections[key]===idx?null:idx;
     renderAll(); saveAllState();
+    // Auto-scroll to protein section when a carb is selected (not deselected)
+    if (type === 'carb' && selections[key] !== null) {
+        var containerId = meal === 'lunch' ? 'lunch-tables' : 'dinner-tables';
+        var protHeader = document.getElementById(containerId).querySelector('.meal-table-header.protein');
+        if (protHeader) {
+            setTimeout(function() {
+                var rect = protHeader.getBoundingClientRect();
+                var offset = 60;
+                // Only scroll if protein header is not already visible
+                if (rect.top > window.innerHeight || rect.top < offset) {
+                    window.scrollBy({ top: rect.top - offset, behavior: 'smooth' });
+                }
+            }, 100);
+        }
+    }
     checkAutoAdvancePublic();
 });
 
@@ -3760,6 +3776,25 @@ document.addEventListener('click', function(e) {
             : (type === 'carb' ? 'dinnerCarb' : 'dinnerProtein');
         trainerSelections[key] = trainerSelections[key] === idx2 ? null : idx2;
         renderTrainerContent();
+        // Auto-scroll to protein section when a carb is selected (not deselected)
+        if (type === 'carb' && trainerSelections[key] !== null) {
+            var panel = document.querySelector('.trainer-tab-panel[data-trainer-panel="'+meal+'"]');
+            if (panel) {
+                var subsections = panel.querySelectorAll('.trainer-subsection');
+                // Second subsection is proteins
+                var protSection = subsections[1];
+                if (protSection) {
+                    setTimeout(function() {
+                        var rect = protSection.getBoundingClientRect();
+                        var offset = 60;
+                        // Only scroll if protein section is not already visible
+                        if (rect.top > window.innerHeight || rect.top < offset) {
+                            window.scrollBy({ top: rect.top - offset, behavior: 'smooth' });
+                        }
+                    }, 100);
+                }
+            }
+        }
         checkAutoAdvanceTrainer();
         return;
     }
