@@ -1658,6 +1658,7 @@ body {
     position: relative;
     display: inline-flex;
     align-items: center;
+    gap: 6px;
 }
 
 .random-diet-btn[data-info]::after {
@@ -1693,6 +1694,39 @@ body {
 .random-diet-btn[data-info].show-info::after {
     opacity: 1;
     transform: translateX(-50%) scale(1);
+}
+
+/* Mobile info button (visible only on touch devices) */
+.info-btn-mobile {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: all var(--transition);
+    flex-shrink: 0;
+}
+
+.info-btn-mobile:active {
+    transform: scale(0.9);
+    background: var(--primary-light);
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .info-btn-mobile {
+        display: flex;
+    }
+    .random-diet-btn[data-info]:hover::after {
+        opacity: 0;
+    }
 }
 
 .random-diet-btn {

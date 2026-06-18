@@ -1476,7 +1476,7 @@ function randomDiet() {
     }
 })();
 
-// Info tooltip on mobile (long press to show, tap elsewhere to hide)
+// Info tooltip on mobile (long press OR info button tap to show, tap elsewhere to hide)
 (function() {
     var infoTimer = null;
     document.querySelectorAll('.random-diet-btn[data-info]').forEach(function(btn) {
@@ -1490,8 +1490,27 @@ function randomDiet() {
         btn.addEventListener('touchend', function() { clearTimeout(infoTimer); });
         btn.addEventListener('touchmove', function() { clearTimeout(infoTimer); });
     });
+
+    // Mobile info button (tap to toggle tooltip)
+    document.querySelectorAll('.info-btn-mobile').forEach(function(infoBtn) {
+        infoBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var targetId = infoBtn.getAttribute('data-info-target');
+            var targetBtn = document.getElementById(targetId);
+            if (!targetBtn) return;
+            var isShowing = targetBtn.classList.contains('show-info');
+            document.querySelectorAll('.random-diet-btn.show-info').forEach(function(b) { b.classList.remove('show-info'); });
+            if (!isShowing) targetBtn.classList.add('show-info');
+        });
+    });
+
     document.addEventListener('touchstart', function(e) {
-        if (!e.target.closest('.random-diet-btn[data-info]')) {
+        if (!e.target.closest('.random-diet-btn[data-info]') && !e.target.closest('.info-btn-mobile')) {
+            document.querySelectorAll('.random-diet-btn.show-info').forEach(function(b) { b.classList.remove('show-info'); });
+        }
+    });
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.random-diet-btn[data-info]') && !e.target.closest('.info-btn-mobile')) {
             document.querySelectorAll('.random-diet-btn.show-info').forEach(function(b) { b.classList.remove('show-info'); });
         }
     });
