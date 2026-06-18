@@ -765,7 +765,7 @@ function activateTab(name) {
         window.scrollTo({ top: panelTop - navH - 4, behavior: 'smooth' });
     }
 }
-function getDefaultTab() { var h = new Date().getHours(); return h<11?'breakfast':h<17?'lunch':'dinner'; }
+function getDefaultTab() { return 'breakfast'; }
 
 // ============================================================
 // ONBOARDING
