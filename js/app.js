@@ -1364,9 +1364,9 @@ function updateSliderRange() {
         var goalName = goalLabels[userGoal] || 'tu objetivo';
         if (userName) {
             var safeName = userName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            titleEl.innerHTML = 'Plan nutricional para <span class="user-name">' + safeName + '</span> con el objetivo de ' + goalName.toLowerCase();
+            titleEl.innerHTML = '<span class="user-name">' + safeName + '</span>, tu plan de ' + goalName.toLowerCase();
         } else {
-            titleEl.textContent = 'Plan nutricional con el objetivo de ' + goalName.toLowerCase();
+            titleEl.textContent = 'Tu plan de ' + goalName.toLowerCase();
         }
     }
 }
