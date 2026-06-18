@@ -213,6 +213,10 @@ body {
     z-index: 1;
 }
 
+.header-buttons {
+    display: contents;
+}
+
 .header h1 {
     font-size: 1.25rem;
     font-weight: 700;
@@ -2884,13 +2888,40 @@ body {
 /* ========== RESPONSIVE ========== */
 @media (max-width: 640px) {
     .header {
-        padding: 10px 14px 6px;
+        padding: 8px 12px 6px;
         text-align: center;
     }
 
-    .reconfigure-btn {
+    .header-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 6px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .header-buttons .trainer-toggle,
+    .header-buttons .reconfigure-btn,
+    .header-buttons .theme-toggle {
         position: static;
-        margin: 0 auto 8px;
+    }
+
+    .header-buttons .trainer-toggle {
+        width: 32px;
+        height: 32px;
+        font-size: 0.95rem;
+    }
+
+    .header-buttons .theme-toggle {
+        width: 32px;
+        height: 32px;
+        font-size: 0.95rem;
+    }
+
+    .reconfigure-btn {
+        margin: 0;
         height: 30px;
         font-size: 0.7rem;
         padding: 0 10px;
@@ -2898,11 +2929,12 @@ body {
 
     .header-content {
         padding-top: 0;
+        width: 100%;
     }
 
     .header h1 {
-        font-size: 1.15rem;
-        margin-bottom: 12px;
+        font-size: 1.05rem;
+        margin-bottom: 4px;
     }
 
     .kcal-number {
@@ -3935,6 +3967,233 @@ body {
 .trainer-validator.complete {
     background: var(--ob-highlight-bg);
     border-top-color: var(--ob-highlight-border);
+}
+
+/* Trainer extra foods section */
+.trainer-extras-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.trainer-extra-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.trainer-extra-select {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    appearance: auto;
+}
+
+.trainer-extra-grams-row {
+    display: flex;
+    gap: 8px;
+}
+
+.trainer-extra-grams {
+    flex: 1;
+    padding: 10px 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    min-width: 0;
+}
+
+.trainer-extra-add-btn {
+    padding: 10px 18px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+}
+
+.trainer-extra-add-btn:hover {
+    opacity: 0.85;
+}
+
+.trainer-extra-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.trainer-extra-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    gap: 10px;
+}
+
+.trainer-extra-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    min-width: 0;
+}
+
+.trainer-extra-item-info strong {
+    color: var(--text-primary);
+}
+
+.trainer-extra-item-macros {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.trainer-extra-remove {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+}
+
+.trainer-extra-remove:hover {
+    color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+/* Trainer macro targets */
+.trainer-target-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.trainer-target-ok {
+    background: rgba(46, 204, 113, 0.12);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.25);
+}
+
+.trainer-target-low,
+.trainer-target-high {
+    background: rgba(243, 156, 18, 0.12);
+    color: #f39c12;
+    border: 1px solid rgba(243, 156, 18, 0.25);
+}
+
+.trainer-target-range {
+    font-weight: 400;
+    font-size: 0.72rem;
+    opacity: 0.8;
+}
+
+.trainer-macro-targets {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.trainer-macro-targets h4 {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.trainer-macro-targets-sub {
+    font-weight: 400;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.trainer-macro-target-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.trainer-macro-target-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tmti-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.tmti-bar-wrap {
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.tmti-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.tmti-bar-protein { background: var(--protein-accent, #3498db); }
+.tmti-bar-carbs { background: var(--carbs-accent, #f39c12); }
+.tmti-bar-fat { background: var(--fat-accent, #e74c3c); }
+
+.tmti-values {
+    font-size: 0.78rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.tmti-target {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+}
+
+.tmti-remain {
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.tmti-remain.target-pending {
+    color: #f39c12;
+}
+
+.tmti-remain.target-reached {
+    color: #2ecc71;
 }
 
 /* ========== RESPONSIVE ONBOARDING ========== */
