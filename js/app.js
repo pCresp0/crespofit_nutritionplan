@@ -3221,13 +3221,21 @@ var currentTrainerTab = getTrainerTabByTime();
 function switchTrainerTab(tab) {
     currentTrainerTab = tab;
     // Update tab buttons
-    document.querySelectorAll('.trainer-tab').forEach(function(btn) {
+    document.querySelectorAll('.trainer-tabs-nav [data-trainer-tab]').forEach(function(btn) {
         btn.classList.toggle('active', btn.dataset.trainerTab === tab);
     });
     // Update tab panels
     document.querySelectorAll('.trainer-tab-panel').forEach(function(panel) {
         panel.classList.toggle('active', panel.dataset.trainerPanel === tab);
     });
+    // Scroll to top of the panel content
+    var activePanel = document.querySelector('.trainer-tab-panel.active');
+    if (activePanel) {
+        var tabsNav = document.querySelector('.trainer-tabs-nav');
+        var navH = tabsNav ? tabsNav.offsetHeight : 0;
+        var panelTop = activePanel.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({ top: panelTop - navH - 4, behavior: 'smooth' });
+    }
 }
 
 function enterTrainerMode() {
@@ -3505,7 +3513,7 @@ function renderTrainerContent() {
 
     document.getElementById('trainer-content').innerHTML = html;
     // Sync tab button active states
-    document.querySelectorAll('.trainer-tab').forEach(function(btn) {
+    document.querySelectorAll('.trainer-tabs-nav [data-trainer-tab]').forEach(function(btn) {
         btn.classList.toggle('active', btn.dataset.trainerTab === currentTrainerTab);
     });
     renderTrainerNutrition();
@@ -3559,7 +3567,7 @@ document.getElementById('trainer-toggle').addEventListener('click', function() {
 
 // Trainer tab switching
 document.addEventListener('click', function(e) {
-    var tabBtn = e.target.closest('.trainer-tab');
+    var tabBtn = e.target.closest('[data-trainer-tab]');
     if (tabBtn && tabBtn.dataset.trainerTab) {
         switchTrainerTab(tabBtn.dataset.trainerTab);
     }
