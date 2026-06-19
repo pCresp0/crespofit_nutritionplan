@@ -402,11 +402,11 @@ function oilSpoonHint(ml) {
     if (ml <= 5) return '(~1 cucharadita)';
     if (ml <= 8) return '(~1 cucharada de postre)';
     if (ml <= 10) return '(~1 cucharada sopera rasa)';
-    if (ml <= 15) return '(~1 cucharada sopera)';
-    if (ml <= 20) return '(~1½ cucharadas soperas)';
-    if (ml <= 25) return '(~2 cucharadas soperas)';
-    if (ml <= 30) return '(~2 cucharadas soperas)';
-    return '(~' + Math.round(ml / 15) + ' cucharadas soperas)';
+    if (ml <= 15) return '(~1 cucharada sopera llena)';
+    if (ml <= 20) return '(~1 cucharada sopera llena + 1 cucharadita)';
+    if (ml <= 25) return '(~1½ cucharadas soperas)';
+    if (ml <= 30) return '(~2 cucharadas soperas rasas)';
+    return '(~' + Math.round(ml / 15) + ' cucharadas soperas llenas)';
 }
 
 // Glass equivalence for milk (ml) — 1 vaso ≈ 200-250ml
@@ -3733,17 +3733,7 @@ function renderTrainerContent() {
                 line += ' <span class="trainer-extra">' + extraText + '</span>';
             }
             if (item.spoonHint && item.amount !== null) {
-                var spoonTxt = (function(ml) {
-                    if (ml <= 3) return '(menos de una cucharadita)';
-                    if (ml <= 5) return '(~1 cucharadita)';
-                    if (ml <= 8) return '(~1 cucharada de postre)';
-                    if (ml <= 10) return '(~1 cucharada sopera rasa)';
-                    if (ml <= 15) return '(~1 cucharada sopera)';
-                    if (ml <= 20) return '(~1½ cucharadas soperas)';
-                    if (ml <= 25) return '(~2 cucharadas soperas)';
-                    if (ml <= 30) return '(~2 cucharadas soperas)';
-                    return '(~' + Math.round(ml / 15) + ' cucharadas soperas)';
-                })(item.amount);
+                var spoonTxt = oilSpoonHint(item.amount);
                 line += ' <span class="trainer-extra">' + spoonTxt + '</span>';
             }
             html += '<li>' + line + '</li>';
