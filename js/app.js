@@ -576,7 +576,7 @@ function renderMealTable(cid, cd, pd, cs, ps, mt) {
         return '<tr class="'+(s?'selected':'')+'" data-meal="'+mt+'" data-type="protein" data-index="'+i+'"><td>'+it.name+'</td><td>'+sc+' '+u+'</td></tr>';
     }).join('');
     container.innerHTML = '<div class="meal-table-wrapper"><div class="meal-table-header carbs">🌾 Hidratos de Carbono</div><table class="meal-table"><tbody>'+cr+'</tbody></table></div>' +
-        '<div class="meal-table-wrapper"><div class="meal-table-header protein">🥩 Proteínas</div><table class="meal-table"><tbody>'+pr+'<tr class="note-row"><td colspan="2">Escurrir bien las latas de aceite de oliva</td></tr></tbody></table></div>';
+        '<div class="meal-table-wrapper"><div class="meal-table-header protein">🥩 Proteínas</div><table class="meal-table"><tbody>'+pr+'</tbody></table></div>';
 }
 
 function renderSupplements() {
@@ -3768,7 +3768,6 @@ function renderTrainerContent() {
         var u = item.unit || 'g';
         html += '<tr class="'+(s?'selected':'')+'" data-trainer-meal="lunch" data-trainer-type="protein" data-trainer-index="'+idx+'"><td>'+item.name+'</td><td>'+item.base+' '+u+'</td></tr>';
     });
-    html += '<tr class="note-row"><td colspan="2">Escurrir bien las latas de aceite de oliva</td></tr>';
     html += '</tbody></table></div>';
     html += '</div></div>'; // end meal-tables + meal-card
 
@@ -3802,7 +3801,6 @@ function renderTrainerContent() {
         var u = item.unit || 'g';
         html += '<tr class="'+(s?'selected':'')+'" data-trainer-meal="dinner" data-trainer-type="protein" data-trainer-index="'+idx+'"><td>'+item.name+'</td><td>'+item.base+' '+u+'</td></tr>';
     });
-    html += '<tr class="note-row"><td colspan="2">Escurrir bien las latas de aceite de oliva</td></tr>';
     html += '</tbody></table></div>';
     html += '</div></div>'; // end meal-tables + meal-card
 
