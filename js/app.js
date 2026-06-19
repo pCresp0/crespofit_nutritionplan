@@ -58,7 +58,7 @@ var BASE_KCAL = 2500;
 
 var breakfastOptions = [
     { id:'yogur-qfb', name:'Yogur de proteínas / QFB con cereales', macros:[550,42,62,14],
-      items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:55,unit:'g'},{text:'Queso fresco batido',amount:500,unit:'g'},{text:'Yogur 2% + proteína',amount:200,unit:'g',extra:'+ {10}g prot',extraBase:10,isAlt:true},{text:'Frutos secos / crema de cacahuete',amount:25,unit:'g'}]},
+      items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:55,unit:'g'},{text:'Queso fresco batido / Yogur 2% + proteína',amount:500,unit:'g',extra:'ó {200}g yogur',extraBase:200,isAlt:true},{text:'Frutos secos / crema de cacahuete',amount:25,unit:'g'}]},
     { id:'tostadas', name:'Tostadas', macros:[470,28,52,17],
       items:[{text:'Pan integral trigo/espelta/centeno',amount:120,unit:'g'},{text:'Lomo',amount:50,unit:'g',extra:'+ {30}g queso semi/havarti light',extraBase:30},{text:'Guacamole o aguacate',amount:40,unit:'g'}]},
     { id:'cereales-leche', name:'Cereales con leche y proteína', macros:[500,33,52,17],
@@ -3731,6 +3731,20 @@ function renderTrainerContent() {
             if (item.extra) {
                 var extraText = item.extra.replace(/\{(\d+)\}/, item.extraBase);
                 line += ' <span class="trainer-extra">' + extraText + '</span>';
+            }
+            if (item.spoonHint && item.amount !== null) {
+                var spoonTxt = (function(ml) {
+                    if (ml <= 3) return '(menos de una cucharadita)';
+                    if (ml <= 5) return '(~1 cucharadita)';
+                    if (ml <= 8) return '(~1 cucharada de postre)';
+                    if (ml <= 10) return '(~1 cucharada sopera rasa)';
+                    if (ml <= 15) return '(~1 cucharada sopera)';
+                    if (ml <= 20) return '(~1½ cucharadas soperas)';
+                    if (ml <= 25) return '(~2 cucharadas soperas)';
+                    if (ml <= 30) return '(~2 cucharadas soperas)';
+                    return '(~' + Math.round(ml / 15) + ' cucharadas soperas)';
+                })(item.amount);
+                line += ' <span class="trainer-extra">' + spoonTxt + '</span>';
             }
             html += '<li>' + line + '</li>';
         });
