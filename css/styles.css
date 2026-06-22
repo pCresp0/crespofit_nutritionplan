@@ -2875,6 +2875,7 @@ body.site-gate-active {
 }
 
 .site-gate-card {
+    position: relative;
     max-width: 400px;
     width: 100%;
     text-align: center;
@@ -2885,30 +2886,44 @@ body.site-gate-active {
     box-shadow: var(--shadow-lg);
 }
 
-.site-gate-icon {
-    display: block;
-    margin: 0 auto 16px;
+.site-gate-admin-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
     padding: 0;
     border: none;
-    background: none;
-    font-size: 3rem;
-    line-height: 1;
-    user-select: none;
-    -webkit-user-select: none;
-    cursor: default;
-    touch-action: manipulation;
-    color: inherit;
-    font-family: inherit;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    opacity: 0.12;
+    transition: opacity 0.2s ease, background 0.2s ease;
 }
 
-.site-gate-icon:focus {
+.site-gate-admin-btn::after {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    margin: 11px auto 0;
+    border-radius: 50%;
+    background: var(--text-muted);
+}
+
+.site-gate-admin-btn:hover,
+.site-gate-admin-btn:focus-visible {
+    opacity: 0.45;
+    background: rgba(255, 255, 255, 0.05);
     outline: none;
 }
 
-.site-gate-icon:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 4px;
-    border-radius: 8px;
+.site-gate-icon {
+    font-size: 3rem;
+    line-height: 1;
+    margin-bottom: 16px;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .site-gate-title {
@@ -2942,16 +2957,6 @@ body.site-gate-active {
 
 .site-gate-pin-overlay.is-open {
     display: flex !important;
-}
-
-.site-gate-icon-pulse,
-.site-gate-card.site-gate-icon-pulse {
-    transform: scale(1.06);
-    transition: transform 0.12s ease;
-}
-
-#site-gate-card {
-    cursor: default;
 }
 
 .site-gate-pin-label {

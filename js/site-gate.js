@@ -4,8 +4,6 @@
     var GATE_SALT = 'crespofit_gate_v1';
     var GATE_HASH = 'd71409f5ab6d20ff93870f390b7377f8884eddd9f1f6416abd5b13968fa5679b';
     var GATE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-    var LONG_PRESS_MS = 650;
-    var TRIPLE_CLICK_MS = 1500;
 
     var appInitCallback = null;
     var gateUiReady = false;
@@ -143,109 +141,19 @@
         });
     }
 
-    function bindUnlockTrigger(el) {
-        if (!el || el.dataset.gateBound === '1') return;
-        el.dataset.gateBound = '1';
-
-        var clickCount = 0;
-        var clickTimer = null;
-        var longPressTimer = null;
-        var longPressDone = false;
-        var lastTouchAt = 0;
-
-        function resetClicks() {
-            clickCount = 0;
-            if (clickTimer) {
-                clearTimeout(clickTimer);
-                clickTimer = null;
-            }
-        }
-
-        function registerClick() {
-            clickCount++;
-            if (clickTimer) clearTimeout(clickTimer);
-            el.classList.add('site-gate-icon-pulse');
-            setTimeout(function() { el.classList.remove('site-gate-icon-pulse'); }, 120);
-            if (clickCount >= 3) {
-                resetClicks();
-                showPinModal();
-                return;
-            }
-            clickTimer = setTimeout(resetClicks, TRIPLE_CLICK_MS);
-        }
-
-        el.addEventListener('touchstart', function() {
-            lastTouchAt = Date.now();
-            longPressDone = false;
-            if (longPressTimer) clearTimeout(longPressTimer);
-            longPressTimer = setTimeout(function() {
-                longPressTimer = null;
-                longPressDone = true;
-                resetClicks();
-                showPinModal();
-            }, LONG_PRESS_MS);
-        }, { passive: true });
-
-        el.addEventListener('touchmove', function() {
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-        });
-
-        el.addEventListener('touchend', function() {
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-        });
-
-        el.addEventListener('mouseup', function(e) {
-            if (e.button !== 0) return;
-            if (Date.now() - lastTouchAt < 400) return;
-            if (longPressDone) {
-                longPressDone = false;
-                return;
-            }
-            registerClick();
-        });
-
-        el.addEventListener('click', function(e) {
-            if (longPressDone) {
-                e.preventDefault();
-                longPressDone = false;
-            }
-        });
-    }
-
     function initGateUi() {
         if (gateUiReady) return;
         gateUiReady = true;
 
         showSiteGate();
 
-        var icon = document.getElementById('site-gate-icon');
-        var card = document.getElementById('site-gate-card');
-        bindUnlockTrigger(icon);
-        if (card && card !== icon) {
-            // Solo long-press en tarjeta; clics en PC van al emoji para no contar doble
-            if (card.dataset.gateBound !== '1') {
-                card.dataset.gateBound = '1';
-                var lpTimer = null;
-                card.addEventListener('touchstart', function() {
-                    if (lpTimer) clearTimeout(lpTimer);
-                    lpTimer = setTimeout(function() {
-                        lpTimer = null;
-                        showPinModal();
-                    }, LONG_PRESS_MS);
-                }, { passive: true });
-                card.addEventListener('touchmove', function() {
-                    if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
-                });
-                card.addEventListener('touchend', function() {
-                    if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
-                });
-            }
+        var adminBtn = document.getElementById('site-gate-admin-btn');
+        if (adminBtn) {
+            adminBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                showPinModal();
+            });
         }
 
         var cancelBtn = document.getElementById('site-gate-pin-cancel');
