@@ -6,7 +6,7 @@
     var GATE_HASH = 'd71409f5ab6d20ff93870f390b7377f8884eddd9f1f6416abd5b13968fa5679b';
     var GATE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
     var LONG_PRESS_MS = 700;
-    var TRIPLE_CLICK_MS = 500;
+    var TRIPLE_CLICK_MS = 900;
 
     function bufferToHex(buf) {
         var arr = new Uint8Array(buf);
@@ -129,13 +129,9 @@
         });
     }
 
-    function isTouchPrimaryDevice() {
-        if (window.matchMedia('(pointer: coarse)').matches) return true;
-        return ('ontouchstart' in window) && !window.matchMedia('(pointer: fine)').matches;
-    }
-
     function bindLongPress(el, onLongPress) {
         var timer = null;
+        var triggered = false;
         function clear() {
             if (timer) {
                 clearTimeout(timer);
@@ -143,25 +139,35 @@
             }
         }
         el.addEventListener('touchstart', function() {
+            triggered = false;
             clear();
             timer = setTimeout(function() {
                 timer = null;
+                triggered = true;
                 onLongPress();
             }, LONG_PRESS_MS);
         }, { passive: true });
         el.addEventListener('touchend', clear);
         el.addEventListener('touchmove', clear);
         el.addEventListener('touchcancel', clear);
+        el.addEventListener('click', function(e) {
+            if (triggered) {
+                e.preventDefault();
+                triggered = false;
+            }
+        });
     }
 
     function bindTripleClick(el, onTriple) {
         var count = 0;
         var resetTimer = null;
-        el.addEventListener('click', function() {
+        el.addEventListener('click', function(e) {
+            if (e.detail === 0) return;
             count++;
             if (resetTimer) clearTimeout(resetTimer);
             if (count >= 3) {
                 count = 0;
+                e.preventDefault();
                 onTriple();
                 return;
             }
@@ -173,9 +179,8 @@
     }
 
     function bindSecretTrigger(el) {
-        if (isTouchPrimaryDevice()) {
-            bindLongPress(el, showPinModal);
-        } else {
+        bindLongPress(el, showPinModal);
+        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
             bindTripleClick(el, showPinModal);
         }
     }

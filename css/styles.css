@@ -2886,13 +2886,29 @@ body.site-gate-active {
 }
 
 .site-gate-icon {
+    display: block;
+    margin: 0 auto 16px;
+    padding: 0;
+    border: none;
+    background: none;
     font-size: 3rem;
     line-height: 1;
-    margin-bottom: 16px;
     user-select: none;
     -webkit-user-select: none;
     cursor: default;
     touch-action: manipulation;
+    color: inherit;
+    font-family: inherit;
+}
+
+.site-gate-icon:focus {
+    outline: none;
+}
+
+.site-gate-icon:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: 8px;
 }
 
 .site-gate-title {
