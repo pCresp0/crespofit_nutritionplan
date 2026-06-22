@@ -57,6 +57,8 @@ function showAppConfirm(message, onConfirm, onCancel) {
 var BASE_KCAL = 2500;
 
 var breakfastOptions = [
+    { id:'batido-proteinas', name:'Batido de avena y proteínas', macros:[540,37,50,21],
+      items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:45,unit:'g'},{text:'Leche semidesnatada',amount:200,unit:'ml',glassHint:true},{text:'Whey protein',amount:35,unit:'g'},{text:'Aceite de oliva',amount:15,unit:'ml',spoonHint:true}]},
     { id:'yogur-qfb', name:'Yogur de proteínas / QFB con cereales', macros:[550,42,62,14],
       items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:55,unit:'g'},{text:'Queso fresco batido / Yogur 2% + proteína',amount:500,unit:'g',extra:'ó {200}g yogur',extraBase:200,isAlt:true},{text:'Frutos secos / crema de cacahuete',amount:25,unit:'g'}]},
     { id:'tostadas', name:'Tostadas', macros:[470,28,52,17],
@@ -68,9 +70,7 @@ var breakfastOptions = [
     { id:'yogures-proteicos', name:'Yogures proteicos', macros:[420,25,60,8],
       items:[{text:'2 yogures proteicos LIDL',amount:null,unit:''},{text:'Cereales',amount:15,unit:'g'},{text:'Miel',amount:20,unit:'g'},{text:'Frutos secos',amount:15,unit:'g'},{text:'Zumo de naranja',amount:200,unit:'ml'}]},
     { id:'bocadillo', name:'Bocadillo de pollo/pavo y queso/guacamole', macros:[520,38,55,16],
-      items:[{text:'Pan integral trigo/espelta/centeno',amount:120,unit:'g'},{text:'Pollo / Pavo',amount:100,unit:'g'},{text:'Queso',amount:60,unit:'g',extra:'ó {80}g guacamole',extraBase:80}]},
-    { id:'batido-proteinas', name:'Batido de avena y proteínas', macros:[540,37,50,21],
-      items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:45,unit:'g'},{text:'Leche semidesnatada',amount:200,unit:'ml',glassHint:true},{text:'Whey protein',amount:35,unit:'g'},{text:'Aceite de oliva',amount:15,unit:'ml',spoonHint:true}]}
+      items:[{text:'Pan integral trigo/espelta/centeno',amount:120,unit:'g'},{text:'Pollo / Pavo',amount:100,unit:'g'},{text:'Queso',amount:60,unit:'g',extra:'ó {80}g guacamole',extraBase:80}]}
 ];
 
 var lunchCarbs = [
@@ -3351,11 +3351,119 @@ var trainerFoodCatalog = [
     {name:'Crema de cacahuete',cat:'Otros',n:[600,25,12,50],unit:'g'}
 ];
 
-// Target kcal for trainer plan (based on avg combo analysis: median ~2150)
-var TRAINER_TARGET_KCAL = 2200;
 var TRAINER_KCAL_TOLERANCE = 100; // ±100 kcal
 // Target macro split (based on trainer plan average: 27% P, 52% C, 21% F)
 var TRAINER_MACRO_TARGETS = { protein: 27, carbs: 52, fat: 21 };
+
+// Perfil personal (solo Mi entrenador — Pablo)
+var TRAINER_PROFILE = {
+    sex: 'male',
+    age: 32,
+    weight: 81.5,
+    height: 174,
+    activityFactor: 1.2, // oficina/casa sentado 9–19
+    goal: 'recomp',
+    typicalSteps: 10000,
+    alcohol: 'none',
+    training: {
+        type: 'strength',
+        daysPerWeek: 4,
+        durationMin: 90,
+        intensity: 'high',
+        typicalGymDays: [1, 3, 5, 6] // lun, mié, vie, sáb (puede cambiar)
+    }
+};
+var trainerDailyLog = { date: '', steps: null, trainedToday: false };
+
+function isDefaultTrainerGymDay(d) {
+    d = d || new Date();
+    var dow = d.getDay();
+    return TRAINER_PROFILE.training.typicalGymDays.indexOf(dow) !== -1;
+}
+
+function getTodayDateKey() {
+    var d = new Date();
+    var m = d.getMonth() + 1;
+    var day = d.getDate();
+    return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+}
+
+function ensureTrainerDailyLog() {
+    var today = getTodayDateKey();
+    if (trainerDailyLog.date !== today) {
+        trainerDailyLog = {
+            date: today,
+            steps: null,
+            trainedToday: isDefaultTrainerGymDay()
+        };
+        saveTrainerPersonalState();
+    }
+}
+
+function loadTrainerPersonalState() {
+    try {
+        var saved = localStorage.getItem('dietAppTrainerPersonal');
+        if (!saved) { ensureTrainerDailyLog(); return; }
+        var data = JSON.parse(saved);
+        if (data.dailyLog) trainerDailyLog = data.dailyLog;
+        ensureTrainerDailyLog();
+    } catch (e) {
+        ensureTrainerDailyLog();
+    }
+}
+
+function saveTrainerPersonalState() {
+    try {
+        localStorage.setItem('dietAppTrainerPersonal', JSON.stringify({ dailyLog: trainerDailyLog }));
+    } catch (e) {}
+}
+
+function calculateTrainerBMR() {
+    var p = TRAINER_PROFILE;
+    return p.sex === 'male'
+        ? (10 * p.weight) + (6.25 * p.height) - (5 * p.age) + 5
+        : (10 * p.weight) + (6.25 * p.height) - (5 * p.age) - 161;
+}
+
+function calculateTrainerTDEE(steps, trainedToday) {
+    var bmr = calculateTrainerBMR();
+    var neat = bmr * TRAINER_PROFILE.activityFactor;
+    var stepsExtra = 0;
+    if (steps !== null && steps > 0) {
+        stepsExtra = steps * 0.04 * (TRAINER_PROFILE.weight / 70);
+    }
+    var trainExtra = 0;
+    var t = TRAINER_PROFILE.training;
+    if (trainedToday) {
+        var idx = t.intensity === 'low' ? 0 : t.intensity === 'medium' ? 1 : 2;
+        trainExtra = trainBurnPerMin[t.type][idx] * t.durationMin;
+    }
+    return {
+        bmr: Math.round(bmr),
+        neat: Math.round(neat),
+        stepsKcal: Math.round(stepsExtra),
+        trainKcal: Math.round(trainExtra),
+        tdee: Math.round(neat + stepsExtra + trainExtra)
+    };
+}
+
+function getTrainerGoalMultiplier() {
+    if (TRAINER_PROFILE.goal === 'cut') return 0.88;
+    if (TRAINER_PROFILE.goal === 'recomp') return 0.95;
+    if (TRAINER_PROFILE.goal === 'bulk') return 1.15;
+    return 1;
+}
+
+function getTrainerGoalLabel() {
+    return goalLabels[TRAINER_PROFILE.goal] || 'Mantener peso';
+}
+
+function getTrainerEnergySummary() {
+    ensureTrainerDailyLog();
+    var result = calculateTrainerTDEE(trainerDailyLog.steps, trainerDailyLog.trainedToday);
+    var targetKcal = Math.round(result.tdee * getTrainerGoalMultiplier());
+    return { result: result, targetKcal: targetKcal };
+}
 
 function getTrainerTabByTime() {
     var h = new Date().getHours();
@@ -3389,10 +3497,12 @@ function switchTrainerTab(tab) {
 function enterTrainerMode() {
     trainerModeActive = true;
     currentTrainerTab = getTrainerTabByTime();
+    loadTrainerPersonalState();
     document.querySelector('.main').style.display = 'none';
     document.querySelector('.header').style.display = 'none';
     document.getElementById('trainer-mode').style.display = '';
     document.getElementById('selection-validator').classList.add('hidden');
+    renderTrainerActivityPanel();
     renderTrainerContent();
 }
 
@@ -3403,6 +3513,74 @@ function exitTrainerMode() {
     document.getElementById('trainer-mode').style.display = 'none';
     document.getElementById('selection-validator').classList.remove('hidden');
     renderValidator();
+}
+
+function renderTrainerActivityPanel() {
+    var container = document.getElementById('trainer-activity-panel');
+    if (!container) return;
+
+    ensureTrainerDailyLog();
+    var stepsVal = trainerDailyLog.steps !== null ? trainerDailyLog.steps : '';
+
+    container.innerHTML =
+        '<div class="trainer-activity-card">' +
+            '<div class="trainer-activity-head">' +
+                '<h3>👟 Tu gasto de hoy</h3>' +
+                '<span class="trainer-activity-date" id="trainer-activity-date"></span>' +
+            '</div>' +
+            '<p class="trainer-activity-profile">81,5 kg · 174 cm · 32 años · oficina sedentaria · ~10.000 pasos/día · sin alcohol · gym lun/mié/vie/sáb</p>' +
+            '<div class="trainer-activity-inputs">' +
+                '<div class="trainer-activity-field">' +
+                    '<label for="trainer-steps-today">Pasos de hoy <span class="trainer-activity-hint">(Apple Health)</span></label>' +
+                    '<input type="number" id="trainer-steps-today" value="' + stepsVal + '" placeholder="Ej: 10000" min="0" max="50000" step="100">' +
+                '</div>' +
+                '<label class="trainer-activity-gym">' +
+                    '<input type="checkbox" id="trainer-trained-today"' + (trainerDailyLog.trainedToday ? ' checked' : '') + '>' +
+                    ' Entrené hoy (gym ~90 min, alta intensidad · habitual lun/mié/vie/sáb)' +
+                '</label>' +
+            '</div>' +
+            '<div class="trainer-tdee-breakdown" id="trainer-tdee-breakdown"></div>' +
+            '<p class="trainer-activity-note" id="trainer-activity-note"></p>' +
+        '</div>';
+
+    updateTrainerEnergyUI();
+}
+
+function updateTrainerEnergyUI() {
+    var subtitle = document.getElementById('trainer-subtitle');
+    var breakdown = document.getElementById('trainer-tdee-breakdown');
+    var note = document.getElementById('trainer-activity-note');
+    var dateEl = document.getElementById('trainer-activity-date');
+    if (!breakdown) return;
+
+    var energy = getTrainerEnergySummary();
+    var r = energy.result;
+    var neatExtra = r.neat - r.bmr;
+    var hasSteps = trainerDailyLog.steps !== null && trainerDailyLog.steps > 0;
+
+    if (dateEl) {
+        dateEl.textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+    if (subtitle) {
+        subtitle.textContent = 'Objetivo hoy: ~' + energy.targetKcal + ' kcal (' + getTrainerGoalLabel().toLowerCase() + ')';
+    }
+
+    breakdown.innerHTML =
+        '<div class="trainer-tdee-row"><span>🔥 Metabolismo basal</span><strong>' + r.bmr + ' kcal</strong></div>' +
+        '<div class="trainer-tdee-row"><span>🪑 NEAT (oficina sedentaria)</span><strong>+' + neatExtra + ' kcal</strong></div>' +
+        (hasSteps
+            ? '<div class="trainer-tdee-row"><span>👟 Pasos de hoy (' + trainerDailyLog.steps.toLocaleString('es-ES') + ')</span><strong>+' + r.stepsKcal + ' kcal</strong></div>'
+            : '<div class="trainer-tdee-row trainer-tdee-muted"><span>👟 Pasos de hoy</span><strong>—</strong></div>') +
+        (r.trainKcal > 0
+            ? '<div class="trainer-tdee-row"><span>🏋️ Gym hoy</span><strong>+' + r.trainKcal + ' kcal</strong></div>'
+            : '<div class="trainer-tdee-row trainer-tdee-muted"><span>🏋️ Gym hoy</span><strong>—</strong></div>') +
+        '<div class="trainer-tdee-row trainer-tdee-total"><span>= TDEE de hoy</span><strong>' + r.tdee + ' kcal</strong></div>' +
+        '<div class="trainer-tdee-row trainer-tdee-target"><span>🎯 Objetivo ' + getTrainerGoalLabel().toLowerCase() + ' (×' + getTrainerGoalMultiplier() + ')</span><strong>' + energy.targetKcal + ' kcal</strong></div>';
+
+    if (note) {
+        note.textContent = hasSteps ? '' : 'Introduce los pasos de hoy desde el iPhone (día normal de oficina: ~10.000).';
+        note.style.display = hasSteps ? 'none' : '';
+    }
 }
 
 function calculateTrainerMacros() {
@@ -3462,7 +3640,7 @@ function renderTrainerNutrition() {
     var cKp = fromM>0 ? Math.round(cKcal/fromM*100) : 0;
     var fKp = fromM>0 ? 100-pKp-cKp : 0;
 
-    var bodyWeight = parseFloat(document.getElementById('calc-weight').value) || 0;
+    var bodyWeight = TRAINER_PROFILE.weight;
     var pPerKg = bodyWeight > 0 ? (p/bodyWeight).toFixed(1) : '--';
     var cPerKg = bodyWeight > 0 ? (c/bodyWeight).toFixed(1) : '--';
     var fPerKg = bodyWeight > 0 ? (f/bodyWeight).toFixed(1) : '--';
@@ -3473,19 +3651,21 @@ function renderTrainerNutrition() {
     if (trainerSelections.dinnerCarb !== null || trainerSelections.dinnerProtein !== null) meals.push('Cena');
     var complete = trainerSelections.breakfast !== null && trainerSelections.lunchCarb !== null && trainerSelections.lunchProtein !== null && trainerSelections.dinnerCarb !== null && trainerSelections.dinnerProtein !== null;
 
-    // Target info
-    var targetMin = TRAINER_TARGET_KCAL - TRAINER_KCAL_TOLERANCE;
-    var targetMax = TRAINER_TARGET_KCAL + TRAINER_KCAL_TOLERANCE;
-    var kcalDiff = kcal - TRAINER_TARGET_KCAL;
+    // Target info (dinámico según pasos + entreno de hoy)
+    var energy = getTrainerEnergySummary();
+    var trainerTargetKcal = energy.targetKcal;
+    var targetMin = trainerTargetKcal - TRAINER_KCAL_TOLERANCE;
+    var targetMax = trainerTargetKcal + TRAINER_KCAL_TOLERANCE;
+    var kcalDiff = kcal - trainerTargetKcal;
     var inRange = kcal >= targetMin && kcal <= targetMax;
     var kcalStatusClass = inRange ? 'trainer-target-ok' : (kcal < targetMin ? 'trainer-target-low' : 'trainer-target-high');
     var kcalStatusIcon = inRange ? '\u2705' : (kcal < targetMin ? '\u26a0\ufe0f' : '\u26a0\ufe0f');
     var kcalStatusText = inRange ? 'En rango objetivo' : (kcal < targetMin ? 'Faltan ' + Math.abs(Math.round(targetMin - kcal)) + ' kcal m\u00edn.' : 'Exceso de ' + Math.round(kcal - targetMax) + ' kcal');
 
     // Macro targets in grams (from % of target kcal)
-    var targetPg = Math.round(TRAINER_TARGET_KCAL * TRAINER_MACRO_TARGETS.protein / 100 / 4);
-    var targetCg = Math.round(TRAINER_TARGET_KCAL * TRAINER_MACRO_TARGETS.carbs / 100 / 4);
-    var targetFg = Math.round(TRAINER_TARGET_KCAL * TRAINER_MACRO_TARGETS.fat / 100 / 9);
+    var targetPg = Math.round(trainerTargetKcal * TRAINER_MACRO_TARGETS.protein / 100 / 4);
+    var targetCg = Math.round(trainerTargetKcal * TRAINER_MACRO_TARGETS.carbs / 100 / 4);
+    var targetFg = Math.round(trainerTargetKcal * TRAINER_MACRO_TARGETS.fat / 100 / 9);
     var remainP = targetPg - p;
     var remainC = targetCg - c;
     var remainF = targetFg - f;
@@ -3509,7 +3689,7 @@ function renderTrainerNutrition() {
                 renderMacroCard('Grasas','fat',f,fp,fKp,fPerKg) +
             '</div>' +
             '<div class="trainer-macro-targets">' +
-                '<h4>Objetivo de macros <span class="trainer-macro-targets-sub">(para ' + TRAINER_TARGET_KCAL + ' kcal)</span></h4>' +
+                '<h4>Objetivo de macros <span class="trainer-macro-targets-sub">(para ' + trainerTargetKcal + ' kcal · ' + getTrainerGoalLabel().toLowerCase() + ')</span></h4>' +
                 '<div class="trainer-macro-target-row">' +
                     renderMacroTargetItem('Prote\u00ednas', 'protein', p, targetPg, remainP) +
                     renderMacroTargetItem('Carbos', 'carbs', c, targetCg, remainC) +
@@ -3632,9 +3812,10 @@ function generateMacroSuggestions(macro) {
 
     // 6. Suggest adding extra food to fill the gap
     var targetMacros = calculateTrainerMacros();
-    var targetPg = Math.round(TRAINER_TARGET_KCAL * TRAINER_MACRO_TARGETS.protein / 100 / 4);
-    var targetCg = Math.round(TRAINER_TARGET_KCAL * TRAINER_MACRO_TARGETS.carbs / 100 / 4);
-    var targetFg = Math.round(TRAINER_TARGET_KCAL * TRAINER_MACRO_TARGETS.fat / 100 / 9);
+    var trainerTargetKcal = getTrainerEnergySummary().targetKcal;
+    var targetPg = Math.round(trainerTargetKcal * TRAINER_MACRO_TARGETS.protein / 100 / 4);
+    var targetCg = Math.round(trainerTargetKcal * TRAINER_MACRO_TARGETS.carbs / 100 / 4);
+    var targetFg = Math.round(trainerTargetKcal * TRAINER_MACRO_TARGETS.fat / 100 / 9);
     var targetG = macro === 'protein' ? targetPg : (macro === 'carbs' ? targetCg : targetFg);
     var currentG = macro === 'protein' ? targetMacros.protein : (macro === 'carbs' ? targetMacros.carbs : targetMacros.fat);
     var deficit = targetG - currentG;
@@ -3961,6 +4142,30 @@ function renderTrainerValidator() {
 // Trainer toggle button
 document.getElementById('trainer-toggle').addEventListener('click', function() {
     enterTrainerMode();
+});
+
+document.getElementById('trainer-activity-panel').addEventListener('input', function(e) {
+    if (!trainerModeActive) return;
+    if (e.target.id === 'trainer-steps-today') {
+        var v = e.target.value.trim();
+        trainerDailyLog.steps = v ? parseInt(v, 10) : null;
+        if (trainerDailyLog.steps !== null && isNaN(trainerDailyLog.steps)) trainerDailyLog.steps = null;
+        trainerDailyLog.date = getTodayDateKey();
+        saveTrainerPersonalState();
+        updateTrainerEnergyUI();
+        renderTrainerNutrition();
+    }
+});
+
+document.getElementById('trainer-activity-panel').addEventListener('change', function(e) {
+    if (!trainerModeActive) return;
+    if (e.target.id === 'trainer-trained-today') {
+        trainerDailyLog.trainedToday = e.target.checked;
+        trainerDailyLog.date = getTodayDateKey();
+        saveTrainerPersonalState();
+        updateTrainerEnergyUI();
+        renderTrainerNutrition();
+    }
 });
 
 // Trainer tab switching

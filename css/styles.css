@@ -4131,6 +4131,135 @@ body {
     color: var(--text-muted);
 }
 
+.trainer-activity-panel {
+    margin-bottom: 20px;
+}
+
+.trainer-activity-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+}
+
+.trainer-activity-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.trainer-activity-head h3 {
+    font-size: 1rem;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.trainer-activity-date {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: capitalize;
+}
+
+.trainer-activity-profile {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin: 0 0 14px;
+}
+
+.trainer-activity-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.trainer-activity-field label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.trainer-activity-hint {
+    font-weight: 400;
+    color: var(--text-muted);
+}
+
+.trainer-activity-field input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+.trainer-activity-gym {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.trainer-activity-gym input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+}
+
+.trainer-tdee-breakdown {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+}
+
+.trainer-tdee-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.78rem;
+    padding: 5px 0;
+    color: var(--text-secondary);
+}
+
+.trainer-tdee-row strong {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.trainer-tdee-row.trainer-tdee-muted strong {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.trainer-tdee-row.trainer-tdee-total {
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.trainer-tdee-row.trainer-tdee-target {
+    margin-top: 4px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.trainer-activity-note {
+    margin: 10px 0 0;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
 .trainer-tabs-nav {
     padding-top: 0;
 }
