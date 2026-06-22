@@ -2889,6 +2889,10 @@ body.site-gate-active {
     font-size: 3rem;
     line-height: 1;
     margin-bottom: 16px;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+    touch-action: manipulation;
 }
 
 .site-gate-title {

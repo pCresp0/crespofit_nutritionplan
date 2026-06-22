@@ -1,10 +1,12 @@
 // Site access gate — PIN verified via SHA-256 (plain PIN never stored in repo)
 (function() {
-    var GATE_STORAGE_KEY = 'dietAppGateV1';
+    var GATE_STORAGE_KEY = 'dietAppGateV2';
     var GATE_SALT = 'crespofit_gate_v1';
     // SHA-256(salt-applied PIN) — regenerate only if PIN changes
     var GATE_HASH = 'd71409f5ab6d20ff93870f390b7377f8884eddd9f1f6416abd5b13968fa5679b';
+    var GATE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
     var LONG_PRESS_MS = 700;
+    var TRIPLE_CLICK_MS = 500;
 
     function bufferToHex(buf) {
         var arr = new Uint8Array(buf);
@@ -24,9 +26,35 @@
         return crypto.subtle.digest('SHA-256', new TextEncoder().encode(payload)).then(bufferToHex);
     }
 
+    function readGateSession() {
+        try {
+            var raw = localStorage.getItem(GATE_STORAGE_KEY);
+            if (!raw) return null;
+            return JSON.parse(raw);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function clearGateSession() {
+        try {
+            localStorage.removeItem(GATE_STORAGE_KEY);
+            localStorage.removeItem('dietAppGateV1');
+        } catch (e) {}
+    }
+
     function isSiteGateUnlocked() {
         try {
-            return localStorage.getItem(GATE_STORAGE_KEY) === GATE_HASH;
+            var data = readGateSession();
+            if (!data || data.h !== GATE_HASH || !data.exp) {
+                clearGateSession();
+                return false;
+            }
+            if (Date.now() > data.exp) {
+                clearGateSession();
+                return false;
+            }
+            return true;
         } catch (e) {
             return false;
         }
@@ -34,7 +62,11 @@
 
     function unlockSiteGate() {
         try {
-            localStorage.setItem(GATE_STORAGE_KEY, GATE_HASH);
+            localStorage.setItem(GATE_STORAGE_KEY, JSON.stringify({
+                h: GATE_HASH,
+                exp: Date.now() + GATE_TTL_MS
+            }));
+            localStorage.removeItem('dietAppGateV1');
         } catch (e) {}
     }
 
@@ -97,6 +129,11 @@
         });
     }
 
+    function isTouchPrimaryDevice() {
+        if (window.matchMedia('(pointer: coarse)').matches) return true;
+        return ('ontouchstart' in window) && !window.matchMedia('(pointer: fine)').matches;
+    }
+
     function bindLongPress(el, onLongPress) {
         var timer = null;
         function clear() {
@@ -105,25 +142,42 @@
                 timer = null;
             }
         }
-        el.addEventListener('touchstart', function(e) {
-            clear();
-            timer = setTimeout(function() {
-                timer = null;
-                onLongPress(e);
-            }, LONG_PRESS_MS);
-        }, { passive: true });
-        el.addEventListener('touchend', clear);
-        el.addEventListener('touchmove', clear);
-        el.addEventListener('touchcancel', clear);
-        el.addEventListener('mousedown', function() {
+        el.addEventListener('touchstart', function() {
             clear();
             timer = setTimeout(function() {
                 timer = null;
                 onLongPress();
             }, LONG_PRESS_MS);
+        }, { passive: true });
+        el.addEventListener('touchend', clear);
+        el.addEventListener('touchmove', clear);
+        el.addEventListener('touchcancel', clear);
+    }
+
+    function bindTripleClick(el, onTriple) {
+        var count = 0;
+        var resetTimer = null;
+        el.addEventListener('click', function() {
+            count++;
+            if (resetTimer) clearTimeout(resetTimer);
+            if (count >= 3) {
+                count = 0;
+                onTriple();
+                return;
+            }
+            resetTimer = setTimeout(function() {
+                count = 0;
+                resetTimer = null;
+            }, TRIPLE_CLICK_MS);
         });
-        el.addEventListener('mouseup', clear);
-        el.addEventListener('mouseleave', clear);
+    }
+
+    function bindSecretTrigger(el) {
+        if (isTouchPrimaryDevice()) {
+            bindLongPress(el, showPinModal);
+        } else {
+            bindTripleClick(el, showPinModal);
+        }
     }
 
     function setupSiteGate(onUnlock) {
@@ -136,10 +190,8 @@
         gate.setAttribute('aria-hidden', 'false');
         document.body.classList.add('site-gate-active');
 
-        var touch = document.getElementById('site-gate-touch');
-        if (touch) {
-            bindLongPress(touch, function() { showPinModal(); });
-        }
+        var icon = document.getElementById('site-gate-icon');
+        if (icon) bindSecretTrigger(icon);
 
         var cancelBtn = document.getElementById('site-gate-pin-cancel');
         var submitBtn = document.getElementById('site-gate-pin-submit');
