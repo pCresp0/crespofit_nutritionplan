@@ -3532,27 +3532,24 @@ function getCorrectedWorkoutVolumeKg(workout) {
 
 function calculateWorkoutKcalBreakdown(workout, weight) {
     weight = weight || TRAINER_PROFILE.weight;
-    var wFactor = weight / 70;
     var isLeg = !!workout.isLeg;
     var sessionMin = getTrainerSessionMin();
-    var volumeKg = getCorrectedWorkoutVolumeKg(workout);
-    // Sesión completa (incl. descansos): Jefit marca pocos min "activos" en pierna por pausas largas
-    var sessionMet = isLeg ? 5.2 : 4.5;
-    var sessionKcal = sessionMet * weight * (sessionMin / 60);
-    var intensityKcal = 2.5 * weight * (workout.actualWorkMin / 60);
-    var volCoef = isLeg ? 0.019 : 0.014;
-    var volumeKcal = volumeKg * volCoef * wFactor;
-    var epocMult = isLeg ? 1.18 : 1.0;
-    var strengthBase = sessionKcal + intensityKcal + volumeKcal;
-    var strengthTotal = strengthBase * epocMult;
-    var epocKcal = strengthTotal - strengthBase;
+    var activeMin = Math.min(workout.actualWorkMin || 0, sessionMin);
+    var restMin = Math.max(0, sessionMin - activeMin);
+    // Modelo conservador: mejor quedarse corto que pasarse (no sumar sesión + volumen + EPOC alto)
+    var workMet = isLeg ? 4.0 : 3.5;
+    var restMet = 2.0;
+    var workKcal = workMet * weight * (activeMin / 60);
+    var restKcal = restMet * weight * (restMin / 60);
+    var base = workKcal + restKcal;
+    var legBonus = isLeg ? base * 0.05 : 0;
     return {
-        session: Math.round(sessionKcal),
-        intensity: Math.round(intensityKcal),
-        volume: Math.round(volumeKcal),
-        volumeKg: volumeKg,
-        epoc: Math.round(epocKcal),
-        total: Math.round(strengthTotal),
+        session: Math.round(restKcal),
+        intensity: Math.round(workKcal),
+        volume: 0,
+        volumeKg: getCorrectedWorkoutVolumeKg(workout),
+        epoc: Math.round(legBonus),
+        total: Math.round(base + legBonus),
         isLeg: isLeg
     };
 }
@@ -3921,10 +3918,9 @@ function updateTrainerEnergyUI() {
         var bd = r.trainDetail.breakdown;
         trainRows += '<div class="trainer-tdee-row"><span>🏋️ ' + r.trainDetail.name + '</span><strong>+' + r.trainKcal + ' kcal</strong></div>';
         trainRows += '<div class="trainer-tdee-sub">' +
-            '<span>Sesión en gym (90 min)</span><span>+' + bd.session + ' kcal</span>' +
-            '<span>Minutos activos levantando</span><span>+' + bd.intensity + ' kcal</span>' +
-            '<span>Volumen total (' + Math.round(bd.volumeKg).toLocaleString('es-ES') + ' kg)</span><span>+' + bd.volume + ' kcal</span>' +
-            (bd.epoc ? '<span>EPOC pierna (grupos grandes)</span><span>+' + bd.epoc + ' kcal</span>' : '') +
+            '<span>Trabajo activo (Jefit)</span><span>+' + bd.intensity + ' kcal</span>' +
+            '<span>Descansos entre series</span><span>+' + bd.session + ' kcal</span>' +
+            (bd.epoc ? '<span>Extra pierna (conservador)</span><span>+' + bd.epoc + ' kcal</span>' : '') +
         '</div>';
     } else {
         trainRows += '<div class="trainer-tdee-row trainer-tdee-muted"><span>🏋️ Gym hoy</span><strong>—</strong></div>';
