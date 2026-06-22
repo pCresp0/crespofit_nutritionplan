@@ -3532,22 +3532,26 @@ function getCorrectedWorkoutVolumeKg(workout) {
 
 function calculateWorkoutKcalBreakdown(workout, weight) {
     weight = weight || TRAINER_PROFILE.weight;
+    var wFactor = weight / 70;
     var isLeg = !!workout.isLeg;
     var sessionMin = getTrainerSessionMin();
     var activeMin = Math.min(workout.actualWorkMin || 0, sessionMin);
     var restMin = Math.max(0, sessionMin - activeMin);
-    // Modelo conservador: mejor quedarse corto que pasarse (no sumar sesión + volumen + EPOC alto)
-    var workMet = isLeg ? 4.0 : 3.5;
-    var restMet = 2.0;
+    // MET estándar (fuerza vigorosa ~5.5–6) sin bici — cardio va en pasos del día
+    // Objetivo torso ~650 kcal activas (por debajo de estimaciones altas ~730)
+    var workMet = isLeg ? 5.5 : 5.5;
+    var restMet = 3.0;
     var workKcal = workMet * weight * (activeMin / 60);
     var restKcal = restMet * weight * (restMin / 60);
-    var base = workKcal + restKcal;
-    var legBonus = isLeg ? base * 0.05 : 0;
+    var volumeKg = getCorrectedWorkoutVolumeKg(workout);
+    var volumeKcal = Math.min(isLeg ? 90 : 100, volumeKg * 0.0045 * wFactor);
+    var base = workKcal + restKcal + volumeKcal;
+    var legBonus = isLeg ? base * 0.06 : 0;
     return {
         session: Math.round(restKcal),
         intensity: Math.round(workKcal),
-        volume: 0,
-        volumeKg: getCorrectedWorkoutVolumeKg(workout),
+        volume: Math.round(volumeKcal),
+        volumeKg: volumeKg,
         epoc: Math.round(legBonus),
         total: Math.round(base + legBonus),
         isLeg: isLeg
@@ -3918,9 +3922,10 @@ function updateTrainerEnergyUI() {
         var bd = r.trainDetail.breakdown;
         trainRows += '<div class="trainer-tdee-row"><span>🏋️ ' + r.trainDetail.name + '</span><strong>+' + r.trainKcal + ' kcal</strong></div>';
         trainRows += '<div class="trainer-tdee-sub">' +
-            '<span>Trabajo activo (Jefit)</span><span>+' + bd.intensity + ' kcal</span>' +
+            '<span>Series bajo tensión (Jefit)</span><span>+' + bd.intensity + ' kcal</span>' +
             '<span>Descansos entre series</span><span>+' + bd.session + ' kcal</span>' +
-            (bd.epoc ? '<span>Extra pierna (conservador)</span><span>+' + bd.epoc + ' kcal</span>' : '') +
+            '<span>Carga mecánica (' + Math.round(bd.volumeKg).toLocaleString('es-ES') + ' kg)</span><span>+' + bd.volume + ' kcal</span>' +
+            (bd.epoc ? '<span>Extra pierna</span><span>+' + bd.epoc + ' kcal</span>' : '') +
         '</div>';
     } else {
         trainRows += '<div class="trainer-tdee-row trainer-tdee-muted"><span>🏋️ Gym hoy</span><strong>—</strong></div>';
