@@ -28,6 +28,31 @@
 </head>
 <body>
 
+    <!-- SITE GATE (under construction) -->
+    <div class="site-gate" id="site-gate" aria-hidden="true">
+        <div class="site-gate-card">
+            <div class="site-gate-icon" aria-hidden="true">🚧</div>
+            <h1 class="site-gate-title">En construcción</h1>
+            <p class="site-gate-text">Estamos preparando el planificador nutricional. Estará disponible próximamente.</p>
+            <p class="site-gate-sub" id="site-gate-touch">Mi Plan Nutricional · CrespoFit</p>
+        </div>
+    </div>
+
+    <div class="app-modal-overlay site-gate-pin-overlay" id="site-gate-pin" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="site-gate-pin-title">
+        <div class="app-modal site-gate-pin-modal">
+            <div class="app-modal-body">
+                <h3 id="site-gate-pin-title" style="margin:0 0 12px;font-size:1.05rem;color:var(--text-primary);">Acceso</h3>
+                <label for="site-gate-pin-input" class="site-gate-pin-label">Introduce el PIN</label>
+                <input type="password" id="site-gate-pin-input" class="site-gate-pin-input" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="12">
+                <p class="site-gate-pin-error" id="site-gate-pin-error" aria-live="polite"></p>
+            </div>
+            <div class="app-modal-actions">
+                <button type="button" class="app-modal-btn app-modal-btn-secondary" id="site-gate-pin-cancel">Cancelar</button>
+                <button type="button" class="app-modal-btn app-modal-btn-primary" id="site-gate-pin-submit">Entrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ========== ONBOARDING ========== -->
     <div class="onboarding" id="onboarding">
         <button class="theme-toggle" id="theme-toggle-onboarding" aria-label="Cambiar tema">🌙</button>
@@ -746,6 +771,7 @@
         </div>
     </div>
 
+    <script src="js/site-gate.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

@@ -2851,6 +2851,130 @@ body {
     color: var(--accent);
 }
 
+/* ========== SITE GATE (under construction) ========== */
+body.site-gate-active {
+    overflow: hidden;
+}
+
+.site-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--bg-primary, #0f0f14);
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.site-gate.site-gate-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.site-gate-card {
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    padding: 36px 28px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+}
+
+.site-gate-icon {
+    font-size: 3rem;
+    line-height: 1;
+    margin-bottom: 16px;
+}
+
+.site-gate-title {
+    font-size: 1.45rem;
+    color: var(--text-primary);
+    margin: 0 0 12px;
+}
+
+.site-gate-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0 0 20px;
+}
+
+.site-gate-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin: 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+}
+
+.site-gate-pin-overlay {
+    z-index: 10001;
+}
+
+.site-gate-pin-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.site-gate-pin-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 1.1rem;
+    letter-spacing: 0.15em;
+    text-align: center;
+}
+
+.site-gate-pin-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.site-gate-pin-error {
+    min-height: 1.2em;
+    margin: 10px 0 0;
+    font-size: 0.78rem;
+    color: #e57373;
+}
+
+.site-gate-pin-shake {
+    animation: siteGateShake 0.45s ease;
+}
+
+@keyframes siteGateShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+.app-modal-btn-secondary {
+    background: rgba(255,255,255,0.08);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.app-modal-btn-secondary:hover {
+    background: rgba(255,255,255,0.12);
+    color: var(--text-primary);
+}
+
 /* App Modal (replaces browser alerts) */
 .app-modal-overlay {
     position: fixed;

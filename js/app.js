@@ -5339,4 +5339,14 @@ function generatePdf(canvas, pdfName) {
 
 document.getElementById('export-btn').addEventListener('click', showExportModal);
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof isSiteGateUnlocked === 'function' && isSiteGateUnlocked()) {
+        var g = document.getElementById('site-gate');
+        if (g) g.classList.add('site-gate-hidden');
+        init();
+    } else if (typeof setupSiteGate === 'function') {
+        setupSiteGate(init);
+    } else {
+        init();
+    }
+});
