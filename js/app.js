@@ -1789,8 +1789,8 @@ document.getElementById('dev-skip-btn').addEventListener('click', function() {
     document.getElementById('calc-training-details').classList.remove('hidden');
     document.getElementById('calc-train-type').value = 'strength';
     document.getElementById('calc-train-days').value = '4';
-    document.getElementById('calc-train-duration').value = '60';
-    document.getElementById('calc-train-intensity').value = 'medium';
+    document.getElementById('calc-train-duration').value = '90';
+    document.getElementById('calc-train-intensity').value = 'high';
     userName = 'Pablo';
     userGoal = 'recomp';
     var result = calculateTDEE();
@@ -3369,19 +3369,20 @@ var TRAINER_PROFILE = {
     workEnd: 19,
     training: {
         daysPerWeek: 4,
+        typicalSessionMin: 90, // habitual en gym (pesas + bici en torso; hoy torso-1: 84 min)
         typicalGymDays: [1, 3, 5, 6], // lun, mié, vie, sáb (puede cambiar)
         dayWorkoutMap: { 1: 'torso-1', 3: 'pierna-1', 5: 'torso-2', 6: 'pierna-2' }
     }
 };
 
-// Rutinas reales de Jefit (Pablo) — tiempos, volumen y bici para estimar kcal
+// Rutinas reales de Jefit (Pablo) — ~90 min habituales por sesión
 var TRAINER_WORKOUTS = [
     {
         id: 'torso-1',
         name: 'Torso 1',
         emoji: '💪',
-        totalMin: 84,
-        actualWorkMin: 57,
+        totalMin: 90,
+        actualWorkMin: 61,
         volumeKg: 11102,
         cardioMin: 30,
         cardioLabel: 'Bici reclinada 30 min',
@@ -3392,8 +3393,8 @@ var TRAINER_WORKOUTS = [
         name: 'Pierna 1',
         emoji: '🦵',
         isLeg: true,
-        totalMin: 86,
-        actualWorkMin: 26,
+        totalMin: 90,
+        actualWorkMin: 27,
         volumeKg: 7350,
         cardioMin: 0,
         exercises: ['Crunch polea', 'Aducción cadera', 'Hack squat', 'Búlgaras Smith', 'Gemelos sentado', 'Zancadas mancuernas']
@@ -3402,8 +3403,8 @@ var TRAINER_WORKOUTS = [
         id: 'torso-2',
         name: 'Torso 2',
         emoji: '🏋️',
-        totalMin: 105,
-        actualWorkMin: 52,
+        totalMin: 90,
+        actualWorkMin: 45,
         volumeKg: 7381,
         cardioMin: 30,
         cardioLabel: 'Bici reclinada 30 min',
@@ -3414,8 +3415,8 @@ var TRAINER_WORKOUTS = [
         name: 'Pierna 2',
         emoji: '🔥',
         isLeg: true,
-        totalMin: 99,
-        actualWorkMin: 19,
+        totalMin: 90,
+        actualWorkMin: 17,
         volumeKg: 9995,
         cardioMin: 0,
         exercises: ['Peso muerto rumano', 'Hip thrust', 'Prensa piernas', 'Extensión cuádriceps', 'Curl femoral', 'Crunch polea', 'Crunch declinado']
@@ -3478,6 +3479,15 @@ function getTrainerWorkoutById(id) {
         if (TRAINER_WORKOUTS[i].id === id) return TRAINER_WORKOUTS[i];
     }
     return null;
+}
+
+function formatWorkoutDurationMeta(workout) {
+    if (!workout) return '';
+    var strengthMin = workout.totalMin - (workout.cardioMin || 0);
+    if (workout.cardioMin) {
+        return strengthMin + ' min pesas + ' + workout.cardioMin + ' min bici · ' + workout.totalMin + ' min total';
+    }
+    return workout.totalMin + ' min';
 }
 
 function getDefaultWorkoutForDay(d) {
@@ -3677,9 +3687,7 @@ function buildTrainerWorkoutPickerHtml() {
     return TRAINER_WORKOUTS.map(function(w) {
         var kcal = calculateWorkoutKcalBreakdown(w).total;
         var sel = trainerDailyLog.workoutId === w.id ? ' trainer-workout-selected' : '';
-        var strengthMin = w.totalMin - (w.cardioMin || 0);
-        var meta = strengthMin + ' min sesión';
-        if (w.cardioMin) meta += ' + ' + w.cardioMin + ' min bici';
+        var meta = formatWorkoutDurationMeta(w);
         var plannedTag = w.id === trainerDailyLog.plannedWorkoutId ? ' · previsto hoy' : '';
         return '<button type="button" class="trainer-workout-chip' + sel + '" data-trainer-workout="' + w.id + '">' +
             '<span class="trainer-workout-chip-name">' + w.emoji + ' ' + w.name + '</span>' +
@@ -3697,9 +3705,7 @@ function renderTrainerWorkoutDaySection() {
 
     var plannedHtml;
     if (planned) {
-        var strengthMin = planned.totalMin - (planned.cardioMin || 0);
-        var plannedMeta = strengthMin + ' min sesión';
-        if (planned.cardioMin) plannedMeta += ' + ' + planned.cardioMin + ' min bici';
+        var plannedMeta = formatWorkoutDurationMeta(planned);
         var plannedCls = 'trainer-planned-workout';
         if (status === 'skipped') plannedCls += ' trainer-planned-skipped';
         if (status === 'done') plannedCls += ' trainer-planned-done';
@@ -3856,7 +3862,7 @@ function renderTrainerActivityPanel() {
                 '<h3>👟 Tu gasto de hoy</h3>' +
                 '<span class="trainer-activity-date" id="trainer-activity-date"></span>' +
             '</div>' +
-            '<p class="trainer-activity-profile">81,5 kg · 174 cm · 32 años · oficina 9–19h · ~10.000 pasos/día · sin alcohol</p>' +
+            '<p class="trainer-activity-profile">81,5 kg · 174 cm · 32 años · oficina 9–19h · ~10.000 pasos/día · ~90 min gym · sin alcohol</p>' +
             '<div class="trainer-activity-inputs">' +
                 '<div class="trainer-activity-field">' +
                     '<label for="trainer-steps-today">Pasos de hoy <span class="trainer-activity-hint">(Apple Health · hasta ahora)</span></label>' +
@@ -3899,9 +3905,9 @@ function updateTrainerEnergyUI() {
         var bd = r.trainDetail.breakdown;
         var w = getTrainerWorkoutById(r.trainDetail.id);
         var strengthMin = w.totalMin - (w.cardioMin || 0);
-        trainRows += '<div class="trainer-tdee-row"><span>🏋️ ' + r.trainDetail.name + '</span><strong>+' + r.trainKcal + ' kcal</strong></div>';
+        trainRows += '<div class="trainer-tdee-row"><span>🏋️ ' + r.trainDetail.name + ' · ' + w.totalMin + ' min</span><strong>+' + r.trainKcal + ' kcal</strong></div>';
         trainRows += '<div class="trainer-tdee-sub">' +
-            '<span>Sesión completa (' + strengthMin + ' min, incl. descansos)</span><span>+' + bd.session + ' kcal</span>' +
+            '<span>Pesas (' + strengthMin + ' min, incl. descansos)</span><span>+' + bd.session + ' kcal</span>' +
             '<span>Series bajo carga (' + w.actualWorkMin + ' min)</span><span>+' + bd.intensity + ' kcal</span>' +
             (bd.cardio ? '<span>' + (w.cardioLabel || 'Cardio') + '</span><span>+' + bd.cardio + ' kcal</span>' : '') +
             '<span>Volumen (' + Math.round(w.volumeKg).toLocaleString('es-ES') + ' kg)</span><span>+' + bd.volume + ' kcal</span>' +
