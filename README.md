@@ -2,7 +2,7 @@
 
 Herramienta web de planificación nutricional personalizada. Calcula tu gasto calórico, elige tus comidas y obtén un plan con cantidades exactas ajustadas a tu objetivo — todo basado en evidencia científica.
 
-## 👉 [Abrir la app](https://pcresp0.github.io/dieta_gym_PCB/)
+## 👉 [Abrir la app](https://pcresp0.github.io/crespofit_nutritionplan/)
 
 <p align="center">
   <img src="img/og-image.png" alt="Mi Plan Nutricional" width="600">
@@ -128,5 +128,5 @@ Abre `index.html` en el navegador. No necesita instalación, build ni servidor.
 ---
 
 <p align="center">
-  <img src="https://hits.sh/pcresp0.github.io/dieta_gym_PCB.svg?label=visitas&color=6B7280&labelColor=374151" alt="Visitas">
+  <img src="https://hits.sh/pcresp0.github.io/crespofit_nutritionplan.svg?label=visitas&color=6B7280&labelColor=374151" alt="Visitas">
 </p>

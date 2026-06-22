@@ -2708,7 +2708,7 @@ function buildWeeklyExportCanvas(plan) {
     ctx.fillStyle = textMuted;
     ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Generado con Mi Plan Nutricional  \u2022  pcresp0.github.io/dieta_gym_PCB', W / 2, curY);
+    ctx.fillText('Generado con Mi Plan Nutricional  \u2022  pcresp0.github.io/crespofit_nutritionplan', W / 2, curY);
     ctx.textAlign = 'left';
 
     // Trim canvas
@@ -4896,7 +4896,7 @@ function buildWhatsAppText() {
 
     text += '\n━━━━━━━━━━━━━━━━━━━━\n\n';
     text += '¿Qué te parece esta dieta? 💪\n';
-    text += 'Hecha con 👉 https://pcresp0.github.io/dieta_gym_PCB/';
+    text += 'Hecha con 👉 https://pcresp0.github.io/crespofit_nutritionplan/';
 
     return text;
 }
@@ -5262,7 +5262,7 @@ function buildExportCanvas() {
     ctx.fillStyle = textMuted;
     ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Generado con Mi Plan Nutricional  \u2022  pcresp0.github.io/dieta_gym_PCB', W / 2, curY + 16);
+    ctx.fillText('Generado con Mi Plan Nutricional  \u2022  pcresp0.github.io/crespofit_nutritionplan', W / 2, curY + 16);
     ctx.textAlign = 'left';
 
     // Trim canvas to actual height
