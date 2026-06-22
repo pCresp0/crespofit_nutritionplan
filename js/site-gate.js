@@ -7,6 +7,7 @@
 
     var appInitCallback = null;
     var gateUiReady = false;
+    var pinUiReady = false;
 
     function bufferToHex(buf) {
         var arr = new Uint8Array(buf);
@@ -96,12 +97,23 @@
         if (err) err.textContent = '';
         input.value = '';
         overlay.classList.add('is-open');
-        setTimeout(function() { input.focus(); }, 50);
+        overlay.removeAttribute('hidden');
+        overlay.setAttribute('aria-hidden', 'false');
+        overlay.style.setProperty('display', 'flex', 'important');
+        overlay.style.setProperty('z-index', '100000', 'important');
+        setTimeout(function() {
+            try { input.focus({ preventScroll: true }); } catch (e) { input.focus(); }
+        }, 50);
     }
 
     function hidePinModal() {
         var overlay = document.getElementById('site-gate-pin');
-        if (overlay) overlay.classList.remove('is-open');
+        if (!overlay) return;
+        overlay.classList.remove('is-open');
+        overlay.setAttribute('hidden', 'hidden');
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.style.removeProperty('display');
+        overlay.style.removeProperty('z-index');
     }
 
     function showPinError(msg) {
@@ -141,24 +153,22 @@
         });
     }
 
-    function initGateUi() {
-        if (gateUiReady) return;
-        gateUiReady = true;
-
-        showSiteGate();
-
-        var adminBtn = document.getElementById('site-gate-admin-btn');
-        if (adminBtn) {
-            adminBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                showPinModal();
-            });
+    function openPinFromAdmin(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
         }
+        showPinModal();
+    }
+
+    function bindPinModalUi() {
+        if (pinUiReady) return;
+        pinUiReady = true;
 
         var cancelBtn = document.getElementById('site-gate-pin-cancel');
         var submitBtn = document.getElementById('site-gate-pin-submit');
         var pinInput = document.getElementById('site-gate-pin-input');
+        var overlay = document.getElementById('site-gate-pin');
 
         if (cancelBtn) cancelBtn.addEventListener('click', hidePinModal);
         if (submitBtn) submitBtn.addEventListener('click', verifyPin);
@@ -167,6 +177,24 @@
                 if (e.key === 'Enter') verifyPin();
                 if (e.key === 'Escape') hidePinModal();
             });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) hidePinModal();
+            });
+        }
+    }
+
+    function initGateUi() {
+        if (gateUiReady) return;
+        gateUiReady = true;
+
+        showSiteGate();
+        bindPinModalUi();
+
+        var adminBtn = document.getElementById('site-gate-admin-btn');
+        if (adminBtn) {
+            adminBtn.addEventListener('click', openPinFromAdmin);
         }
     }
 
@@ -178,6 +206,21 @@
         } else {
             initGateUi();
         }
+    }
+
+    function bootstrapGate() {
+        bindPinModalUi();
+        if (isSiteGateUnlocked()) {
+            hideSiteGate();
+        } else {
+            initGateUi();
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootstrapGate);
+    } else {
+        bootstrapGate();
     }
 
     window.isSiteGateUnlocked = isSiteGateUnlocked;
