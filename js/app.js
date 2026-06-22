@@ -3537,16 +3537,17 @@ function calculateWorkoutKcalBreakdown(workout, weight) {
     var sessionMin = getTrainerSessionMin();
     var activeMin = Math.min(workout.actualWorkMin || 0, sessionMin);
     var restMin = Math.max(0, sessionMin - activeMin);
-    // MET estándar (fuerza vigorosa ~5.5–6) sin bici — cardio va en pasos del día
-    // Objetivo torso ~650 kcal activas (por debajo de estimaciones altas ~730)
-    var workMet = isLeg ? 5.5 : 5.5;
-    var restMet = 3.0;
+    // Torso ~550 kcal · Pierna más alta (más kg y grupos grandes)
+    var workMet = isLeg ? 6.2 : 4.55;
+    var restMet = isLeg ? 3.25 : 2.75;
     var workKcal = workMet * weight * (activeMin / 60);
     var restKcal = restMet * weight * (restMin / 60);
     var volumeKg = getCorrectedWorkoutVolumeKg(workout);
-    var volumeKcal = Math.min(isLeg ? 90 : 100, volumeKg * 0.0045 * wFactor);
+    var volCoef = isLeg ? 0.0065 : 0.0032;
+    var volCap = isLeg ? 115 : 70;
+    var volumeKcal = Math.min(volCap, volumeKg * volCoef * wFactor);
     var base = workKcal + restKcal + volumeKcal;
-    var legBonus = isLeg ? base * 0.06 : 0;
+    var legBonus = isLeg ? base * 0.07 : 0;
     return {
         session: Math.round(restKcal),
         intensity: Math.round(workKcal),
@@ -3925,7 +3926,7 @@ function updateTrainerEnergyUI() {
             '<span>Series bajo tensión (Jefit)</span><span>+' + bd.intensity + ' kcal</span>' +
             '<span>Descansos entre series</span><span>+' + bd.session + ' kcal</span>' +
             '<span>Carga mecánica (' + Math.round(bd.volumeKg).toLocaleString('es-ES') + ' kg)</span><span>+' + bd.volume + ' kcal</span>' +
-            (bd.epoc ? '<span>Extra pierna</span><span>+' + bd.epoc + ' kcal</span>' : '') +
+            (bd.epoc ? '<span>Extra pierna (grupos grandes)</span><span>+' + bd.epoc + ' kcal</span>' : '') +
         '</div>';
     } else {
         trainRows += '<div class="trainer-tdee-row trainer-tdee-muted"><span>🏋️ Gym hoy</span><strong>—</strong></div>';
