@@ -2937,6 +2937,21 @@ body.site-gate-active {
 
 .site-gate-pin-overlay {
     z-index: 100000;
+    display: none !important;
+}
+
+.site-gate-pin-overlay.is-open {
+    display: flex !important;
+}
+
+.site-gate-icon-pulse,
+.site-gate-card.site-gate-icon-pulse {
+    transform: scale(1.06);
+    transition: transform 0.12s ease;
+}
+
+#site-gate-card {
+    cursor: default;
 }
 
 .site-gate-pin-label {

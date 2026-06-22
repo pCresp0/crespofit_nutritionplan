@@ -2,11 +2,13 @@
 (function() {
     var GATE_STORAGE_KEY = 'dietAppGateV2';
     var GATE_SALT = 'crespofit_gate_v1';
-    // SHA-256(salt-applied PIN) — regenerate only if PIN changes
     var GATE_HASH = 'd71409f5ab6d20ff93870f390b7377f8884eddd9f1f6416abd5b13968fa5679b';
     var GATE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-    var LONG_PRESS_MS = 700;
-    var TRIPLE_CLICK_MS = 1000;
+    var LONG_PRESS_MS = 650;
+    var TRIPLE_CLICK_MS = 1500;
+
+    var appInitCallback = null;
+    var gateUiReady = false;
 
     function bufferToHex(buf) {
         var arr = new Uint8Array(buf);
@@ -79,6 +81,15 @@
         document.body.classList.remove('site-gate-active');
     }
 
+    function showSiteGate() {
+        var gate = document.getElementById('site-gate');
+        if (gate) {
+            gate.classList.remove('site-gate-hidden');
+            gate.setAttribute('aria-hidden', 'false');
+        }
+        document.body.classList.add('site-gate-active');
+    }
+
     function showPinModal() {
         var overlay = document.getElementById('site-gate-pin');
         var input = document.getElementById('site-gate-pin-input');
@@ -86,13 +97,13 @@
         if (!overlay || !input) return;
         if (err) err.textContent = '';
         input.value = '';
-        overlay.style.display = 'flex';
-        setTimeout(function() { input.focus(); }, 80);
+        overlay.classList.add('is-open');
+        setTimeout(function() { input.focus(); }, 50);
     }
 
     function hidePinModal() {
         var overlay = document.getElementById('site-gate-pin');
-        if (overlay) overlay.style.display = 'none';
+        if (overlay) overlay.classList.remove('is-open');
     }
 
     function showPinError(msg) {
@@ -105,7 +116,14 @@
         }
     }
 
-    function verifyPinAndUnlock(onUnlock) {
+    function finishUnlock() {
+        unlockSiteGate();
+        hidePinModal();
+        hideSiteGate();
+        if (typeof appInitCallback === 'function') appInitCallback();
+    }
+
+    function verifyPin() {
         var input = document.getElementById('site-gate-pin-input');
         if (!input) return;
         var pin = input.value.trim();
@@ -114,12 +132,8 @@
             return;
         }
         hashPin(pin).then(function(digest) {
-            if (digest === GATE_HASH) {
-                unlockSiteGate();
-                hidePinModal();
-                hideSiteGate();
-                if (typeof onUnlock === 'function') onUnlock();
-            } else {
+            if (digest === GATE_HASH) finishUnlock();
+            else {
                 showPinError('PIN incorrecto.');
                 input.value = '';
                 input.focus();
@@ -129,103 +143,136 @@
         });
     }
 
-    function bindSecretTrigger(el) {
+    function bindUnlockTrigger(el) {
+        if (!el || el.dataset.gateBound === '1') return;
+        el.dataset.gateBound = '1';
+
+        var clickCount = 0;
+        var clickTimer = null;
         var longPressTimer = null;
-        var longPressFired = false;
-        var mouseClickCount = 0;
-        var mouseClickTimer = null;
+        var longPressDone = false;
+        var lastTouchAt = 0;
 
-        function clearLongPress() {
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
+        function resetClicks() {
+            clickCount = 0;
+            if (clickTimer) {
+                clearTimeout(clickTimer);
+                clickTimer = null;
             }
         }
 
-        function resetMouseClicks() {
-            mouseClickCount = 0;
-            if (mouseClickTimer) {
-                clearTimeout(mouseClickTimer);
-                mouseClickTimer = null;
-            }
-        }
-
-        function registerMouseClick() {
-            mouseClickCount++;
-            if (mouseClickTimer) clearTimeout(mouseClickTimer);
-            if (mouseClickCount >= 3) {
-                resetMouseClicks();
+        function registerClick() {
+            clickCount++;
+            if (clickTimer) clearTimeout(clickTimer);
+            el.classList.add('site-gate-icon-pulse');
+            setTimeout(function() { el.classList.remove('site-gate-icon-pulse'); }, 120);
+            if (clickCount >= 3) {
+                resetClicks();
                 showPinModal();
                 return;
             }
-            mouseClickTimer = setTimeout(resetMouseClicks, TRIPLE_CLICK_MS);
+            clickTimer = setTimeout(resetClicks, TRIPLE_CLICK_MS);
         }
 
-        // Móvil: pulsación larga
         el.addEventListener('touchstart', function() {
-            longPressFired = false;
-            clearLongPress();
+            lastTouchAt = Date.now();
+            longPressDone = false;
+            if (longPressTimer) clearTimeout(longPressTimer);
             longPressTimer = setTimeout(function() {
                 longPressTimer = null;
-                longPressFired = true;
+                longPressDone = true;
+                resetClicks();
                 showPinModal();
             }, LONG_PRESS_MS);
         }, { passive: true });
 
-        el.addEventListener('touchend', clearLongPress);
-        el.addEventListener('touchmove', clearLongPress);
-        el.addEventListener('touchcancel', clearLongPress);
+        el.addEventListener('touchmove', function() {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+        });
 
-        // PC: triple clic (detail=3 del navegador o 3 clics sueltos)
+        el.addEventListener('touchend', function() {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+        });
+
+        el.addEventListener('mouseup', function(e) {
+            if (e.button !== 0) return;
+            if (Date.now() - lastTouchAt < 400) return;
+            if (longPressDone) {
+                longPressDone = false;
+                return;
+            }
+            registerClick();
+        });
+
         el.addEventListener('click', function(e) {
-            if (longPressFired) {
+            if (longPressDone) {
                 e.preventDefault();
-                longPressFired = false;
-                return;
-            }
-            // Evitar ghost click tras long press en táctil
-            if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
-
-            if (e.detail >= 3) {
-                resetMouseClicks();
-                e.preventDefault();
-                showPinModal();
-                return;
-            }
-
-            if (e.detail === 1) {
-                registerMouseClick();
+                longPressDone = false;
             }
         });
     }
 
-    function setupSiteGate(onUnlock) {
-        var gate = document.getElementById('site-gate');
-        if (!gate) {
-            if (typeof onUnlock === 'function') onUnlock();
-            return;
-        }
-        gate.classList.remove('site-gate-hidden');
-        gate.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('site-gate-active');
+    function initGateUi() {
+        if (gateUiReady) return;
+        gateUiReady = true;
+
+        showSiteGate();
 
         var icon = document.getElementById('site-gate-icon');
-        if (icon) bindSecretTrigger(icon);
+        var card = document.getElementById('site-gate-card');
+        bindUnlockTrigger(icon);
+        if (card && card !== icon) {
+            // Solo long-press en tarjeta; clics en PC van al emoji para no contar doble
+            if (card.dataset.gateBound !== '1') {
+                card.dataset.gateBound = '1';
+                var lpTimer = null;
+                card.addEventListener('touchstart', function() {
+                    if (lpTimer) clearTimeout(lpTimer);
+                    lpTimer = setTimeout(function() {
+                        lpTimer = null;
+                        showPinModal();
+                    }, LONG_PRESS_MS);
+                }, { passive: true });
+                card.addEventListener('touchmove', function() {
+                    if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+                });
+                card.addEventListener('touchend', function() {
+                    if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+                });
+            }
+        }
 
         var cancelBtn = document.getElementById('site-gate-pin-cancel');
         var submitBtn = document.getElementById('site-gate-pin-submit');
         var pinInput = document.getElementById('site-gate-pin-input');
 
         if (cancelBtn) cancelBtn.addEventListener('click', hidePinModal);
-        if (submitBtn) submitBtn.addEventListener('click', function() { verifyPinAndUnlock(onUnlock); });
+        if (submitBtn) submitBtn.addEventListener('click', verifyPin);
         if (pinInput) {
             pinInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') verifyPinAndUnlock(onUnlock);
+                if (e.key === 'Enter') verifyPin();
                 if (e.key === 'Escape') hidePinModal();
             });
         }
     }
 
+    function setupSiteGate(onUnlock) {
+        appInitCallback = onUnlock;
+        if (isSiteGateUnlocked()) {
+            hideSiteGate();
+            if (typeof onUnlock === 'function') onUnlock();
+        } else {
+            initGateUi();
+        }
+    }
+
     window.isSiteGateUnlocked = isSiteGateUnlocked;
     window.setupSiteGate = setupSiteGate;
+    window.hideSiteGate = hideSiteGate;
 })();
