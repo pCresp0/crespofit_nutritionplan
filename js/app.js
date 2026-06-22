@@ -3422,7 +3422,56 @@ var TRAINER_WORKOUTS = [
     }
 ];
 
-var trainerDailyLog = { date: '', steps: null, watchActiveKcal: null, trainedToday: false, workoutId: null };
+var trainerDailyLog = {
+    date: '',
+    steps: null,
+    watchActiveKcal: null,
+    plannedWorkoutId: null,
+    workoutStatus: null, // done | skipped | rest | other
+    workoutId: null
+};
+
+function syncTrainerWorkoutState() {
+    trainerDailyLog.plannedWorkoutId = trainerDailyLog.plannedWorkoutId || getDefaultWorkoutForDay();
+    if (!trainerDailyLog.workoutStatus) {
+        if (trainerDailyLog.trainedToday) {
+            trainerDailyLog.workoutStatus = (trainerDailyLog.workoutId && trainerDailyLog.workoutId !== trainerDailyLog.plannedWorkoutId)
+                ? 'other' : 'done';
+        } else {
+            trainerDailyLog.workoutStatus = isDefaultTrainerGymDay() ? 'skipped' : 'rest';
+        }
+    }
+    if (trainerDailyLog.workoutStatus === 'done') {
+        trainerDailyLog.workoutId = trainerDailyLog.plannedWorkoutId || getDefaultWorkoutForDay();
+        if (!trainerDailyLog.workoutId) trainerDailyLog.workoutStatus = 'other';
+    } else if (trainerDailyLog.workoutStatus === 'rest' || trainerDailyLog.workoutStatus === 'skipped') {
+        trainerDailyLog.workoutId = null;
+    }
+}
+
+function getActiveWorkoutId() {
+    syncTrainerWorkoutState();
+    if (trainerDailyLog.workoutStatus === 'done' || trainerDailyLog.workoutStatus === 'other') {
+        return trainerDailyLog.workoutId;
+    }
+    return null;
+}
+
+function getPlannedWorkoutLabel() {
+    var id = trainerDailyLog.plannedWorkoutId || getDefaultWorkoutForDay();
+    if (!id) return null;
+    var w = getTrainerWorkoutById(id);
+    return w ? w.emoji + ' ' + w.name : null;
+}
+
+function getWorkoutDayHint() {
+    var days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+    var dow = new Date().getDay();
+    if (!isDefaultTrainerGymDay()) {
+        return days[dow] + ' · descanso habitual';
+    }
+    return days[dow] + ' · rutina habitual';
+}
 
 function getTrainerWorkoutById(id) {
     for (var i = 0; i < TRAINER_WORKOUTS.length; i++) {
@@ -3515,18 +3564,23 @@ function getTodayDateKey() {
 function ensureTrainerDailyLog() {
     var today = getTodayDateKey();
     if (trainerDailyLog.date !== today) {
+        var planned = getDefaultWorkoutForDay();
         var gymDay = isDefaultTrainerGymDay();
         trainerDailyLog = {
             date: today,
             steps: null,
             watchActiveKcal: null,
-            trainedToday: gymDay,
-            workoutId: gymDay ? getDefaultWorkoutForDay() : null
+            plannedWorkoutId: planned,
+            workoutStatus: gymDay ? 'done' : 'rest',
+            workoutId: gymDay ? planned : null
         };
         saveTrainerPersonalState();
-    } else if (trainerDailyLog.trainedToday && !trainerDailyLog.workoutId) {
-        trainerDailyLog.workoutId = getDefaultWorkoutForDay();
-        saveTrainerPersonalState();
+    } else {
+        syncTrainerWorkoutState();
+        if ((trainerDailyLog.workoutStatus === 'done' || trainerDailyLog.workoutStatus === 'other') && !trainerDailyLog.workoutId) {
+            trainerDailyLog.workoutId = trainerDailyLog.plannedWorkoutId || getDefaultWorkoutForDay();
+            saveTrainerPersonalState();
+        }
     }
 }
 
@@ -3537,6 +3591,7 @@ function loadTrainerPersonalState() {
         var data = JSON.parse(saved);
         if (data.dailyLog) trainerDailyLog = data.dailyLog;
         ensureTrainerDailyLog();
+        syncTrainerWorkoutState();
     } catch (e) {
         ensureTrainerDailyLog();
     }
@@ -3609,14 +3664,131 @@ function getTrainerGoalLabel() {
 
 function getTrainerEnergySummary() {
     ensureTrainerDailyLog();
-    var workoutId = trainerDailyLog.trainedToday ? trainerDailyLog.workoutId : null;
     var result = calculateTrainerTDEE(
         trainerDailyLog.steps,
-        workoutId,
+        getActiveWorkoutId(),
         trainerDailyLog.watchActiveKcal
     );
     var targetKcal = Math.round(result.tdee * getTrainerGoalMultiplier());
     return { result: result, targetKcal: targetKcal };
+}
+
+function buildTrainerWorkoutPickerHtml() {
+    return TRAINER_WORKOUTS.map(function(w) {
+        var kcal = calculateWorkoutKcalBreakdown(w).total;
+        var sel = trainerDailyLog.workoutId === w.id ? ' trainer-workout-selected' : '';
+        var strengthMin = w.totalMin - (w.cardioMin || 0);
+        var meta = strengthMin + ' min sesión';
+        if (w.cardioMin) meta += ' + ' + w.cardioMin + ' min bici';
+        var plannedTag = w.id === trainerDailyLog.plannedWorkoutId ? ' · previsto hoy' : '';
+        return '<button type="button" class="trainer-workout-chip' + sel + '" data-trainer-workout="' + w.id + '">' +
+            '<span class="trainer-workout-chip-name">' + w.emoji + ' ' + w.name + '</span>' +
+            '<span class="trainer-workout-chip-meta">' + meta + ' · ~' + kcal + ' kcal' + plannedTag + '</span>' +
+        '</button>';
+    }).join('');
+}
+
+function renderTrainerWorkoutDaySection() {
+    syncTrainerWorkoutState();
+    var plannedId = trainerDailyLog.plannedWorkoutId;
+    var planned = plannedId ? getTrainerWorkoutById(plannedId) : null;
+    var status = trainerDailyLog.workoutStatus;
+    var plannedKcal = planned ? calculateWorkoutKcalBreakdown(planned).total : 0;
+
+    var plannedHtml;
+    if (planned) {
+        var strengthMin = planned.totalMin - (planned.cardioMin || 0);
+        var plannedMeta = strengthMin + ' min sesión';
+        if (planned.cardioMin) plannedMeta += ' + ' + planned.cardioMin + ' min bici';
+        var plannedCls = 'trainer-planned-workout';
+        if (status === 'skipped') plannedCls += ' trainer-planned-skipped';
+        if (status === 'done') plannedCls += ' trainer-planned-done';
+        plannedHtml =
+            '<div class="' + plannedCls + '">' +
+                '<span class="trainer-planned-label">Previsto hoy</span>' +
+                '<span class="trainer-planned-name">' + planned.emoji + ' ' + planned.name + '</span>' +
+                '<span class="trainer-planned-meta">' + getWorkoutDayHint() + ' · ' + plannedMeta + ' · ~' + plannedKcal + ' kcal</span>' +
+            '</div>';
+    } else {
+        plannedHtml =
+            '<div class="trainer-planned-workout trainer-planned-rest">' +
+                '<span class="trainer-planned-label">Previsto hoy</span>' +
+                '<span class="trainer-planned-name">😴 Descanso</span>' +
+                '<span class="trainer-planned-meta">' + getWorkoutDayHint() + '</span>' +
+            '</div>';
+    }
+
+    function statusBtn(key, label) {
+        var sel = status === key ? ' trainer-status-selected' : '';
+        return '<button type="button" class="trainer-workout-status-btn' + sel + '" data-workout-status="' + key + '">' + label + '</button>';
+    }
+
+    var pickerHidden = status === 'other' ? '' : ' hidden';
+    var pickerLabel = status === 'other'
+        ? 'Elige qué entrenamiento hiciste'
+        : 'Cambiar rutina';
+
+    return '<div class="trainer-workout-day-card">' +
+        '<div class="trainer-activity-head">' +
+            '<h3>🏋️ Entrenamiento del día</h3>' +
+        '</div>' +
+        plannedHtml +
+        '<div class="trainer-workout-status" id="trainer-workout-status">' +
+            statusBtn('done', '✅ Hecho') +
+            statusBtn('skipped', '❌ No hecho') +
+            statusBtn('rest', '😴 Descanso') +
+            statusBtn('other', '🔄 Otro') +
+        '</div>' +
+        '<div class="trainer-workout-picker' + pickerHidden + '" id="trainer-workout-picker">' +
+            '<span class="trainer-workout-picker-label">' + pickerLabel + '</span>' +
+            '<div class="trainer-workout-list" id="trainer-workout-list">' + buildTrainerWorkoutPickerHtml() + '</div>' +
+        '</div>' +
+        '<p class="trainer-workout-day-note" id="trainer-workout-day-note"></p>' +
+    '</div>';
+}
+
+function updateTrainerWorkoutDayUI() {
+    syncTrainerWorkoutState();
+    var statusEl = document.getElementById('trainer-workout-status');
+    var pickerEl = document.getElementById('trainer-workout-picker');
+    var noteEl = document.getElementById('trainer-workout-day-note');
+    var plannedEl = document.querySelector('.trainer-planned-workout');
+    if (!statusEl) return;
+
+    var status = trainerDailyLog.workoutStatus;
+    statusEl.querySelectorAll('[data-workout-status]').forEach(function(btn) {
+        btn.classList.toggle('trainer-status-selected', btn.dataset.workoutStatus === status);
+    });
+
+    if (pickerEl) {
+        pickerEl.classList.toggle('hidden', status !== 'other');
+        var label = pickerEl.querySelector('.trainer-workout-picker-label');
+        if (label) label.textContent = 'Elige qué entrenamiento hiciste';
+    }
+
+    if (plannedEl) {
+        plannedEl.classList.remove('trainer-planned-done', 'trainer-planned-skipped', 'trainer-planned-rest');
+        if (status === 'done') plannedEl.classList.add('trainer-planned-done');
+        else if (status === 'skipped') plannedEl.classList.add('trainer-planned-skipped');
+        else if (status === 'rest') plannedEl.classList.add('trainer-planned-rest');
+    }
+
+    var list = document.getElementById('trainer-workout-list');
+    if (list) {
+        list.querySelectorAll('.trainer-workout-chip').forEach(function(chip) {
+            chip.classList.toggle('trainer-workout-selected', trainerDailyLog.workoutId === chip.dataset.trainerWorkout);
+        });
+    }
+
+    if (noteEl) {
+        var notes = {
+            done: 'Entreno previsto registrado. Cambia a «Otro» si hiciste una rutina distinta.',
+            skipped: 'Entreno previsto no realizado — no suma kcal de gym.',
+            rest: 'Día de descanso — sin gasto de entrenamiento.',
+            other: 'Selecciona la rutina que hiciste realmente.'
+        };
+        noteEl.textContent = notes[status] || '';
+    }
 }
 
 function getTrainerTabByTime() {
@@ -3677,19 +3849,8 @@ function renderTrainerActivityPanel() {
     var stepsVal = trainerDailyLog.steps !== null ? trainerDailyLog.steps : '';
     var watchVal = trainerDailyLog.watchActiveKcal !== null ? trainerDailyLog.watchActiveKcal : '';
 
-    var workoutChips = TRAINER_WORKOUTS.map(function(w) {
-        var kcal = calculateWorkoutKcalBreakdown(w).total;
-        var sel = trainerDailyLog.workoutId === w.id ? ' trainer-workout-selected' : '';
-        var strengthMin = w.totalMin - (w.cardioMin || 0);
-        var meta = strengthMin + ' min sesión';
-        if (w.cardioMin) meta += ' + ' + w.cardioMin + ' min bici';
-        return '<button type="button" class="trainer-workout-chip' + sel + '" data-trainer-workout="' + w.id + '">' +
-            '<span class="trainer-workout-chip-name">' + w.emoji + ' ' + w.name + '</span>' +
-            '<span class="trainer-workout-chip-meta">' + meta + ' · ~' + kcal + ' kcal</span>' +
-        '</button>';
-    }).join('');
-
     container.innerHTML =
+        renderTrainerWorkoutDaySection() +
         '<div class="trainer-activity-card">' +
             '<div class="trainer-activity-head">' +
                 '<h3>👟 Tu gasto de hoy</h3>' +
@@ -3705,20 +3866,12 @@ function renderTrainerActivityPanel() {
                     '<label for="trainer-watch-kcal">Kcal activas Apple Watch <span class="trainer-activity-hint">(opcional · Movimiento)</span></label>' +
                     '<input type="number" id="trainer-watch-kcal" value="' + watchVal + '" placeholder="Ej: 403" min="0" max="5000" step="1">' +
                 '</div>' +
-                '<div class="trainer-activity-field">' +
-                    '<span class="trainer-activity-field-label">Entreno de hoy <span class="trainer-activity-hint">(Jefit · lun/mié/vie/sáb habitual)</span></span>' +
-                    '<div class="trainer-workout-list" id="trainer-workout-list">' + workoutChips +
-                        '<button type="button" class="trainer-workout-chip trainer-workout-rest' + (!trainerDailyLog.trainedToday ? ' trainer-workout-selected' : '') + '" data-trainer-workout="rest">' +
-                            '<span class="trainer-workout-chip-name">😴 Descanso</span>' +
-                            '<span class="trainer-workout-chip-meta">No entrené hoy</span>' +
-                        '</button>' +
-                    '</div>' +
-                '</div>' +
             '</div>' +
             '<div class="trainer-tdee-breakdown" id="trainer-tdee-breakdown"></div>' +
             '<p class="trainer-activity-note" id="trainer-activity-note"></p>' +
         '</div>';
 
+    updateTrainerWorkoutDayUI();
     updateTrainerEnergyUI();
 }
 
@@ -3781,20 +3934,11 @@ function updateTrainerEnergyUI() {
         var noteParts = [];
         if (!hasSteps) noteParts.push('Introduce los pasos actuales del iPhone (oficina normal: ~10.000 al cerrar el día).');
         if (!hasWatch) noteParts.push('Si tienes Apple Watch, mete las kcal activas de Movimiento para contrastar.');
-        if (!trainerDailyLog.trainedToday) noteParts.push('Selecciona tu rutina Jefit si entrenaste.');
         note.textContent = noteParts.join(' ');
         note.style.display = noteParts.length ? '' : 'none';
     }
 
-    // Sync workout chip selection without full re-render
-    var list = document.getElementById('trainer-workout-list');
-    if (list) {
-        list.querySelectorAll('.trainer-workout-chip').forEach(function(chip) {
-            var id = chip.dataset.trainerWorkout;
-            var selected = id === 'rest' ? !trainerDailyLog.trainedToday : trainerDailyLog.workoutId === id;
-            chip.classList.toggle('trainer-workout-selected', selected);
-        });
-    }
+    updateTrainerWorkoutDayUI();
 }
 
 function calculateTrainerMacros() {
@@ -4382,18 +4526,39 @@ document.getElementById('trainer-activity-panel').addEventListener('input', func
 
 document.getElementById('trainer-activity-panel').addEventListener('click', function(e) {
     if (!trainerModeActive) return;
+
+    var statusBtn = e.target.closest('[data-workout-status]');
+    if (statusBtn) {
+        var status = statusBtn.dataset.workoutStatus;
+        trainerDailyLog.workoutStatus = status;
+        trainerDailyLog.plannedWorkoutId = trainerDailyLog.plannedWorkoutId || getDefaultWorkoutForDay();
+        if (status === 'done') {
+            trainerDailyLog.workoutId = trainerDailyLog.plannedWorkoutId;
+            if (!trainerDailyLog.workoutId) trainerDailyLog.workoutStatus = 'other';
+        } else if (status === 'skipped' || status === 'rest') {
+            trainerDailyLog.workoutId = null;
+        } else if (status === 'other' && !trainerDailyLog.workoutId) {
+            trainerDailyLog.workoutId = null;
+        }
+        trainerDailyLog.date = getTodayDateKey();
+        saveTrainerPersonalState();
+        if (status === 'other') {
+            var picker = document.getElementById('trainer-workout-picker');
+            if (picker) picker.classList.remove('hidden');
+        }
+        updateTrainerWorkoutDayUI();
+        updateTrainerEnergyUI();
+        renderTrainerNutrition();
+        return;
+    }
+
     var chip = e.target.closest('[data-trainer-workout]');
     if (!chip) return;
-    var id = chip.dataset.trainerWorkout;
-    if (id === 'rest') {
-        trainerDailyLog.trainedToday = false;
-        trainerDailyLog.workoutId = null;
-    } else {
-        trainerDailyLog.trainedToday = true;
-        trainerDailyLog.workoutId = id;
-    }
+    trainerDailyLog.workoutStatus = 'other';
+    trainerDailyLog.workoutId = chip.dataset.trainerWorkout;
     trainerDailyLog.date = getTodayDateKey();
     saveTrainerPersonalState();
+    updateTrainerWorkoutDayUI();
     updateTrainerEnergyUI();
     renderTrainerNutrition();
 });
