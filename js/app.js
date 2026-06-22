@@ -1763,6 +1763,7 @@ document.getElementById('start-plan').addEventListener('click', function() {
     populateBodyTimeline();
     saveAllState();
     setupPublicTabsVisibility();
+    enterTrainerMode();
 
     // Show welcome modal on first visit
     if (!localStorage.getItem('welcomeModalSeen')) {
@@ -1811,6 +1812,7 @@ document.getElementById('dev-skip-btn').addEventListener('click', function() {
     populateBodyTimeline();
     saveAllState();
     setupPublicTabsVisibility();
+    enterTrainerMode();
 });
 
 document.getElementById('welcome-modal-ok').addEventListener('click', function() {
@@ -3068,6 +3070,7 @@ function init() {
         populateBodyTimeline();
         setupPublicTabsVisibility();
         window.scrollTo(0, 0);
+        enterTrainerMode();
     } else {
         document.getElementById('onboarding').style.display = '';
         document.getElementById('app-wrapper').style.display = 'none';
