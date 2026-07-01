@@ -3867,6 +3867,17 @@ function enterTrainerMode() {
     document.getElementById('selection-validator').classList.add('hidden');
     renderTrainerActivityPanel();
     renderTrainerContent();
+
+    // Scroll to the active trainer tab panel content
+    setTimeout(function() {
+        var activePanel = document.querySelector('.trainer-tab-panel.active');
+        if (activePanel) {
+            var tabsNav = document.querySelector('.trainer-tabs-nav');
+            var navH = tabsNav ? tabsNav.offsetHeight : 0;
+            var panelTop = activePanel.getBoundingClientRect().top + window.scrollY;
+            window.scrollTo({ top: panelTop - navH - 4, behavior: 'smooth' });
+        }
+    }, 150);
 }
 
 function exitTrainerMode() {
