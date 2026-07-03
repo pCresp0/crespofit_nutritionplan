@@ -4869,6 +4869,10 @@ body.site-gate-active {
     transition: opacity 0.3s ease, max-height 0.3s ease;
 }
 
+.trainer-extras-section {
+    margin-top: 24px;
+}
+
 .trainer-extras-toggle {
     display: flex;
     align-items: center;
@@ -5501,4 +5505,223 @@ body.site-gate-active {
     background: var(--primary);
     color: white;
     transform: scale(1.1);
+}
+
+/* ============================================================ */
+/* TRAINER PLAN TARGET CARD + NEW ELEMENTS (2400 kcal update)   */
+/* ============================================================ */
+
+/* Plan Target Card */
+.trainer-plan-target-card {
+    background: linear-gradient(135deg, rgba(var(--accent-rgb,251,191,36), 0.08) 0%, rgba(var(--accent-rgb,251,191,36), 0.04) 100%);
+    border: 1.5px solid rgba(var(--accent-rgb,251,191,36), 0.35);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+}
+
+.trainer-plan-target-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.trainer-plan-target-icon {
+    font-size: 1.2rem;
+}
+
+.trainer-plan-target-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.01em;
+}
+
+.trainer-plan-target-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.trainer-plan-field label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.trainer-plan-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--input-bg, rgba(255,255,255,0.06));
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    transition: border-color 0.2s;
+}
+
+.trainer-plan-input-wrap:focus-within {
+    border-color: var(--accent, #fbbf24);
+    box-shadow: 0 0 0 2px rgba(var(--accent-rgb,251,191,36), 0.18);
+}
+
+.trainer-plan-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    width: 100%;
+    min-width: 0;
+    font-family: inherit;
+}
+
+.trainer-plan-input-unit {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+/* Macro preview below inputs */
+.trainer-plan-macro-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+}
+
+.tpmp-item {
+    font-size: 0.73rem;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.tpmp-protein {
+    background: rgba(239,68,68, 0.12);
+    color: #ef4444;
+}
+
+.tpmp-carbs {
+    background: rgba(59,130,246, 0.12);
+    color: #3b82f6;
+}
+
+.tpmp-fat {
+    background: rgba(234,179,8, 0.12);
+    color: #eab308;
+}
+
+/* Fruit Selector Chips */
+.trainer-fruit-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.trainer-fruit-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-right: 4px;
+    white-space: nowrap;
+}
+
+.trainer-fruit-chip {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+    font-family: inherit;
+}
+
+.trainer-fruit-chip:hover {
+    border-color: var(--accent, #fbbf24);
+    color: var(--text-primary);
+    transform: scale(1.03);
+}
+
+.trainer-fruit-chip-sel {
+    background: rgba(var(--accent-rgb,251,191,36), 0.18);
+    border-color: var(--accent, #fbbf24);
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* Fixed banana in breakfast */
+.trainer-fruit-fixed {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: rgba(var(--accent-rgb,251,191,36), 0.08);
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin-top: 4px;
+    font-size: 0.82rem;
+    color: var(--text-primary);
+}
+
+.trainer-fruit-fixed-note {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Dinner scaled amounts */
+.dinner-scaled-g {
+    color: var(--accent, #fbbf24);
+    font-weight: 700;
+}
+
+.dinner-base-g {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.extras-banner-dinner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.dinner-kcal-hint {
+    font-size: 0.72rem;
+    color: var(--accent, #fbbf24);
+    font-weight: 600;
+    padding: 2px 8px;
+    background: rgba(var(--accent-rgb,251,191,36), 0.12);
+    border-radius: 12px;
+}
+
+/* Macro range hint below macro targets heading */
+.trainer-macro-range-hint {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin: 2px 0 10px;
+    font-style: italic;
 }

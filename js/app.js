@@ -76,7 +76,7 @@ var breakfastOptions = [
 var lunchCarbs = [
     {name:'Arroz blanco',base:130,tag:'seco',n:[350,7,78,0.6]},
     {name:'Pasta',base:130,tag:'seco',n:[350,12,72,1.5]},
-    {name:'Patata boniato',base:590,altName:'Precongelada',altBase:370,tag:'crudo',n:[86,1.6,20,0.1]},
+    {name:'Patata cocida',base:660,tag:'cocido',n:[77,1.8,17,0.1]},
     {name:'Tortitas de arroz',base:130,n:[385,7,83,3]},{name:'Pan',base:180,n:[265,9,49,3.2]},
     {name:'Quinoa',base:130,tag:'seco',n:[368,14,64,6]},{name:'Cus-cus',base:130,tag:'seco',n:[376,12.8,77,0.6]},{name:'Gnocchis de patata',base:260,n:[165,4,34,1]},
     {name:'Garbanzos cocidos',base:300,tag:'cocido',n:[164,9,27,2.6]},
@@ -92,7 +92,7 @@ var lunchProteins = [
 var dinnerCarbs = [
     {name:'Arroz blanco',base:100,tag:'seco',n:[350,7,78,0.6]},
     {name:'Pasta',base:100,tag:'seco',n:[350,12,72,1.5]},
-    {name:'Patata boniato',base:450,altName:'Precongelada',altBase:300,tag:'crudo',n:[86,1.6,20,0.1]},
+    {name:'Patata cocida',base:500,tag:'cocido',n:[77,1.8,17,0.1]},
     {name:'Tortitas de arroz',base:100,n:[385,7,83,3]},{name:'Pan',base:140,n:[265,9,49,3.2]},
     {name:'Quinoa',base:100,tag:'seco',n:[368,14,64,6]},{name:'Cus-cus',base:100,tag:'seco',n:[376,12.8,77,0.6]},{name:'Gnocchis de patata',base:200,n:[165,4,34,1]},
     {name:'Garbanzos cocidos',base:230,tag:'cocido',n:[164,9,27,2.6]},
@@ -3317,12 +3317,23 @@ var trainerSelections = {
 };
 var trainerExtraFoods = []; // [{catalogIdx, grams}]
 
+// ---- Trainer Plan Fixed Target ----
+var TRAINER_FIXED_KCAL = 2400; // kcal objetivo del plan (editable por el usuario)
+
+// ---- Frutas del plan (siempre 225g) ----
+var TRAINER_FRUIT_OPTIONS = [
+    { name: 'Banana',  emoji: '🍌', n: [89, 1.1, 22.8, 0.3] },  // por 100g
+    { name: 'Naranja', emoji: '🍊', n: [47, 0.9, 11.8, 0.1] }   // por 100g
+];
+var TRAINER_FRUIT_GRAMS = 225; // gramos por pieza
+var trainerFruitSelections = { lunch: 0, dinner: 0 }; // 0=banana, 1=naranja
+
 // Consolidated food catalog for extra foods picker (per 100g/100ml)
 var trainerFoodCatalog = [
     // Hidratos
     {name:'Arroz blanco',cat:'Hidratos',n:[350,7,78,0.6],unit:'g'},
     {name:'Pasta',cat:'Hidratos',n:[350,12,72,1.5],unit:'g'},
-    {name:'Patata / boniato',cat:'Hidratos',n:[86,1.6,20,0.1],unit:'g'},
+    {name:'Patata cocida',cat:'Hidratos',n:[77,1.8,17,0.1],unit:'g'},
     {name:'Tortitas de arroz',cat:'Hidratos',n:[385,7,83,3],unit:'g'},
     {name:'Pan',cat:'Hidratos',n:[265,9,49,3.2],unit:'g'},
     {name:'Quinoa',cat:'Hidratos',n:[368,14,64,6],unit:'g'},
@@ -3354,9 +3365,9 @@ var trainerFoodCatalog = [
     {name:'Crema de cacahuete',cat:'Otros',n:[600,25,12,50],unit:'g'}
 ];
 
-var TRAINER_KCAL_TOLERANCE = 100; // ±100 kcal
-// Target macro split (based on trainer plan average: 27% P, 52% C, 21% F)
-var TRAINER_MACRO_TARGETS = { protein: 27, carbs: 52, fat: 21 };
+var TRAINER_KCAL_TOLERANCE = 50; // ±50 kcal
+// Macro targets are now computed dynamically based on weight (2g/kg P, 0.9g/kg F, rest C)
+// getTrainerMacroTargetsGrams(weight, kcal) is used instead of fixed percentages
 
 // Perfil personal (solo Mi entrenador — Pablo)
 var TRAINER_PROFILE = {
@@ -3703,8 +3714,83 @@ function getTrainerEnergySummary() {
         trainerDailyLog.steps,
         getActiveWorkoutId()
     );
-    var targetKcal = Math.round(result.tdee * getTrainerGoalMultiplier());
-    return { result: result, targetKcal: targetKcal };
+    var tdeeTarget = Math.round(result.tdee * getTrainerGoalMultiplier());
+    return { result: result, targetKcal: TRAINER_FIXED_KCAL, tdeeTarget: tdeeTarget };
+}
+
+// ---- Macro targets dinámicos: 2g/kg P, 0.9g/kg G, resto C ----
+function getTrainerMacroTargetsGrams(weight, kcal) {
+    weight = weight || TRAINER_PROFILE.weight;
+    kcal = kcal || TRAINER_FIXED_KCAL;
+    var protG = Math.round(weight * 2.0);
+    var fatG  = Math.round(weight * 0.9);
+    var protKcal = protG * 4;
+    var fatKcal  = fatG * 9;
+    var carbKcal = kcal - protKcal - fatKcal;
+    var carbG    = Math.round(carbKcal / 4);
+    return { protG: protG, fatG: fatG, carbG: carbG, protKcal: protKcal, fatKcal: fatKcal, carbKcal: carbKcal };
+}
+
+// ---- Calcula macros de fruta seleccionada ----
+function getTrainerFruitMacros(fruitIdx) {
+    var fruit = TRAINER_FRUIT_OPTIONS[fruitIdx] || TRAINER_FRUIT_OPTIONS[0];
+    var g = TRAINER_FRUIT_GRAMS;
+    return {
+        kcal: fruit.n[0] * g / 100,
+        protein: fruit.n[1] * g / 100,
+        carbs: fruit.n[2] * g / 100,
+        fat: fruit.n[3] * g / 100
+    };
+}
+
+// ---- Auto-escala los gramos de la cena para alcanzar TRAINER_FIXED_KCAL ----
+function getTrainerDinnerScaledAmounts() {
+    if (trainerSelections.dinnerCarb === null || trainerSelections.dinnerProtein === null) return null;
+
+    var targetKcal = TRAINER_FIXED_KCAL;
+
+    // 1. Desayuno fijo (batido + banana siempre)
+    var brkKcal = 0;
+    if (trainerSelections.breakfast !== null) {
+        brkKcal = breakfastOptions[trainerSelections.breakfast].macros[0];
+    }
+    var bananaMacros = getTrainerFruitMacros(0); // banana siempre en desayuno
+    brkKcal += bananaMacros.kcal;
+
+    // 2. Comida: HC + P + extras + fruta elegida
+    var lunchKcal = 0;
+    if (trainerSelections.lunchCarb !== null) {
+        var lc = lunchCarbs[trainerSelections.lunchCarb];
+        lunchKcal += lc.n[0] * lc.base / 100;
+    }
+    if (trainerSelections.lunchProtein !== null) {
+        var lp = lunchProteins[trainerSelections.lunchProtein];
+        lunchKcal += lp.n[0] * lp.base / 100;
+    }
+    lunchKcal += extrasNutr.verduras[0] * 200 / 100 + extrasNutr.aceite[0] * EXTRAS_OIL_ML / 100;
+    lunchKcal += getTrainerFruitMacros(trainerFruitSelections.lunch).kcal;
+
+    // 3. Extras cena + fruta cena
+    var dinnerExtrasKcal = extrasNutr.verduras[0] * 200 / 100 + extrasNutr.aceite[0] * EXTRAS_OIL_ML / 100;
+    var dinnerFruitKcal  = getTrainerFruitMacros(trainerFruitSelections.dinner).kcal;
+
+    // 4. Calorías disponibles para HC+P de cena
+    var remainingKcal = targetKcal - brkKcal - lunchKcal - dinnerExtrasKcal - dinnerFruitKcal;
+
+    var dc = dinnerCarbs[trainerSelections.dinnerCarb];
+    var dp = dinnerProteins[trainerSelections.dinnerProtein];
+    var baseKcal = dc.n[0] * dc.base / 100 + dp.n[0] * dp.base / 100;
+
+    if (baseKcal <= 0) return null;
+    var scale = remainingKcal / baseKcal;
+    if (scale < 0) scale = 0;
+
+    return {
+        carbGrams:  Math.round(dc.base * scale),
+        protGrams:  Math.round(dp.base * scale),
+        scale:      scale,
+        remainingKcal: Math.round(remainingKcal)
+    };
 }
 
 function buildTrainerWorkoutPickerHtml() {
@@ -3898,13 +3984,37 @@ function renderTrainerActivityPanel() {
     var stepsVal = trainerDailyLog.steps !== null ? trainerDailyLog.steps : '';
 
     container.innerHTML =
+        // ---- PLAN TARGET CARD (kcal + peso editable) ----
+        '<div class="trainer-plan-target-card">' +
+            '<div class="trainer-plan-target-head">' +
+                '<span class="trainer-plan-target-icon">🎯</span>' +
+                '<span class="trainer-plan-target-title">Objetivo del Plan</span>' +
+            '</div>' +
+            '<div class="trainer-plan-target-fields">' +
+                '<div class="trainer-plan-field">' +
+                    '<label for="trainer-kcal-target">Calorías diarias</label>' +
+                    '<div class="trainer-plan-input-wrap">' +
+                        '<input type="number" id="trainer-kcal-target" class="trainer-plan-input" value="' + TRAINER_FIXED_KCAL + '" min="1200" max="5000" step="50">' +
+                        '<span class="trainer-plan-input-unit">kcal</span>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="trainer-plan-field">' +
+                    '<label for="trainer-body-weight">Peso corporal</label>' +
+                    '<div class="trainer-plan-input-wrap">' +
+                        '<input type="number" id="trainer-body-weight" class="trainer-plan-input" value="' + TRAINER_PROFILE.weight + '" min="40" max="200" step="0.5">' +
+                        '<span class="trainer-plan-input-unit">kg</span>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="trainer-plan-macro-preview" id="trainer-plan-macro-preview"></div>' +
+        '</div>' +
         renderTrainerWorkoutDaySection() +
         '<div class="trainer-activity-card">' +
             '<div class="trainer-activity-head">' +
-                '<h3>👟 Tu gasto de hoy</h3>' +
+                '<h3>💟 Tu gasto de hoy</h3>' +
                 '<span class="trainer-activity-date" id="trainer-activity-date"></span>' +
             '</div>' +
-            '<p class="trainer-activity-profile">81,5 kg · 174 cm · 32 años · oficina 9–19h · ~10.000 pasos/día · sin alcohol</p>' +
+            '<p class="trainer-activity-profile">' + TRAINER_PROFILE.weight + ' kg · ' + TRAINER_PROFILE.height + ' cm · ' + TRAINER_PROFILE.age + ' años · oficina 9–19h · ~10.000 pasos/día · sin alcohol</p>' +
             '<div class="trainer-activity-inputs">' +
                 '<div class="trainer-activity-field">' +
                     '<label for="trainer-steps-today">Pasos totales del día <span class="trainer-activity-hint">(estimación · incluye cardio)</span></label>' +
@@ -3917,6 +4027,7 @@ function renderTrainerActivityPanel() {
 
     updateTrainerWorkoutDayUI();
     updateTrainerEnergyUI();
+    updateTrainerPlanMacroPreview();
 }
 
 function updateTrainerEnergyUI() {
@@ -3934,7 +4045,7 @@ function updateTrainerEnergyUI() {
         dateEl.textContent = getTrainerTimeLabel();
     }
     if (subtitle) {
-        subtitle.textContent = 'Objetivo hoy: ~' + energy.targetKcal + ' kcal (' + getTrainerGoalLabel().toLowerCase() + ')';
+        subtitle.textContent = 'Plan: ' + TRAINER_FIXED_KCAL + ' kcal · TDEE estimado: ~' + energy.tdeeTarget + ' kcal';
     }
 
     var trainRows = '';
@@ -3979,41 +4090,88 @@ function calculateTrainerMacros() {
     var t = { kcal: 0, protein: 0, carbs: 0, fat: 0 };
     var has = false;
 
-    // Desayuno: kcal reales de los macros del desayuno tal cual
+    // Helper: sumar macros de un alimento por gramos
+    function addFoodByGrams(item, grams) {
+        if (!item || !grams) return;
+        t.kcal    += item.n[0] * grams / 100;
+        t.protein += item.n[1] * grams / 100;
+        t.carbs   += item.n[2] * grams / 100;
+        t.fat     += item.n[3] * grams / 100;
+    }
+
+    // 1. DESAYUNO — gramaje fijo tal cual el screenshot
     if (trainerSelections.breakfast !== null) {
         has = true;
         var m = breakfastOptions[trainerSelections.breakfast].macros;
         t.kcal += m[0]; t.protein += m[1]; t.carbs += m[2]; t.fat += m[3];
+        // Banana fija 225g en desayuno (siempre)
+        var brkFruit = getTrainerFruitMacros(0); // índice 0 = banana
+        t.kcal += brkFruit.kcal; t.protein += brkFruit.protein; t.carbs += brkFruit.carbs; t.fat += brkFruit.fat;
     }
 
-    // Comida/cena: kcal reales de los gramos base que dice el entrenador
-    function addFood(data, idx) {
-        if (idx === null) return;
+    // Extras por comida: 200g verduras + EXTRAS_OIL_ML aceite
+    function addVegOil() {
+        t.kcal    += extrasNutr.verduras[0] * 200 / 100;
+        t.protein += extrasNutr.verduras[1] * 200 / 100;
+        t.carbs   += extrasNutr.verduras[2] * 200 / 100;
+        t.fat     += extrasNutr.verduras[3] * 200 / 100;
+        t.kcal    += extrasNutr.aceite[0] * EXTRAS_OIL_ML / 100;
+        t.fat     += extrasNutr.aceite[3] * EXTRAS_OIL_ML / 100;
+    }
+
+    // 2. COMIDA — bases fijas + fruta elegida
+    var hasLunch = trainerSelections.lunchCarb !== null || trainerSelections.lunchProtein !== null;
+    if (trainerSelections.lunchCarb !== null) {
         has = true;
-        var item = data[idx];
-        var g = item.base;
-        t.kcal += item.n[0]*g/100; t.protein += item.n[1]*g/100; t.carbs += item.n[2]*g/100; t.fat += item.n[3]*g/100;
+        var lc = lunchCarbs[trainerSelections.lunchCarb];
+        addFoodByGrams(lc, lc.base);
     }
-    // Extras por comida: 200g verduras + 5ml aceite + 1 fruta
-    function addExtras() {
-        t.kcal += extrasNutr.verduras[0]*200/100; t.protein += extrasNutr.verduras[1]*200/100; t.carbs += extrasNutr.verduras[2]*200/100; t.fat += extrasNutr.verduras[3]*200/100;
-        t.kcal += extrasNutr.aceite[0]*EXTRAS_OIL_ML/100; t.fat += extrasNutr.aceite[3]*EXTRAS_OIL_ML/100;
-        t.kcal += extrasNutr.fruta[0]; t.protein += extrasNutr.fruta[1]; t.carbs += extrasNutr.fruta[2]; t.fat += extrasNutr.fruta[3];
+    if (trainerSelections.lunchProtein !== null) {
+        has = true;
+        var lp = lunchProteins[trainerSelections.lunchProtein];
+        addFoodByGrams(lp, lp.base);
+    }
+    if (hasLunch) {
+        addVegOil();
+        var lunchFruitM = getTrainerFruitMacros(trainerFruitSelections.lunch);
+        t.kcal += lunchFruitM.kcal; t.protein += lunchFruitM.protein; t.carbs += lunchFruitM.carbs; t.fat += lunchFruitM.fat;
     }
 
-    addFood(lunchCarbs, trainerSelections.lunchCarb); addFood(lunchProteins, trainerSelections.lunchProtein);
-    if (trainerSelections.lunchCarb !== null || trainerSelections.lunchProtein !== null) addExtras();
-    addFood(dinnerCarbs, trainerSelections.dinnerCarb); addFood(dinnerProteins, trainerSelections.dinnerProtein);
-    if (trainerSelections.dinnerCarb !== null || trainerSelections.dinnerProtein !== null) addExtras();
+    // 3. CENA — gramos auto-escalados para llegar a TRAINER_FIXED_KCAL
+    var hasDinner = trainerSelections.dinnerCarb !== null || trainerSelections.dinnerProtein !== null;
+    if (hasDinner) {
+        has = true;
+        var scaled = getTrainerDinnerScaledAmounts();
+        if (scaled && trainerSelections.dinnerCarb !== null && trainerSelections.dinnerProtein !== null) {
+            // Usar gramos escalados
+            var dc = dinnerCarbs[trainerSelections.dinnerCarb];
+            var dp = dinnerProteins[trainerSelections.dinnerProtein];
+            addFoodByGrams(dc, scaled.carbGrams);
+            addFoodByGrams(dp, scaled.protGrams);
+        } else {
+            // Parcial — usar bases normales
+            if (trainerSelections.dinnerCarb !== null) {
+                var dc2 = dinnerCarbs[trainerSelections.dinnerCarb];
+                addFoodByGrams(dc2, dc2.base);
+            }
+            if (trainerSelections.dinnerProtein !== null) {
+                var dp2 = dinnerProteins[trainerSelections.dinnerProtein];
+                addFoodByGrams(dp2, dp2.base);
+            }
+        }
+        addVegOil();
+        var dinnerFruitM = getTrainerFruitMacros(trainerFruitSelections.dinner);
+        t.kcal += dinnerFruitM.kcal; t.protein += dinnerFruitM.protein; t.carbs += dinnerFruitM.carbs; t.fat += dinnerFruitM.fat;
+    }
 
-    // Alimentos adicionales
+    // 4. Alimentos adicionales
     trainerExtraFoods.forEach(function(extra) {
         has = true;
         var food = trainerFoodCatalog[extra.catalogIdx];
-        t.kcal += food.n[0] * extra.grams / 100;
+        t.kcal    += food.n[0] * extra.grams / 100;
         t.protein += food.n[1] * extra.grams / 100;
-        t.carbs += food.n[2] * extra.grams / 100;
-        t.fat += food.n[3] * extra.grams / 100;
+        t.carbs   += food.n[2] * extra.grams / 100;
+        t.fat     += food.n[3] * extra.grams / 100;
     });
 
     return has ? t : null;
@@ -4043,21 +4201,20 @@ function renderTrainerNutrition() {
     if (trainerSelections.dinnerCarb !== null || trainerSelections.dinnerProtein !== null) meals.push('Cena');
     var complete = trainerSelections.breakfast !== null && trainerSelections.lunchCarb !== null && trainerSelections.lunchProtein !== null && trainerSelections.dinnerCarb !== null && trainerSelections.dinnerProtein !== null;
 
-    // Target info (dinámico según pasos + entreno de hoy)
-    var energy = getTrainerEnergySummary();
-    var trainerTargetKcal = energy.targetKcal;
+    // Target fijo del plan (editable)
+    var trainerTargetKcal = TRAINER_FIXED_KCAL;
     var targetMin = trainerTargetKcal - TRAINER_KCAL_TOLERANCE;
     var targetMax = trainerTargetKcal + TRAINER_KCAL_TOLERANCE;
-    var kcalDiff = kcal - trainerTargetKcal;
     var inRange = kcal >= targetMin && kcal <= targetMax;
     var kcalStatusClass = inRange ? 'trainer-target-ok' : (kcal < targetMin ? 'trainer-target-low' : 'trainer-target-high');
-    var kcalStatusIcon = inRange ? '\u2705' : (kcal < targetMin ? '\u26a0\ufe0f' : '\u26a0\ufe0f');
-    var kcalStatusText = inRange ? 'En rango objetivo' : (kcal < targetMin ? 'Faltan ' + Math.abs(Math.round(targetMin - kcal)) + ' kcal m\u00edn.' : 'Exceso de ' + Math.round(kcal - targetMax) + ' kcal');
+    var kcalStatusIcon = inRange ? '✅' : '⚠️';
+    var kcalStatusText = inRange ? 'En rango objetivo' : (kcal < targetMin ? 'Faltan ' + Math.abs(Math.round(targetMin - kcal)) + ' kcal mín.' : 'Exceso de ' + Math.round(kcal - targetMax) + ' kcal');
 
-    // Macro targets in grams (from % of target kcal)
-    var targetPg = Math.round(trainerTargetKcal * TRAINER_MACRO_TARGETS.protein / 100 / 4);
-    var targetCg = Math.round(trainerTargetKcal * TRAINER_MACRO_TARGETS.carbs / 100 / 4);
-    var targetFg = Math.round(trainerTargetKcal * TRAINER_MACRO_TARGETS.fat / 100 / 9);
+    // Macro targets dinámicos: 2g/kg P, 0.9g/kg G, resto C
+    var mt = getTrainerMacroTargetsGrams(bodyWeight, trainerTargetKcal);
+    var targetPg = mt.protG;
+    var targetCg = mt.carbG;
+    var targetFg = mt.fatG;
     var remainP = targetPg - p;
     var remainC = targetCg - c;
     var remainF = targetFg - f;
@@ -4081,7 +4238,8 @@ function renderTrainerNutrition() {
                 renderMacroCard('Grasas','fat',f,fp,fKp,fPerKg) +
             '</div>' +
             '<div class="trainer-macro-targets">' +
-                '<h4>Objetivo de macros <span class="trainer-macro-targets-sub">(para ' + trainerTargetKcal + ' kcal · ' + getTrainerGoalLabel().toLowerCase() + ')</span></h4>' +
+                '<h4>Objetivo de macros <span class="trainer-macro-targets-sub">(' + bodyWeight + ' kg \xB7 ' + trainerTargetKcal + ' kcal)</span></h4>' +
+                '<small class="trainer-macro-range-hint">P: 2\u20132.2 g/kg &nbsp;&middot;&nbsp; G: 0.8\u20131.0 g/kg &nbsp;&middot;&nbsp; HC: resto cal\xF3rico</small>' +
                 '<div class="trainer-macro-target-row">' +
                     renderMacroTargetItem('Prote\u00ednas', 'protein', p, targetPg, remainP) +
                     renderMacroTargetItem('Carbos', 'carbs', c, targetCg, remainC) +
@@ -4204,10 +4362,11 @@ function generateMacroSuggestions(macro) {
 
     // 6. Suggest adding extra food to fill the gap
     var targetMacros = calculateTrainerMacros();
-    var trainerTargetKcal = getTrainerEnergySummary().targetKcal;
-    var targetPg = Math.round(trainerTargetKcal * TRAINER_MACRO_TARGETS.protein / 100 / 4);
-    var targetCg = Math.round(trainerTargetKcal * TRAINER_MACRO_TARGETS.carbs / 100 / 4);
-    var targetFg = Math.round(trainerTargetKcal * TRAINER_MACRO_TARGETS.fat / 100 / 9);
+    var trainerTargetKcal = TRAINER_FIXED_KCAL;
+    var mt2 = getTrainerMacroTargetsGrams(TRAINER_PROFILE.weight, trainerTargetKcal);
+    var targetPg = mt2.protG;
+    var targetCg = mt2.carbG;
+    var targetFg = mt2.fatG;
     var targetG = macro === 'protein' ? targetPg : (macro === 'carbs' ? targetCg : targetFg);
     var currentG = macro === 'protein' ? targetMacros.protein : (macro === 'carbs' ? targetMacros.carbs : targetMacros.fat);
     var deficit = targetG - currentG;
@@ -4289,15 +4448,37 @@ function showMacroFixTooltip(macro) {
 function renderTrainerContent() {
     var html = '';
 
+    // Helper: fruit selector chips for a meal
+    function fruitSelectorHtml(meal) {
+        var selIdx = trainerFruitSelections[meal];
+        var h = '<div class="trainer-fruit-selector">' +
+            '<span class="trainer-fruit-label">🍎 Fruta (225g):</span>';
+        TRAINER_FRUIT_OPTIONS.forEach(function(fr, i) {
+            var sel = selIdx === i ? ' trainer-fruit-chip-sel' : '';
+            h += '<button type="button" class="trainer-fruit-chip' + sel + '" data-fruit-meal="' + meal + '" data-fruit-idx="' + i + '">' +
+                fr.emoji + ' ' + fr.name +
+                '</button>';
+        });
+        h += '</div>';
+        return h;
+    }
+
+    // Helper: scaled dinner amount display
+    function dinnerAmountHtml(baseGrams, scaledGrams) {
+        if (scaledGrams !== null && scaledGrams !== baseGrams) {
+            return '<strong class="dinner-scaled-g">' + scaledGrams + '</strong><span class="dinner-base-g"> (base: ' + baseGrams + ')</span>';
+        }
+        return '<strong>' + (scaledGrams !== null ? scaledGrams : baseGrams) + '</strong>';
+    }
+
     // ===== TAB: Desayuno =====
     var brkActive = currentTrainerTab === 'breakfast' ? ' active' : '';
     html += '<div class="trainer-tab-panel' + brkActive + '" data-trainer-panel="breakfast">';
 
-    // Desayunos
     html += '<div class="trainer-section"><h3>☀️ Desayunos (elige 1)</h3>';
     breakfastOptions.forEach(function(opt, idx) {
         var sel = trainerSelections.breakfast === idx ? ' trainer-card-selected' : '';
-        html += '<div class="trainer-card'+sel+'" data-trainer-type="breakfast" data-trainer-index="'+idx+'"><div class="trainer-card-title">' + opt.name + '</div><ul>';
+        html += '<div class="trainer-card' + sel + '" data-trainer-type="breakfast" data-trainer-index="' + idx + '"><div class="trainer-card-title">' + opt.name + '</div><ul>';
         opt.items.forEach(function(item) {
             var line = item.text;
             if (item.amount !== null) line += ': <strong>' + item.amount + (item.unit || 'g') + '</strong>';
@@ -4311,6 +4492,8 @@ function renderTrainerContent() {
             }
             html += '<li>' + line + '</li>';
         });
+        // Banana fija siempre en desayuno
+        html += '<li class="trainer-fruit-fixed"><span>🍌 Banana: <strong>225g</strong></span><span class="trainer-fruit-fixed-note">(siempre incluida)</span></li>';
         html += '</ul></div>';
     });
     html += '</div>';
@@ -4321,29 +4504,30 @@ function renderTrainerContent() {
     var lunchActive = currentTrainerTab === 'lunch' ? ' active' : '';
     html += '<div class="trainer-tab-panel' + lunchActive + '" data-trainer-panel="lunch">';
 
-    // Comida - using same visual structure as public mode
     html += '<div class="meal-card">';
     html += '<div class="tab-subtitle">Elige un hidrato y una proteína.</div>';
-    html += '<div class="extras-banner"><span>\ud83e\udd57 + ~200g verduras &nbsp;|&nbsp; '+EXTRAS_OIL_ML+'ml aceite oliva &nbsp;|&nbsp; 1 fruta</span></div>';
+    html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + EXTRAS_OIL_ML + 'ml aceite oliva &nbsp;|&nbsp; fruta (225g)</span></div>';
+    // Fruit selector for lunch
+    html += fruitSelectorHtml('lunch');
     html += '<div class="meal-tables">';
     // Carbs
-    html += '<div class="meal-table-wrapper"><div class="meal-table-header carbs">\ud83c\udf3e Hidratos de Carbono</div><table class="meal-table"><tbody>';
+    html += '<div class="meal-table-wrapper"><div class="meal-table-header carbs">🌾 Hidratos de Carbono</div><table class="meal-table"><tbody>';
     lunchCarbs.forEach(function(item, idx) {
         var s = trainerSelections.lunchCarb === idx;
         var u = item.unit || 'g';
-        var tagHtml = item.tag ? ' <span class="food-tag food-tag-'+item.tag+'">'+item.tag+'</span>' : '';
-        html += '<tr class="'+(s?'selected':'')+'" data-trainer-meal="lunch" data-trainer-type="carb" data-trainer-index="'+idx+'"><td>'+item.name+'</td><td>'+item.base+' '+u+tagHtml+'</td></tr>';
+        var tagHtml = item.tag ? ' <span class="food-tag food-tag-' + item.tag + '">' + item.tag + '</span>' : '';
+        html += '<tr class="' + (s ? 'selected' : '') + '" data-trainer-meal="lunch" data-trainer-type="carb" data-trainer-index="' + idx + '"><td>' + item.name + '</td><td>' + item.base + ' ' + u + tagHtml + '</td></tr>';
         if (item.altName) {
-            html += '<tr class="sub-row '+(s?'selected':'')+'" data-trainer-meal="lunch" data-trainer-type="carb" data-trainer-index="'+idx+'"><td>'+item.altName+'</td><td>'+item.altBase+' '+u+tagHtml+'</td></tr>';
+            html += '<tr class="sub-row ' + (s ? 'selected' : '') + '" data-trainer-meal="lunch" data-trainer-type="carb" data-trainer-index="' + idx + '"><td>' + item.altName + '</td><td>' + item.altBase + ' ' + u + tagHtml + '</td></tr>';
         }
     });
     html += '</tbody></table></div>';
     // Proteins
-    html += '<div class="meal-table-wrapper"><div class="meal-table-header protein">\ud83e\udd69 Prote\u00ednas</div><table class="meal-table"><tbody>';
+    html += '<div class="meal-table-wrapper"><div class="meal-table-header protein">🥩 Proteínas</div><table class="meal-table"><tbody>';
     lunchProteins.forEach(function(item, idx) {
         var s = trainerSelections.lunchProtein === idx;
         var u = item.unit || 'g';
-        html += '<tr class="'+(s?'selected':'')+'" data-trainer-meal="lunch" data-trainer-type="protein" data-trainer-index="'+idx+'"><td>'+item.name+'</td><td>'+item.base+' '+u+'</td></tr>';
+        html += '<tr class="' + (s ? 'selected' : '') + '" data-trainer-meal="lunch" data-trainer-type="protein" data-trainer-index="' + idx + '"><td>' + item.name + '</td><td>' + item.base + ' ' + u + '</td></tr>';
     });
     html += '</tbody></table></div>';
     html += '</div></div>'; // end meal-tables + meal-card
@@ -4354,29 +4538,51 @@ function renderTrainerContent() {
     var dinnerActive = currentTrainerTab === 'dinner' ? ' active' : '';
     html += '<div class="trainer-tab-panel' + dinnerActive + '" data-trainer-panel="dinner">';
 
-    // Cena - using same visual structure as public mode
+    // Get scaled dinner amounts
+    var scaledDinner = getTrainerDinnerScaledAmounts();
+
     html += '<div class="meal-card">';
     html += '<div class="tab-subtitle">Elige un hidrato y una proteína.</div>';
-    html += '<div class="extras-banner"><span>\ud83e\udd57 + ~200g verduras &nbsp;|&nbsp; '+EXTRAS_OIL_ML+'ml aceite oliva &nbsp;|&nbsp; 1 fruta</span></div>';
+    if (scaledDinner) {
+        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + EXTRAS_OIL_ML + 'ml aceite oliva &nbsp;|&nbsp; fruta (225g)</span>' +
+            '<span class="dinner-kcal-hint">HC+P ajustados a ' + scaledDinner.remainingKcal + ' kcal disponibles</span></div>';
+    } else {
+        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + EXTRAS_OIL_ML + 'ml aceite oliva &nbsp;|&nbsp; fruta (225g) &nbsp;&mdash; Selecciona comida para ajustar</span></div>';
+    }
+    // Fruit selector for dinner
+    html += fruitSelectorHtml('dinner');
     html += '<div class="meal-tables">';
-    // Carbs
-    html += '<div class="meal-table-wrapper"><div class="meal-table-header carbs">\ud83c\udf3e Hidratos de Carbono</div><table class="meal-table"><tbody>';
+    // Carbs (with scaled amounts if available)
+    html += '<div class="meal-table-wrapper"><div class="meal-table-header carbs">🌾 Hidratos de Carbono</div><table class="meal-table"><tbody>';
     dinnerCarbs.forEach(function(item, idx) {
         var s = trainerSelections.dinnerCarb === idx;
         var u = item.unit || 'g';
-        var tagHtml = item.tag ? ' <span class="food-tag food-tag-'+item.tag+'">'+item.tag+'</span>' : '';
-        html += '<tr class="'+(s?'selected':'')+'" data-trainer-meal="dinner" data-trainer-type="carb" data-trainer-index="'+idx+'"><td>'+item.name+'</td><td>'+item.base+' '+u+tagHtml+'</td></tr>';
+        var tagHtml = item.tag ? ' <span class="food-tag food-tag-' + item.tag + '">' + item.tag + '</span>' : '';
+        var amtHtml;
+        if (s && scaledDinner) {
+            amtHtml = dinnerAmountHtml(item.base, scaledDinner.carbGrams) + ' ' + u + tagHtml;
+        } else {
+            amtHtml = item.base + ' ' + u + tagHtml;
+        }
+        html += '<tr class="' + (s ? 'selected' : '') + '" data-trainer-meal="dinner" data-trainer-type="carb" data-trainer-index="' + idx + '"><td>' + item.name + '</td><td>' + amtHtml + '</td></tr>';
         if (item.altName) {
-            html += '<tr class="sub-row '+(s?'selected':'')+'" data-trainer-meal="dinner" data-trainer-type="carb" data-trainer-index="'+idx+'"><td>'+item.altName+'</td><td>'+item.altBase+' '+u+tagHtml+'</td></tr>';
+            var altAmtHtml = s && scaledDinner ? dinnerAmountHtml(item.altBase, Math.round(item.altBase * scaledDinner.scale)) + ' ' + u + tagHtml : item.altBase + ' ' + u + tagHtml;
+            html += '<tr class="sub-row ' + (s ? 'selected' : '') + '" data-trainer-meal="dinner" data-trainer-type="carb" data-trainer-index="' + idx + '"><td>' + item.altName + '</td><td>' + altAmtHtml + '</td></tr>';
         }
     });
     html += '</tbody></table></div>';
-    // Proteins
-    html += '<div class="meal-table-wrapper"><div class="meal-table-header protein">\ud83e\udd69 Prote\u00ednas</div><table class="meal-table"><tbody>';
+    // Proteins (with scaled amounts if available)
+    html += '<div class="meal-table-wrapper"><div class="meal-table-header protein">🥩 Proteínas</div><table class="meal-table"><tbody>';
     dinnerProteins.forEach(function(item, idx) {
         var s = trainerSelections.dinnerProtein === idx;
         var u = item.unit || 'g';
-        html += '<tr class="'+(s?'selected':'')+'" data-trainer-meal="dinner" data-trainer-type="protein" data-trainer-index="'+idx+'"><td>'+item.name+'</td><td>'+item.base+' '+u+'</td></tr>';
+        var amtHtml;
+        if (s && scaledDinner) {
+            amtHtml = dinnerAmountHtml(item.base, scaledDinner.protGrams) + ' ' + u;
+        } else {
+            amtHtml = item.base + ' ' + u;
+        }
+        html += '<tr class="' + (s ? 'selected' : '') + '" data-trainer-meal="dinner" data-trainer-type="protein" data-trainer-index="' + idx + '"><td>' + item.name + '</td><td>' + amtHtml + '</td></tr>';
     });
     html += '</tbody></table></div>';
     html += '</div></div>'; // end meal-tables + meal-card
@@ -4421,12 +4627,12 @@ function renderTrainerContent() {
             var ep = Math.round(food.n[1]*extra.grams/100);
             var ec = Math.round(food.n[2]*extra.grams/100);
             var ef = Math.round(food.n[3]*extra.grams/100);
-            html += '<div class="trainer-extra-item" data-extra-idx="'+i+'">';
+            html += '<div class="trainer-extra-item" data-extra-idx="' + i + '">';
             html += '<div class="trainer-extra-item-info">';
             html += '<strong>' + food.name + '</strong> — ' + extra.grams + food.unit;
             html += '<span class="trainer-extra-item-macros">' + ek + ' kcal · P:' + ep + ' C:' + ec + ' G:' + ef + '</span>';
             html += '</div>';
-            html += '<button class="trainer-extra-remove" data-extra-remove="'+i+'">✕</button>';
+            html += '<button class="trainer-extra-remove" data-extra-remove="' + i + '">✕</button>';
             html += '</div>';
         });
         html += '</div>';
@@ -4434,10 +4640,10 @@ function renderTrainerContent() {
     html += '</div>'; // end body
     html += '</div>'; // end section
 
-    // Suplementos (siempre visible, fuera de tabs)
-    html += '<div class="trainer-section trainer-supplements-section"><h3>\ud83d\udc8a Suplementación</h3><div class="trainer-supps">';
+    // Suplementos
+    html += '<div class="trainer-section trainer-supplements-section"><h3>💊 Suplementación</h3><div class="trainer-supps">';
     supplements.forEach(function(s) {
-        var tipHtml = s.tip ? '<button class="supp-tooltip-btn" data-supptip="'+s.title+'" aria-label="Información científica">ℹ️</button>' : '';
+        var tipHtml = s.tip ? '<button class="supp-tooltip-btn" data-supptip="' + s.title + '" aria-label="Información científica">ℹ️</button>' : '';
         html += '<div class="trainer-supp">' + s.icon + ' <strong>' + s.title + '</strong> — ' + s.desc + ' ' + tipHtml + '</div>';
     });
     html += '</div></div>';
@@ -4451,6 +4657,7 @@ function renderTrainerContent() {
     renderTrainerDietSummary();
     renderTrainerValidator();
     setupTrainerTabsVisibility();
+    updateTrainerPlanMacroPreview();
 }
 
 var trainerTabsScrollHandler = null;
@@ -4491,6 +4698,17 @@ function setupPublicTabsVisibility() {
     };
     window.addEventListener('scroll', publicTabsScrollHandler, { passive: true });
     publicTabsScrollHandler();
+}
+
+// ---- Actualiza el preview de macros en la tarjeta de objetivo del plan ----
+function updateTrainerPlanMacroPreview() {
+    var el = document.getElementById('trainer-plan-macro-preview');
+    if (!el) return;
+    var mt = getTrainerMacroTargetsGrams(TRAINER_PROFILE.weight, TRAINER_FIXED_KCAL);
+    el.innerHTML =
+        '<span class="tpmp-item tpmp-protein">\uD83E\uDD69 P: <strong>' + mt.protG + 'g</strong> (2 g/kg)</span>' +
+        '<span class="tpmp-item tpmp-carbs">\uD83C\uDF3E HC: <strong>' + mt.carbG + 'g</strong> (resto cal\xF3rico)</span>' +
+        '<span class="tpmp-item tpmp-fat">\uD83E\uDED2 G: <strong>' + mt.fatG + 'g</strong> (0.9 g/kg)</span>';
 }
 
 function renderTrainerValidator() {
@@ -4548,7 +4766,28 @@ document.getElementById('trainer-activity-panel').addEventListener('input', func
         updateTrainerEnergyUI();
         renderTrainerNutrition();
     }
+    if (e.target.id === 'trainer-kcal-target') {
+        var kcalVal = parseInt(e.target.value, 10);
+        if (!isNaN(kcalVal) && kcalVal >= 1200 && kcalVal <= 5000) {
+            TRAINER_FIXED_KCAL = kcalVal;
+            updateTrainerPlanMacroPreview();
+            renderTrainerContent(); // re-render to update scaled dinner amounts
+        }
+    }
+    if (e.target.id === 'trainer-body-weight') {
+        var wVal = parseFloat(e.target.value);
+        if (!isNaN(wVal) && wVal >= 40 && wVal <= 200) {
+            TRAINER_PROFILE.weight = wVal;
+            // Update profile display
+            var profileEl = document.querySelector('.trainer-activity-profile');
+            if (profileEl) profileEl.textContent = wVal + ' kg \xB7 ' + TRAINER_PROFILE.height + ' cm \xB7 ' + TRAINER_PROFILE.age + ' a\xF1os \xB7 oficina 9\u201319h \xB7 ~10.000 pasos/d\xEDa \xB7 sin alcohol';
+            updateTrainerPlanMacroPreview();
+            renderTrainerNutrition(); // update macro targets with new weight
+            renderTrainerContent();  // update scaled dinner amounts
+        }
+    }
 });
+
 
 document.getElementById('trainer-activity-panel').addEventListener('click', function(e) {
     if (!trainerModeActive) return;
@@ -4731,6 +4970,20 @@ document.addEventListener('click', function(e) {
         }
         return;
     }
+
+
+    // Fruit chip selector (lunch / dinner)
+    var fruitChip = e.target.closest('[data-fruit-meal]');
+    if (fruitChip) {
+        var fruitMeal = fruitChip.dataset.fruitMeal;
+        var fruitIdx3 = parseInt(fruitChip.dataset.fruitIdx);
+        if (!isNaN(fruitIdx3) && (fruitMeal === 'lunch' || fruitMeal === 'dinner')) {
+            trainerFruitSelections[fruitMeal] = fruitIdx3;
+            renderTrainerContent(); // re-render to update scaled dinner amounts
+        }
+        return;
+    }
+
 
     // Breakfast cards
     var card = e.target.closest('[data-trainer-type="breakfast"]');
