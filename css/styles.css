@@ -5725,3 +5725,15 @@ body.site-gate-active {
     margin: 2px 0 10px;
     font-style: italic;
 }
+
+/* Disabled fruit chip style */
+.trainer-fruit-chip-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    border-style: dashed;
+}
+.trainer-fruit-chip-disabled:hover {
+    border-color: var(--border);
+    color: var(--text-secondary);
+    transform: none;
+}

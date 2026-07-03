@@ -3326,7 +3326,7 @@ var TRAINER_FRUIT_OPTIONS = [
     { name: 'Naranja', emoji: '🍊', n: [47, 0.9, 11.8, 0.1] }   // por 100g
 ];
 var TRAINER_FRUIT_GRAMS = 225; // gramos por pieza
-var trainerFruitSelections = { lunch: 0, dinner: 0 }; // 0=banana, 1=naranja
+var trainerFruitSelections = { lunch: null, dinner: null }; // 0=banana, 1=naranja, null=ninguna (máximo una fruta entre comida y cena)
 
 // Consolidated food catalog for extra foods picker (per 100g/100ml)
 var trainerFoodCatalog = [
@@ -3733,6 +3733,9 @@ function getTrainerMacroTargetsGrams(weight, kcal) {
 
 // ---- Calcula macros de fruta seleccionada ----
 function getTrainerFruitMacros(fruitIdx) {
+    if (fruitIdx === null || fruitIdx === undefined) {
+        return { kcal: 0, protein: 0, carbs: 0, fat: 0 };
+    }
     var fruit = TRAINER_FRUIT_OPTIONS[fruitIdx] || TRAINER_FRUIT_OPTIONS[0];
     var g = TRAINER_FRUIT_GRAMS;
     return {
@@ -4448,17 +4451,38 @@ function showMacroFixTooltip(macro) {
 function renderTrainerContent() {
     var html = '';
 
-    // Helper: fruit selector chips for a meal
+    // Helper: fruit selector chips for a meal (max 1 fruit total between lunch and dinner)
     function fruitSelectorHtml(meal) {
         var selIdx = trainerFruitSelections[meal];
+        var otherMeal = meal === 'lunch' ? 'dinner' : 'lunch';
+        var otherHasFruit = trainerFruitSelections[otherMeal] !== null;
+
         var h = '<div class="trainer-fruit-selector">' +
-            '<span class="trainer-fruit-label">🍎 Fruta (225g):</span>';
+            '<span class="trainer-fruit-label">\uD83C\uDF4E Fruta (225g):</span>';
+        
         TRAINER_FRUIT_OPTIONS.forEach(function(fr, i) {
-            var sel = selIdx === i ? ' trainer-fruit-chip-sel' : '';
-            h += '<button type="button" class="trainer-fruit-chip' + sel + '" data-fruit-meal="' + meal + '" data-fruit-idx="' + i + '">' +
+            var isSelected = selIdx === i;
+            var classes = 'trainer-fruit-chip';
+            if (isSelected) classes += ' trainer-fruit-chip-sel';
+            
+            // If the other meal already has fruit, disable unselected options here to enforce max 1 fruit
+            var disabledAttr = '';
+            if (otherHasFruit && !isSelected) {
+                classes += ' trainer-fruit-chip-disabled';
+                disabledAttr = ' disabled title="Solo se permite 1 pieza de fruta adicional al d\xEDa (comida o cena)"';
+            }
+
+            h += '<button type="button" class="' + classes + '" data-fruit-meal="' + meal + '" data-fruit-idx="' + i + '"' + disabledAttr + '>' +
                 fr.emoji + ' ' + fr.name +
                 '</button>';
         });
+
+        // Add a "Ninguna" chip to explicitly clear selection
+        var noneSel = selIdx === null ? ' trainer-fruit-chip-sel' : '';
+        h += '<button type="button" class="trainer-fruit-chip' + noneSel + '" data-fruit-meal="' + meal + '" data-fruit-idx="none">' +
+            '\u274C Ninguna' +
+            '</button>';
+
         h += '</div>';
         return h;
     }
@@ -4976,11 +5000,20 @@ document.addEventListener('click', function(e) {
     var fruitChip = e.target.closest('[data-fruit-meal]');
     if (fruitChip) {
         var fruitMeal = fruitChip.dataset.fruitMeal;
-        var fruitIdx3 = parseInt(fruitChip.dataset.fruitIdx);
-        if (!isNaN(fruitIdx3) && (fruitMeal === 'lunch' || fruitMeal === 'dinner')) {
-            trainerFruitSelections[fruitMeal] = fruitIdx3;
-            renderTrainerContent(); // re-render to update scaled dinner amounts
+        var otherMeal = fruitMeal === 'lunch' ? 'dinner' : 'lunch';
+        var rawIdx = fruitChip.dataset.fruitIdx;
+        
+        if (rawIdx === 'none') {
+            trainerFruitSelections[fruitMeal] = null;
+        } else {
+            var fruitIdx3 = parseInt(rawIdx);
+            if (!isNaN(fruitIdx3)) {
+                // Set the current meal's fruit and clear the other one to enforce max 1 fruit total
+                trainerFruitSelections[fruitMeal] = fruitIdx3;
+                trainerFruitSelections[otherMeal] = null;
+            }
         }
+        renderTrainerContent(); // re-render to update scaled dinner amounts
         return;
     }
 
