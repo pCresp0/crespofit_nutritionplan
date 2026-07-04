@@ -3467,6 +3467,17 @@ var trainerFoodCatalog = [
     {name:'Crema de cacahuete',cat:'Otros',n:[600,25,12,50],unit:'g'}
 ];
 
+// Sort trainerFoodCatalog alphabetically within each category group
+(function() {
+    var categoryOrder = { 'Hidratos': 1, 'Proteínas': 2, 'Salsas': 3, 'Otros': 4 };
+    trainerFoodCatalog.sort(function(a, b) {
+        var catA = categoryOrder[a.cat] || 99;
+        var catB = categoryOrder[b.cat] || 99;
+        if (catA !== catB) return catA - catB;
+        return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
+    });
+})();
+
 var TRAINER_KCAL_TOLERANCE = 50; // ±50 kcal
 // Macro targets are now computed dynamically based on weight (2g/kg P, 0.9g/kg F, rest C)
 // getTrainerMacroTargetsGrams(weight, kcal) is used instead of fixed percentages
@@ -4921,8 +4932,12 @@ function renderTrainerContent() {
     });
     html += '</optgroup>';
     html += '</select>';
+    var initialUnit = trainerFoodCatalog[0] ? trainerFoodCatalog[0].unit : 'g';
     html += '<div class="trainer-extra-grams-row" style="gap:8px;">';
-    html += '<input type="number" id="trainer-extra-grams" class="trainer-extra-grams" min="1" max="2000" placeholder="Gramos" value="100" style="flex:1;">';
+    html += '<div style="position:relative; flex:1; display:flex; align-items:center;">';
+    html += '<input type="number" id="trainer-extra-grams" class="trainer-extra-grams" min="1" max="2000" placeholder="Cantidad" value="100" style="width:100%; padding-right:24px; box-sizing:border-box;">';
+    html += '<span id="trainer-extra-unit" style="position:absolute; right:8px; font-size:0.85rem; color:var(--text-secondary); pointer-events:none; font-weight:600;">' + initialUnit + '</span>';
+    html += '</div>';
     html += '<select id="trainer-extra-replace" class="trainer-extra-replace" style="flex:2; padding:6px; border-radius:4px; background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-primary); font-size:0.8rem; height:34px;">';
     html += '<option value="none">Adicional (no reemplaza)</option>';
     html += '<option value="lunchCarb">Comida: Reemplaza HC</option>';
@@ -5123,6 +5138,10 @@ document.addEventListener('change', function(e) {
             var catalogIdx = parseInt(foodSelect.value);
             if (!isNaN(catalogIdx) && catalogIdx >= 0 && catalogIdx < trainerFoodCatalog.length) {
                 var food = trainerFoodCatalog[catalogIdx];
+                var unitSpan = document.getElementById('trainer-extra-unit');
+                if (unitSpan) {
+                    unitSpan.textContent = food.unit;
+                }
                 if (food.unit === 'ud') {
                     gramsInput.placeholder = 'Unidades';
                     gramsInput.value = '1';
