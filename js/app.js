@@ -3774,6 +3774,14 @@ function ensureTrainerDailyLog() {
         };
         saveTrainerPersonalState();
     } else {
+        var d = new Date();
+        if (d.getDay() === 6 && trainerDailyLog.plannedWorkoutId === 'pierna-2') {
+            trainerDailyLog.plannedWorkoutId = 'abs-cardio';
+            if (trainerDailyLog.workoutStatus === 'done' && trainerDailyLog.workoutId === 'pierna-2') {
+                trainerDailyLog.workoutId = 'abs-cardio';
+            }
+            saveTrainerPersonalState();
+        }
         syncTrainerWorkoutState();
         if ((trainerDailyLog.workoutStatus === 'done' || trainerDailyLog.workoutStatus === 'other') && !trainerDailyLog.workoutId) {
             trainerDailyLog.workoutId = trainerDailyLog.plannedWorkoutId || getDefaultWorkoutForDay();
