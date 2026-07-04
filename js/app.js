@@ -5336,12 +5336,11 @@ document.addEventListener('click', function(e) {
 });
 
 function checkAutoAdvanceTrainer() {
-    // Ordered sequence of steps: breakfast → lunchCarb → lunchProtein → snackVisited → dinnerCarb → dinnerProtein
+    // Ordered sequence of steps: breakfast → lunchCarb → lunchProtein → dinnerCarb → dinnerProtein
     var steps = [
         { key:'breakfast', tab:'breakfast', label:'Desayuno' },
         { key:'lunchCarb', tab:'lunch', label:'Comida HC', section:'carbs' },
         { key:'lunchProtein', tab:'lunch', label:'Comida Prot', section:'protein' },
-        { key:'snackVisited', tab:'snack', label:'Merienda' },
         { key:'dinnerCarb', tab:'dinner', label:'Cena HC', section:'carbs' },
         { key:'dinnerProtein', tab:'dinner', label:'Cena Prot', section:'protein' }
     ];
