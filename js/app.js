@@ -4166,11 +4166,13 @@ function getTrainerTabByTime() {
     var m = now.getMinutes();
     var totalMin = h * 60 + m;
 
-    // Desayuno: 1:00 (60 min) a 12:15 (735 min)
-    if (totalMin >= 60 && totalMin <= 735) return 'breakfast';
-    // Comida: 12:16 (736 min) a 18:00 (1080 min)
-    if (totalMin >= 736 && totalMin <= 1080) return 'lunch';
-    // Cena: 18:01 (1081 min) a 1:00 (60 min del día siguiente)
+    // Desayuno: 1:00 (60 min) a 12:00 (720 min)
+    if (totalMin >= 60 && totalMin <= 720) return 'breakfast';
+    // Comida: 12:01 (721 min) a 15:45 (945 min)
+    if (totalMin >= 721 && totalMin <= 945) return 'lunch';
+    // Merienda: 15:46 (946 min) a 19:30 (1170 min)
+    if (totalMin >= 946 && totalMin <= 1170) return 'snack';
+    // Cena: 19:31 (1171 min) a 0:59 (59 min del día siguiente)
     return 'dinner';
 }
 
