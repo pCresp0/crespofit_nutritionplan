@@ -3398,6 +3398,7 @@ var trainerFoodCatalog = [
     {name:'Ketchup',cat:'Salsas',n:[97,1,24,0.1],unit:'g'},
     {name:'Mayonesa',cat:'Salsas',n:[680,1,1,75],unit:'g'},
     // Otros
+    {name:'Ensaladilla rusa casera',cat:'Otros',n:[100,8.5,10,3.5],unit:'g'},
     {name:'Verduras',cat:'Otros',n:[25,2,4,0.3],unit:'g'},
     {name:'Fruta',cat:'Otros',n:[80,0.5,20,0.2],unit:'g'},
     {name:'Aceite de oliva',cat:'Otros',n:[900,0,0,100],unit:'ml'},
