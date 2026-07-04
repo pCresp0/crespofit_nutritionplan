@@ -3475,13 +3475,13 @@ var TRAINER_PROFILE = {
     workStart: 9,
     workEnd: 19,
     training: {
-        daysPerWeek: 4,
+        daysPerWeek: 5,
         typicalSessionMin: 90, // base fija para las 4 sesiones/semana (kcal, no editable)
         avgBarSideKg: 22.5, // peso medio anotado por lado en Jefit (ej. 20–25 kg)
         smithBarKg: 20,
         barbellKg: 20,
-        typicalGymDays: [1, 3, 5, 6], // lun, mié, vie, sáb (puede cambiar)
-        dayWorkoutMap: { 1: 'torso-1', 3: 'pierna-1', 5: 'torso-2', 6: 'pierna-2' }
+        typicalGymDays: [1, 2, 4, 5, 6], // lun, mar, jue, vie, sáb (puede cambiar)
+        dayWorkoutMap: { 1: 'torso-1', 2: 'pierna-1', 4: 'torso-2', 5: 'pierna-2', 6: 'abs-cardio' }
     }
 };
 
@@ -3536,6 +3536,14 @@ var TRAINER_WORKOUTS = [
         actualWorkMin: 17,
         volumeKg: 9995,
         exercises: ['Peso muerto rumano', 'Hip thrust', 'Prensa piernas', 'Extensión cuádriceps', 'Curl femoral', 'Crunch polea', 'Crunch declinado']
+    },
+    {
+        id: 'abs-cardio',
+        name: 'Abs y Cardio',
+        emoji: '🧘',
+        actualWorkMin: 30,
+        volumeKg: 0,
+        exercises: ['Abs', 'Cardio']
     }
 ];
 
@@ -3635,6 +3643,17 @@ function getCorrectedWorkoutVolumeKg(workout) {
 }
 
 function calculateWorkoutKcalBreakdown(workout, weight) {
+    if (workout && workout.id === 'abs-cardio') {
+        return {
+            session: 0,
+            intensity: 130,
+            volume: 0,
+            volumeKg: 0,
+            epoc: 0,
+            total: 130,
+            isLeg: false
+        };
+    }
     weight = weight || TRAINER_PROFILE.weight;
     var wFactor = weight / 70;
     var isLeg = !!workout.isLeg;
