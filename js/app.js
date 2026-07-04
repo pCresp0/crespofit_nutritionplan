@@ -3472,10 +3472,11 @@ var trainerFoodCatalog = [
     {name:'Copos de avena',cat:'Otros',n:[372,13,60,7],unit:'g'},
     {name:'Whey protein (HSN Evowhey)',cat:'Otros',n:[361,76,5.9,3.6],unit:'g'},
     {name:'Leche desnatada',cat:'Otros',n:[40,3.9,5.3,0.3],unit:'ml'},
+    {name:'Leche semidesnatada',cat:'Otros',n:[49,3.3,4.8,1.6],unit:'ml'},
     {name:'Queso fresco batido',cat:'Otros',n:[63,10,4,0.8],unit:'g'},
     {name:'Frutos secos',cat:'Otros',n:[600,20,15,52],unit:'g'},
     {name:'Crema de cacahuete',cat:'Otros',n:[600,25,12,50],unit:'g'},
-    {name:'Vaso de café con leche (60ml café + 150ml leche)',cat:'Otros',n:[72,5,7,2.3],unit:'ud'}
+    {name:'Vaso de café con leche desnatada (60ml café + 150ml leche)',cat:'Otros',n:[60,5.9,8,0.5],unit:'ud'}
 ];
 
 // Sort trainerFoodCatalog alphabetically within each category group
