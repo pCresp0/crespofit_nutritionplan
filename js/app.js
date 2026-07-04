@@ -3224,11 +3224,35 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
         return items;
     }
 
+    var hasExtra = function(replaceKey) {
+        return isTrainer && trainerExtraFoods.some(function(e) { return e.replace === replaceKey; });
+    };
+
     var bk = getBreakfastItems();
-    var lunchItems = (selObj.lunchCarb !== null || selObj.lunchProtein !== null)
-        ? getMealItems(lunchCarbs, lunchProteins, selObj.lunchCarb, selObj.lunchProtein, 'lunch') : null;
-    var dinnerItems = (selObj.dinnerCarb !== null || selObj.dinnerProtein !== null)
-        ? getMealItems(dinnerCarbs, dinnerProteins, selObj.dinnerCarb, selObj.dinnerProtein, 'dinner') : null;
+    var lunchItems = (selObj.lunchCarb !== null || selObj.lunchProtein !== null || hasExtra('lunchCarb') || hasExtra('lunchProtein'))
+        ? (getMealItems(lunchCarbs, lunchProteins, selObj.lunchCarb, selObj.lunchProtein, 'lunch') || []) : null;
+    var dinnerItems = (selObj.dinnerCarb !== null || selObj.dinnerProtein !== null || hasExtra('dinnerCarb') || hasExtra('dinnerProtein'))
+        ? (getMealItems(dinnerCarbs, dinnerProteins, selObj.dinnerCarb, selObj.dinnerProtein, 'dinner') || []) : null;
+
+    if (isTrainer && lunchItems) {
+        trainerExtraFoods.forEach(function(extra) {
+            if (extra.replace === 'lunchCarb' || extra.replace === 'lunchProtein') {
+                var food = trainerFoodCatalog[extra.catalogIdx];
+                var displayUnit = food.unit === 'ud' ? (extra.grams === 1 ? ' unidad' : ' unidades') : food.unit;
+                lunchItems.push(food.name + ': <strong>' + extra.grams + displayUnit + '</strong> (Reemplazo)');
+            }
+        });
+    }
+
+    if (isTrainer && dinnerItems) {
+        trainerExtraFoods.forEach(function(extra) {
+            if (extra.replace === 'dinnerCarb' || extra.replace === 'dinnerProtein') {
+                var food = trainerFoodCatalog[extra.catalogIdx];
+                var displayUnit = food.unit === 'ud' ? (extra.grams === 1 ? ' unidad' : ' unidades') : food.unit;
+                dinnerItems.push(food.name + ': <strong>' + extra.grams + displayUnit + '</strong> (Reemplazo)');
+            }
+        });
+    }
 
     var complete = bk && lunchItems && dinnerItems;
     if (!complete) return '';
@@ -3330,9 +3354,10 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
         '</div>';
 
     // Extra foods in trainer mode
-    if (isTrainer && trainerExtraFoods.length > 0) {
+    var independentExtras = isTrainer ? trainerExtraFoods.filter(function(e) { return !e.replace || e.replace === 'none'; }) : [];
+    if (isTrainer && independentExtras.length > 0) {
         var extraKcalTotal = 0;
-        var extraItems = trainerExtraFoods.map(function(extra) {
+        var extraItems = independentExtras.map(function(extra) {
             var food = trainerFoodCatalog[extra.catalogIdx];
             var factor = food.unit === 'ud' ? extra.grams : extra.grams / 100;
             var ek = Math.round(food.n[0] * factor);
@@ -3861,49 +3886,77 @@ function getTrainerMealScaledRatios() {
         fixedFat  += food.n[3] * factor;
     });
 
-    // Si no hay comida y cena seleccionada por completo, usamos ratio 1 y aceite base
-    if (trainerSelections.lunchCarb === null || trainerSelections.lunchProtein === null ||
-        trainerSelections.dinnerCarb === null || trainerSelections.dinnerProtein === null) {
+    var hasExtra = function(replaceKey) {
+        return trainerExtraFoods.some(function(e) { return e.replace === replaceKey; });
+    };
+
+    var lunchCarbSelected = trainerSelections.lunchCarb !== null || hasExtra('lunchCarb');
+    var lunchProteinSelected = trainerSelections.lunchProtein !== null || hasExtra('lunchProtein');
+    var dinnerCarbSelected = trainerSelections.dinnerCarb !== null || hasExtra('dinnerCarb');
+    var dinnerProteinSelected = trainerSelections.dinnerProtein !== null || hasExtra('dinnerProtein');
+
+    // Si no hay comida y cena seleccionada por completo (o reemplazada), usamos ratio 1 y aceite base
+    if (!lunchCarbSelected || !lunchProteinSelected || !dinnerCarbSelected || !dinnerProteinSelected) {
         return { lunchCarb: 1, lunchProtein: 1, dinnerCarb: 1, dinnerProtein: 1, oilMl: EXTRAS_OIL_ML };
     }
 
     // 3. Obtener macros de bases de Comida y Cena
-    var lc = lunchCarbs[trainerSelections.lunchCarb];
-    var lp = lunchProteins[trainerSelections.lunchProtein];
-    var dc = dinnerCarbs[trainerSelections.dinnerCarb];
-    var dp = dinnerProteins[trainerSelections.dinnerProtein];
+    var lc = trainerSelections.lunchCarb !== null ? lunchCarbs[trainerSelections.lunchCarb] : null;
+    var lp = trainerSelections.lunchProtein !== null ? lunchProteins[trainerSelections.lunchProtein] : null;
+    var dc = trainerSelections.dinnerCarb !== null ? dinnerCarbs[trainerSelections.dinnerCarb] : null;
+    var dp = trainerSelections.dinnerProtein !== null ? dinnerProteins[trainerSelections.dinnerProtein] : null;
 
     var baseCarbKcal = 0, baseCarbProt = 0, baseCarbFat = 0;
     var baseProtKcal = 0, baseProtProt = 0, baseProtFat = 0;
 
     // Comida
     if (trainerAdjustableMeals.lunch) {
-        baseCarbKcal += (lc.n[0] * lc.base / 100);
-        baseCarbProt += (lc.n[1] * lc.base / 100);
-        baseCarbFat  += (lc.n[3] * lc.base / 100);
-        
-        baseProtKcal += (lp.n[0] * lp.base / 100);
-        baseProtProt += (lp.n[1] * lp.base / 100);
-        baseProtFat  += (lp.n[3] * lp.base / 100);
+        if (lc) {
+            baseCarbKcal += (lc.n[0] * lc.base / 100);
+            baseCarbProt += (lc.n[1] * lc.base / 100);
+            baseCarbFat  += (lc.n[3] * lc.base / 100);
+        }
+        if (lp) {
+            baseProtKcal += (lp.n[0] * lp.base / 100);
+            baseProtProt += (lp.n[1] * lp.base / 100);
+            baseProtFat  += (lp.n[3] * lp.base / 100);
+        }
     } else {
-        fixedKcal += (lc.n[0] * lc.base / 100) + (lp.n[0] * lp.base / 100);
-        fixedProt += (lc.n[1] * lc.base / 100) + (lp.n[1] * lp.base / 100);
-        fixedFat  += (lc.n[3] * lc.base / 100) + (lp.n[3] * lp.base / 100);
+        if (lc) {
+            fixedKcal += (lc.n[0] * lc.base / 100);
+            fixedProt += (lc.n[1] * lc.base / 100);
+            fixedFat  += (lc.n[3] * lc.base / 100);
+        }
+        if (lp) {
+            fixedKcal += (lp.n[0] * lp.base / 100);
+            fixedProt += (lp.n[1] * lp.base / 100);
+            fixedFat  += (lp.n[3] * lp.base / 100);
+        }
     }
 
     // Cena
     if (trainerAdjustableMeals.dinner) {
-        baseCarbKcal += (dc.n[0] * dc.base / 100);
-        baseCarbProt += (dc.n[1] * dc.base / 100);
-        baseCarbFat  += (dc.n[3] * dc.base / 100);
-        
-        baseProtKcal += (dp.n[0] * dp.base / 100);
-        baseProtProt += (dp.n[1] * dp.base / 100);
-        baseProtFat  += (dp.n[3] * dp.base / 100);
+        if (dc) {
+            baseCarbKcal += (dc.n[0] * dc.base / 100);
+            baseCarbProt += (dc.n[1] * dc.base / 100);
+            baseCarbFat  += (dc.n[3] * dc.base / 100);
+        }
+        if (dp) {
+            baseProtKcal += (dp.n[0] * dp.base / 100);
+            baseProtProt += (dp.n[1] * dp.base / 100);
+            baseProtFat  += (dp.n[3] * dp.base / 100);
+        }
     } else {
-        fixedKcal += (dc.n[0] * dc.base / 100) + (dp.n[0] * dp.base / 100);
-        fixedProt += (dc.n[1] * dc.base / 100) + (dp.n[1] * dp.base / 100);
-        fixedFat  += (dc.n[3] * dc.base / 100) + (dp.n[3] * dp.base / 100);
+        if (dc) {
+            fixedKcal += (dc.n[0] * dc.base / 100);
+            fixedProt += (dc.n[1] * dc.base / 100);
+            fixedFat  += (dc.n[3] * dc.base / 100);
+        }
+        if (dp) {
+            fixedKcal += (dp.n[0] * dp.base / 100);
+            fixedProt += (dp.n[1] * dp.base / 100);
+            fixedFat  += (dp.n[3] * dp.base / 100);
+        }
     }
 
     // Si ninguna es ajustable, devolvemos 1.0
@@ -4300,8 +4353,12 @@ function calculateTrainerMacros() {
 
     var ratios = getTrainerMealScaledRatios();
     
+    var hasExtra = function(replaceKey) {
+        return trainerExtraFoods.some(function(e) { return e.replace === replaceKey; });
+    };
+
     // 2. COMIDA — escalada con los ratios
-    var hasLunch = trainerSelections.lunchCarb !== null || trainerSelections.lunchProtein !== null;
+    var hasLunch = trainerSelections.lunchCarb !== null || trainerSelections.lunchProtein !== null || hasExtra('lunchCarb') || hasExtra('lunchProtein');
     if (trainerSelections.lunchCarb !== null) {
         has = true;
         var lc = lunchCarbs[trainerSelections.lunchCarb];
@@ -4330,7 +4387,7 @@ function calculateTrainerMacros() {
     }
 
     // 3. CENA — escalada con los ratios
-    var hasDinner = trainerSelections.dinnerCarb !== null || trainerSelections.dinnerProtein !== null;
+    var hasDinner = trainerSelections.dinnerCarb !== null || trainerSelections.dinnerProtein !== null || hasExtra('dinnerCarb') || hasExtra('dinnerProtein');
     if (trainerSelections.dinnerCarb !== null) {
         has = true;
         var dc = dinnerCarbs[trainerSelections.dinnerCarb];
@@ -4834,9 +4891,16 @@ function renderTrainerContent() {
     });
     html += '</optgroup>';
     html += '</select>';
-    html += '<div class="trainer-extra-grams-row">';
-    html += '<input type="number" id="trainer-extra-grams" class="trainer-extra-grams" min="1" max="2000" placeholder="Gramos" value="100">';
-    html += '<button class="trainer-extra-add-btn" id="trainer-extra-add">+ Añadir</button>';
+    html += '<div class="trainer-extra-grams-row" style="gap:8px;">';
+    html += '<input type="number" id="trainer-extra-grams" class="trainer-extra-grams" min="1" max="2000" placeholder="Gramos" value="100" style="flex:1;">';
+    html += '<select id="trainer-extra-replace" class="trainer-extra-replace" style="flex:2; padding:6px; border-radius:4px; background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-primary); font-size:0.8rem; height:34px;">';
+    html += '<option value="none">Adicional (no reemplaza)</option>';
+    html += '<option value="lunchCarb">Comida: Reemplaza HC</option>';
+    html += '<option value="lunchProtein">Comida: Reemplaza Prot</option>';
+    html += '<option value="dinnerCarb">Cena: Reemplaza HC</option>';
+    html += '<option value="dinnerProtein">Cena: Reemplaza Prot</option>';
+    html += '</select>';
+    html += '<button class="trainer-extra-add-btn" id="trainer-extra-add" style="flex:1;">+ Añadir</button>';
     html += '</div></div>';
     if (trainerExtraFoods.length > 0) {
         html += '<div class="trainer-extra-list">';
@@ -4848,9 +4912,16 @@ function renderTrainerContent() {
             var ec = Math.round(food.n[2]*factor);
             var ef = Math.round(food.n[3]*factor);
             var displayUnit = food.unit === 'ud' ? (extra.grams === 1 ? ' unidad' : ' unidades') : food.unit;
+            
+            var replaceLabel = '';
+            if (extra.replace === 'lunchCarb') replaceLabel = ' <span class="badge-replace" style="font-size:0.68rem;color:var(--gold-accent);background:rgba(251,191,36,0.12);padding:2px 6px;border-radius:8px;margin-left:6px;font-weight:600;">reemplaza Comida HC</span>';
+            else if (extra.replace === 'lunchProtein') replaceLabel = ' <span class="badge-replace" style="font-size:0.68rem;color:var(--gold-accent);background:rgba(251,191,36,0.12);padding:2px 6px;border-radius:8px;margin-left:6px;font-weight:600;">reemplaza Comida Prot</span>';
+            else if (extra.replace === 'dinnerCarb') replaceLabel = ' <span class="badge-replace" style="font-size:0.68rem;color:var(--gold-accent);background:rgba(251,191,36,0.12);padding:2px 6px;border-radius:8px;margin-left:6px;font-weight:600;">reemplaza Cena HC</span>';
+            else if (extra.replace === 'dinnerProtein') replaceLabel = ' <span class="badge-replace" style="font-size:0.68rem;color:var(--gold-accent);background:rgba(251,191,36,0.12);padding:2px 6px;border-radius:8px;margin-left:6px;font-weight:600;">reemplaza Cena Prot</span>';
+
             html += '<div class="trainer-extra-item" data-extra-idx="' + i + '">';
             html += '<div class="trainer-extra-item-info">';
-            html += '<strong>' + food.name + '</strong> — ' + extra.grams + displayUnit;
+            html += '<strong>' + food.name + '</strong> — ' + extra.grams + displayUnit + replaceLabel;
             html += '<span class="trainer-extra-item-macros">' + ek + ' kcal · P:' + ep + ' C:' + ec + ' G:' + ef + '</span>';
             html += '</div>';
             html += '<button class="trainer-extra-remove" data-extra-remove="' + i + '">✕</button>';
@@ -4936,12 +5007,16 @@ function renderTrainerValidator() {
     var bar = document.getElementById('trainer-validator');
     if (!bar) return;
 
+    var hasExtra = function(replaceKey) {
+        return trainerExtraFoods.some(function(e) { return e.replace === replaceKey; });
+    };
+
     var checks = [
         { label: 'Desayuno', done: trainerSelections.breakfast !== null },
-        { label: 'Comida HC', done: trainerSelections.lunchCarb !== null },
-        { label: 'Comida Prot', done: trainerSelections.lunchProtein !== null },
-        { label: 'Cena HC', done: trainerSelections.dinnerCarb !== null },
-        { label: 'Cena Prot', done: trainerSelections.dinnerProtein !== null }
+        { label: 'Comida HC', done: trainerSelections.lunchCarb !== null || hasExtra('lunchCarb') },
+        { label: 'Comida Prot', done: trainerSelections.lunchProtein !== null || hasExtra('lunchProtein') },
+        { label: 'Cena HC', done: trainerSelections.dinnerCarb !== null || hasExtra('dinnerCarb') },
+        { label: 'Cena Prot', done: trainerSelections.dinnerProtein !== null || hasExtra('dinnerProtein') }
     ];
 
     var allDone = checks.every(function(c) { return c.done; });
@@ -5105,11 +5180,22 @@ function checkAutoAdvanceTrainer() {
         { key:'dinnerProtein', tab:'dinner', label:'Cena Prot', section:'protein' }
     ];
 
+    var hasExtra = function(replaceKey) {
+        return trainerExtraFoods.some(function(e) { return e.replace === replaceKey; });
+    };
+
     // Find the first unfilled step
     var nextStep = null;
     for (var i = 0; i < steps.length; i++) {
-        var val = trainerSelections[steps[i].key];
-        if (val === null || val === false) { nextStep = steps[i]; break; }
+        var key = steps[i].key;
+        var val = trainerSelections[key];
+        var isFilled = (val !== null && val !== false);
+        if (key === 'lunchCarb' && hasExtra('lunchCarb')) isFilled = true;
+        if (key === 'lunchProtein' && hasExtra('lunchProtein')) isFilled = true;
+        if (key === 'dinnerCarb' && hasExtra('dinnerCarb')) isFilled = true;
+        if (key === 'dinnerProtein' && hasExtra('dinnerProtein')) isFilled = true;
+        
+        if (!isFilled) { nextStep = steps[i]; break; }
     }
 
     // All 5 complete → scroll to summary
@@ -5210,12 +5296,15 @@ document.addEventListener('click', function(e) {
     if (e.target.id === 'trainer-extra-add' || e.target.closest('#trainer-extra-add')) {
         var foodSelect = document.getElementById('trainer-extra-food');
         var gramsInput = document.getElementById('trainer-extra-grams');
+        var replaceSelect = document.getElementById('trainer-extra-replace');
         if (foodSelect && gramsInput) {
             var catalogIdx = parseInt(foodSelect.value);
             var grams = parseInt(gramsInput.value);
+            var replaceVal = replaceSelect ? replaceSelect.value : 'none';
             if (!isNaN(catalogIdx) && grams > 0 && catalogIdx >= 0 && catalogIdx < trainerFoodCatalog.length) {
-                trainerExtraFoods.push({ catalogIdx: catalogIdx, grams: grams });
+                trainerExtraFoods.push({ catalogIdx: catalogIdx, grams: grams, replace: replaceVal });
                 renderTrainerContent();
+                checkAutoAdvanceTrainer();
             }
         }
         return;
