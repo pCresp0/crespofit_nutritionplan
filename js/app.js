@@ -4623,20 +4623,21 @@ function renderTrainerNutrition() {
     var balance = kcal - tdee;
     var balanceText = '';
     var balanceStyle = '';
-    if (balance > 0) {
+    var absBal = Math.abs(balance);
+    if (balance > 50) {
         balanceText = '🔥 Superávit de +' + balance + ' kcal';
         balanceStyle = 'background:rgba(249,115,22,0.1); color:#f97316; border:1px solid rgba(249,115,22,0.2);';
-    } else if (balance < 0) {
-        balanceText = '💧 Déficit de -' + Math.abs(balance) + ' kcal';
+    } else if (balance < -50) {
+        balanceText = '💧 Déficit de ' + absBal + ' kcal';
         balanceStyle = 'background:rgba(59,130,246,0.1); color:#3b82f6; border:1px solid rgba(59,130,246,0.2);';
     } else {
-        balanceText = '⚖️ Balance neutro';
+        balanceText = '⚖️ Equilibrio (~' + absBal + ' kcal)';
         balanceStyle = 'background:rgba(156,163,175,0.1); color:#9ca3af; border:1px solid rgba(156,163,175,0.2);';
     }
 
-    var deficit = -balance;
+    var deficit = -balance; // Déficit real (positivo = comemos menos que gastamos)
     var warningHtml = '';
-    if (deficit < 300) {
+    if (deficit > 0 && deficit < 300) {
         var kcalPerStep = 0.045 * (bodyWeight / 70);
         var missingKcal = 300 - deficit;
         var extraSteps = Math.ceil(missingKcal / kcalPerStep);
