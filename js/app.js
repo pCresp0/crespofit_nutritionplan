@@ -5018,6 +5018,12 @@ function renderTrainerContent() {
             ? (typeKey === 'carb' ? tempRatios.lunchCarb : tempRatios.lunchProtein)
             : (typeKey === 'carb' ? tempRatios.dinnerCarb : tempRatios.dinnerProtein);
         var amt = Math.round(itemBase * r);
+        
+        // Si amt es NaN, solo mostrar el base
+        if (isNaN(amt)) {
+            return '<strong>' + itemBase + '</strong> ' + u;
+        }
+        
         return scaledAmountHtml(itemBase, amt) + ' ' + u;
     }
 
