@@ -5777,3 +5777,11 @@ body.site-gate-active {
     border-color: var(--accent, #fbbf24);
     color: var(--accent, #fbbf24);
 }
+
+/* Search results list hover styling */
+.search-result-row:hover {
+    background: var(--bg-primary) !important;
+    border-color: var(--gold-accent) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}

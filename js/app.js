@@ -4948,35 +4948,9 @@ function renderTrainerContent() {
     html += '<span class="trainer-extras-chevron">▾</span>';
     html += '</div>';
     html += '<div class="trainer-extras-body' + extrasOpen + '" id="trainer-extras-body">';
-    html += '<div class="trainer-extra-form">';
-    html += '<select class="trainer-extra-select" id="trainer-extra-food">';
-    var lastCat = '';
-    trainerFoodCatalog.forEach(function(f, i) {
-        if (f.cat !== lastCat) {
-            if (lastCat) html += '</optgroup>';
-            html += '<optgroup label="' + f.cat + '">';
-            lastCat = f.cat;
-        }
-        var unitLabel = f.unit === 'ud' ? 'unidad' : ('100' + f.unit);
-        html += '<option value="' + i + '">' + f.name + ' (' + f.n[0] + ' kcal/' + unitLabel + ')</option>';
-    });
-    html += '</optgroup>';
-    html += '</select>';
-    var initialUnit = trainerFoodCatalog[0] ? trainerFoodCatalog[0].unit : 'g';
-    html += '<div class="trainer-extra-grams-row" style="gap:8px;">';
-    html += '<div style="position:relative; flex:1; display:flex; align-items:center;">';
-    html += '<input type="number" id="trainer-extra-grams" class="trainer-extra-grams" min="1" max="2000" placeholder="Cantidad" value="100" style="width:100%; padding-right:24px; box-sizing:border-box;">';
-    html += '<span id="trainer-extra-unit" style="position:absolute; right:8px; font-size:0.85rem; color:var(--text-secondary); pointer-events:none; font-weight:600;">' + initialUnit + '</span>';
-    html += '</div>';
-    html += '<select id="trainer-extra-replace" class="trainer-extra-replace" style="flex:2; padding:6px; border-radius:4px; background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-primary); font-size:0.8rem; height:34px;">';
-    html += '<option value="none">Adicional (no reemplaza)</option>';
-    html += '<option value="lunchCarb">Comida: Reemplaza HC</option>';
-    html += '<option value="lunchProtein">Comida: Reemplaza Prot</option>';
-    html += '<option value="dinnerCarb">Cena: Reemplaza HC</option>';
-    html += '<option value="dinnerProtein">Cena: Reemplaza Prot</option>';
-    html += '</select>';
-    html += '<button class="trainer-extra-add-btn" id="trainer-extra-add" style="flex:1;">+ Añadir</button>';
-    html += '</div></div>';
+    html += '<button id="trainer-open-search" class="trainer-extra-search-trigger" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px; border:1px dashed var(--border); background:var(--bg-secondary); color:var(--text-secondary); cursor:pointer; font-weight:600; font-size:0.9rem; transition:all 0.2s ease; margin-bottom:12px;">';
+    html += '<span>🔍 Buscar y añadir alimento...</span>';
+    html += '</button>';
     if (trainerExtraFoods.length > 0) {
         html += '<div class="trainer-extra-list">';
         trainerExtraFoods.forEach(function(extra, i) {
@@ -5159,30 +5133,143 @@ document.getElementById('trainer-activity-panel').addEventListener('input', func
     }
 });
 
-document.addEventListener('change', function(e) {
-    if (!trainerModeActive) return;
-    if (e.target.id === 'trainer-extra-food') {
-        var foodSelect = e.target;
-        var gramsInput = document.getElementById('trainer-extra-grams');
-        if (foodSelect && gramsInput) {
-            var catalogIdx = parseInt(foodSelect.value);
-            if (!isNaN(catalogIdx) && catalogIdx >= 0 && catalogIdx < trainerFoodCatalog.length) {
-                var food = trainerFoodCatalog[catalogIdx];
-                var unitSpan = document.getElementById('trainer-extra-unit');
-                if (unitSpan) {
-                    unitSpan.textContent = food.unit;
-                }
-                if (food.unit === 'ud') {
-                    gramsInput.placeholder = 'Unidades';
-                    gramsInput.value = '1';
-                } else if (food.unit === 'ml') {
-                    gramsInput.placeholder = 'Mililitros';
-                    gramsInput.value = '100';
-                } else {
-                    gramsInput.placeholder = 'Gramos';
-                    gramsInput.value = '100';
-                }
+var activeSearchFoodIdx = null;
+
+function openSearchModal() {
+    activeSearchFoodIdx = null;
+    var backdrop = document.getElementById('search-modal-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.id = 'search-modal-backdrop';
+        backdrop.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.65); backdrop-filter:blur(4px); z-index:9999; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s ease;';
+        document.body.appendChild(backdrop);
+    }
+    renderSearchModalContent(backdrop);
+    requestAnimationFrame(function() {
+        backdrop.style.opacity = '1';
+    });
+}
+
+function closeSearchModal() {
+    var backdrop = document.getElementById('search-modal-backdrop');
+    if (backdrop) {
+        backdrop.style.opacity = '0';
+        setTimeout(function() {
+            if (backdrop.parentNode) {
+                backdrop.parentNode.removeChild(backdrop);
             }
+        }, 200);
+    }
+}
+
+function renderSearchModalContent(backdrop, query) {
+    query = query || '';
+    var html = '<div class="search-modal-card" style="background:var(--bg-primary); width:92%; max-width:440px; border-radius:12px; border:1px solid var(--border); box-shadow:0 10px 25px rgba(0,0,0,0.3); overflow:hidden; display:flex; flex-direction:column; max-height:85vh; transform:scale(0.95); transition:transform 0.2s ease; font-family:inherit; color:var(--text-primary);">';
+    
+    // Header
+    html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid var(--border); background:var(--bg-secondary);">';
+    html += '<h4 style="margin:0; font-size:1.05rem; font-weight:700;">Añadir alimento adicional</h4>';
+    html += '<button id="search-modal-close" style="background:none; border:none; color:var(--text-secondary); font-size:1.25rem; cursor:pointer; padding:4px;">✕</button>';
+    html += '</div>';
+    
+    // Body
+    html += '<div style="padding:16px; display:flex; flex-direction:column; overflow-y:auto; flex:1;">';
+    
+    if (activeSearchFoodIdx === null) {
+        // STEP 1: Search food
+        html += '<input type="text" id="search-modal-input" placeholder="Escribe para buscar... (ej: arroz, pavo, café)" value="' + query + '" style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); font-size:0.9rem; box-sizing:border-box; margin-bottom:12px;" autocomplete="off">';
+        
+        // Results list
+        html += '<div id="search-modal-results" style="display:flex; flex-direction:column; gap:6px; max-height:300px; overflow-y:auto; padding-right:4px;">';
+        
+        var normalizedQuery = query.toLowerCase().trim();
+        var matches = [];
+        trainerFoodCatalog.forEach(function(f, idx) {
+            if (normalizedQuery === '' || f.name.toLowerCase().includes(normalizedQuery) || f.cat.toLowerCase().includes(normalizedQuery)) {
+                matches.push({ food: f, idx: idx });
+            }
+        });
+        
+        if (matches.length === 0) {
+            html += '<div style="text-align:center; padding:24px; color:var(--text-secondary); font-size:0.9rem;">No se encontraron resultados</div>';
+        } else {
+            var lastCat = '';
+            matches.forEach(function(m) {
+                var f = m.food;
+                if (f.cat !== lastCat) {
+                    html += '<div style="font-size:0.75rem; font-weight:700; color:var(--gold-accent); text-transform:uppercase; margin-top:8px; margin-bottom:4px; padding-left:4px;">' + f.cat + '</div>';
+                    lastCat = f.cat;
+                }
+                var unitLabel = f.unit === 'ud' ? 'unidad' : ('100' + f.unit);
+                html += '<button class="search-result-row" data-food-idx="' + m.idx + '" style="width:100%; text-align:left; background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; padding:10px 12px; cursor:pointer; color:var(--text-primary); transition:all 0.15s ease; display:flex; justify-content:space-between; align-items:center;">';
+                html += '<span style="font-weight:600; font-size:0.88rem;">' + f.name + '</span>';
+                html += '<span style="font-size:0.78rem; color:var(--text-secondary);">' + f.n[0] + ' kcal/' + f.unit + '</span>';
+                html += '</button>';
+            });
+        }
+        html += '</div>';
+    } else {
+        // STEP 2: Configure quantity
+        var food = trainerFoodCatalog[activeSearchFoodIdx];
+        var defaultQty = food.unit === 'ud' ? 1 : 100;
+        
+        html += '<button id="search-modal-back" style="background:none; border:none; color:var(--gold-accent); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:600; font-size:0.85rem; padding:0; margin-bottom:14px;">← Volver al buscador</button>';
+        
+        html += '<div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">';
+        html += '<div>';
+        html += '<div style="font-size:0.75rem; color:var(--gold-accent); font-weight:700; text-transform:uppercase;">' + food.cat + '</div>';
+        html += '<strong style="font-size:1.05rem;">' + food.name + '</strong>';
+        html += '</div>';
+        html += '<span style="font-size:0.85rem; background:var(--bg-primary); border:1px solid var(--border); padding:4px 8px; border-radius:6px; color:var(--text-secondary);">' + food.n[0] + ' kcal / ' + (food.unit === 'ud' ? 'unidad' : ('100' + food.unit)) + '</span>';
+        html += '</div>';
+        
+        html += '<div style="margin-bottom:14px;">';
+        html += '<label style="display:block; font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">Cantidad a añadir:</label>';
+        html += '<div style="position:relative; display:flex; align-items:center;">';
+        html += '<input type="number" id="search-qty-input" min="1" max="2000" value="' + defaultQty + '" style="width:100%; padding:10px 32px 10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); font-size:0.95rem; box-sizing:border-box; font-weight:700;">';
+        html += '<span style="position:absolute; right:12px; font-size:0.88rem; color:var(--text-secondary); font-weight:700; pointer-events:none;">' + food.unit + '</span>';
+        html += '</div>';
+        html += '</div>';
+        
+        html += '<div style="margin-bottom:20px;">';
+        html += '<label style="display:block; font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">¿Reemplaza alguna comida?</label>';
+        html += '<select id="search-replace-select" style="width:100%; padding:10px; border-radius:6px; background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-primary); font-size:0.88rem; box-sizing:border-box;">';
+        html += '<option value="none">Alimento extra (no reemplaza)</option>';
+        html += '<option value="lunchCarb">Comida: Reemplaza Hidratos</option>';
+        html += '<option value="lunchProtein">Comida: Reemplaza Proteínas</option>';
+        html += '<option value="dinnerCarb">Cena: Reemplaza Hidratos</option>';
+        html += '<option value="dinnerProtein">Cena: Reemplaza Proteínas</option>';
+        html += '</select>';
+        html += '</div>';
+        
+        html += '<button id="search-modal-add-btn" style="width:100%; padding:12px; border-radius:6px; border:none; background:var(--gold-accent); color:#1e1e1e; font-weight:700; font-size:0.95rem; cursor:pointer; transition:opacity 0.15s ease;">Añadir al plan</button>';
+    }
+    
+    html += '</div></div>';
+    backdrop.innerHTML = html;
+    
+    setTimeout(function() {
+        var card = backdrop.querySelector('.search-modal-card');
+        if (card) card.style.transform = 'scale(1)';
+    }, 10);
+    
+    if (activeSearchFoodIdx === null) {
+        var input = document.getElementById('search-modal-input');
+        if (input) {
+            input.focus();
+            var val = input.value;
+            input.value = '';
+            input.value = val;
+        }
+    }
+}
+
+document.addEventListener('input', function(e) {
+    if (e.target.id === 'search-modal-input') {
+        var query = e.target.value;
+        var backdrop = document.getElementById('search-modal-backdrop');
+        if (backdrop) {
+            renderSearchModalContent(backdrop, query);
         }
     }
 });
@@ -5371,17 +5458,56 @@ document.addEventListener('click', function(e) {
         return;
     }
 
-    // Extra foods: add button
-    if (e.target.id === 'trainer-extra-add' || e.target.closest('#trainer-extra-add')) {
-        var foodSelect = document.getElementById('trainer-extra-food');
-        var gramsInput = document.getElementById('trainer-extra-grams');
-        var replaceSelect = document.getElementById('trainer-extra-replace');
-        if (foodSelect && gramsInput) {
-            var catalogIdx = parseInt(foodSelect.value);
-            var grams = parseInt(gramsInput.value);
-            var replaceVal = replaceSelect ? replaceSelect.value : 'none';
-            if (!isNaN(catalogIdx) && grams > 0 && catalogIdx >= 0 && catalogIdx < trainerFoodCatalog.length) {
-                trainerExtraFoods.push({ catalogIdx: catalogIdx, grams: grams, replace: replaceVal });
+    // Open modal
+    if (e.target.closest('#trainer-open-search')) {
+        openSearchModal();
+        return;
+    }
+    
+    // Close modal
+    if (e.target.id === 'search-modal-close' || (e.target.id === 'search-modal-backdrop' && !e.target.closest('.search-modal-card'))) {
+        closeSearchModal();
+        return;
+    }
+    
+    // Go back to search step
+    if (e.target.id === 'search-modal-back') {
+        activeSearchFoodIdx = null;
+        var backdrop = document.getElementById('search-modal-backdrop');
+        if (backdrop) renderSearchModalContent(backdrop);
+        return;
+    }
+    
+    // Click result item -> Step 2
+    var row = e.target.closest('.search-result-row');
+    if (row) {
+        var idx = parseInt(row.dataset.foodIdx);
+        if (!isNaN(idx)) {
+            activeSearchFoodIdx = idx;
+            var backdrop = document.getElementById('search-modal-backdrop');
+            if (backdrop) {
+                var searchInput = document.getElementById('search-modal-input');
+                var query = searchInput ? searchInput.value : '';
+                renderSearchModalContent(backdrop, query);
+            }
+        }
+        return;
+    }
+    
+    // Confirm and add food
+    if (e.target.id === 'search-modal-add-btn') {
+        var qtyInput = document.getElementById('search-qty-input');
+        var replaceSelect = document.getElementById('search-replace-select');
+        if (qtyInput && replaceSelect && activeSearchFoodIdx !== null) {
+            var grams = parseInt(qtyInput.value, 10);
+            var replaceVal = replaceSelect.value;
+            if (!isNaN(grams) && grams > 0) {
+                trainerExtraFoods.push({
+                    catalogIdx: activeSearchFoodIdx,
+                    grams: grams,
+                    replace: replaceVal
+                });
+                closeSearchModal();
                 renderTrainerContent();
                 checkAutoAdvanceTrainer();
             }
