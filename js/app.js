@@ -3872,10 +3872,10 @@ function getTrainerMealScaledRatios() {
     fixedProt += lunchFruit.protein + dinnerFruit.protein + snackFruit.protein;
     fixedFat += lunchFruit.fat + dinnerFruit.fat + snackFruit.fat;
 
-    // 2.1 Merienda fija (Whey Protein 30g)
-    fixedKcal += 120;
-    fixedProt += 24;
-    fixedFat += 1.5;
+    // 2.1 Merienda fija (Whey Protein 35g)
+    fixedKcal += 140;
+    fixedProt += 28;
+    fixedFat += 1.75;
 
     // 2.2 Alimentos adicionales (restan de los macros disponibles para Comida/Cena)
     trainerExtraFoods.forEach(function(extra) {
@@ -4378,10 +4378,10 @@ function calculateTrainerMacros() {
     // 2.5 MERIENDA — fija (siempre incluida si hay desayuno)
     if (trainerSelections.breakfast !== null) {
         has = true;
-        t.kcal += 120;
-        t.protein += 24;
-        t.carbs += 2.1;
-        t.fat += 1.5;
+        t.kcal += 140;
+        t.protein += 28;
+        t.carbs += 2.45;
+        t.fat += 1.75;
         var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
         t.kcal += snackFruitM.kcal; t.protein += snackFruitM.protein; t.carbs += snackFruitM.carbs; t.fat += snackFruitM.fat;
     }
@@ -4818,7 +4818,7 @@ function renderTrainerContent() {
     html += fruitSelectorHtml('snack');
     html += '<div class="meal-tables">';
     html += '<div class="meal-table-wrapper" style="width:100%; max-width:600px; margin:0 auto;"><div class="meal-table-header protein">🥤 Batido Fijo</div><table class="meal-table"><tbody>';
-    html += '<tr class="selected"><td>Batido de Whey Protein</td><td><strong>30g</strong> (24g proteína)</td></tr>';
+    html += '<tr class="selected"><td>Batido de Whey Protein</td><td><strong>35g</strong> (28g proteína)</td></tr>';
     html += '<tr class="selected"><td>Agua</td><td><strong>250ml</strong> (0 kcal)</td></tr>';
     html += '</tbody></table></div>';
     html += '</div></div>';
