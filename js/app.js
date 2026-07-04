@@ -3668,7 +3668,6 @@ function calculateTrainerBMR() {
 
 function calculateTrainerTDEE(steps, workoutId) {
     var bmr = calculateTrainerBMR();
-    var office = getOfficeNeatKcal();
     var stepsKcal = Math.round(calculateStepsKcal(steps));
     var trainExtra = 0;
     var trainDetail = null;
@@ -3683,12 +3682,12 @@ function calculateTrainerTDEE(steps, workoutId) {
             };
         }
     }
-    var activeKcal = office.kcal + stepsKcal + trainExtra;
+    var activeKcal = stepsKcal + trainExtra;
     return {
         bmr: Math.round(bmr),
-        officeKcal: office.kcal,
-        officeLabel: office.label,
-        officeComplete: office.complete,
+        officeKcal: 0,
+        officeLabel: '',
+        officeComplete: true,
         stepsKcal: stepsKcal,
         trainKcal: Math.round(trainExtra),
         trainDetail: trainDetail,
@@ -4047,7 +4046,7 @@ function renderTrainerActivityPanel() {
                 '<h3>💟 Tu gasto de hoy</h3>' +
                 '<span class="trainer-activity-date" id="trainer-activity-date"></span>' +
             '</div>' +
-            '<p class="trainer-activity-profile">' + TRAINER_PROFILE.weight + ' kg · ' + TRAINER_PROFILE.height + ' cm · ' + TRAINER_PROFILE.age + ' años · oficina 9–19h · ~10.000 pasos/día · sin alcohol</p>' +
+            '<p class="trainer-activity-profile">' + TRAINER_PROFILE.weight + ' kg · ' + TRAINER_PROFILE.height + ' cm · ' + TRAINER_PROFILE.age + ' años · teletrabajo (jueves oficina) · ~10.000 pasos/día · sin alcohol</p>' +
             '<div class="trainer-activity-inputs">' +
                 '<div class="trainer-activity-field">' +
                     '<label for="trainer-steps-today">Pasos totales del día <span class="trainer-activity-hint">(estimación · incluye cardio)</span></label>' +
@@ -4097,7 +4096,6 @@ function updateTrainerEnergyUI() {
 
     breakdown.innerHTML =
         '<div class="trainer-tdee-row"><span>🔥 Metabolismo basal</span><strong>' + r.bmr + ' kcal</strong></div>' +
-        '<div class="trainer-tdee-row"><span>🪑 ' + r.officeLabel + '</span><strong>+' + r.officeKcal + ' kcal</strong></div>' +
         (hasSteps
             ? '<div class="trainer-tdee-row"><span>👟 Pasos del día (' + trainerDailyLog.steps.toLocaleString('es-ES') + ' total)</span><strong>+' + r.stepsKcal + ' kcal</strong></div>'
             : '<div class="trainer-tdee-row trainer-tdee-muted"><span>👟 Pasos del día</span><strong>—</strong></div>') +
@@ -4108,7 +4106,7 @@ function updateTrainerEnergyUI() {
 
     if (note) {
         if (!hasSteps) {
-            note.textContent = 'Introduce los pasos totales que harás hoy (oficina normal: ~10.000).';
+            note.textContent = 'Introduce los pasos totales que harás hoy (estimación general: ~10.000).';
             note.style.display = '';
         } else {
             note.textContent = '';
@@ -4826,7 +4824,7 @@ document.getElementById('trainer-activity-panel').addEventListener('input', func
             TRAINER_PROFILE.weight = wVal;
             // Update profile display
             var profileEl = document.querySelector('.trainer-activity-profile');
-            if (profileEl) profileEl.textContent = wVal + ' kg \xB7 ' + TRAINER_PROFILE.height + ' cm \xB7 ' + TRAINER_PROFILE.age + ' a\xF1os \xB7 oficina 9\u201319h \xB7 ~10.000 pasos/d\xEDa \xB7 sin alcohol';
+            if (profileEl) profileEl.textContent = wVal + ' kg \xB7 ' + TRAINER_PROFILE.height + ' cm \xB7 ' + TRAINER_PROFILE.age + ' a\xF1os \xB7 teletrabajo (jueves oficina) \xB7 ~10.000 pasos/d\xEDa \xB7 sin alcohol';
             updateTrainerPlanMacroPreview();
             renderTrainerNutrition(); // update macro targets with new weight
             renderTrainerContent();  // update scaled dinner amounts
