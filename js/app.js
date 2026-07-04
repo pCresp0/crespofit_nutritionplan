@@ -4575,14 +4575,20 @@ function renderTrainerNutrition() {
     container.innerHTML =
         '<div class="nutrition-header"><h3>\ud83d\udcca Resumen Nutricional</h3><span class="nutrition-meals">'+meals.join(' + ')+(complete?'':' \u00b7 Incompleto')+'</span></div>' +
         '<div class="nutrition-body">' +
-            '<div class="nutrition-kcal-row"><span class="nutrition-kcal-number">'+kcal+'</span><span class="nutrition-kcal-unit">kcal</span></div>' +
+            '<div class="nutrition-kcal-row">' +
+                '<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">' +
+                    '<div style="display: flex; align-items: baseline; gap: 6px;">' +
+                        '<span class="nutrition-kcal-number">'+kcal+'</span><span class="nutrition-kcal-unit">kcal</span>' +
+                    '</div>' +
+                    '<span style="font-size: 0.7rem; color: rgba(255,255,255,0.5); font-weight: 400;">Gasto de hoy: ' + tdee + ' kcal</span>' +
+                '</div>' +
+            '</div>' +
             '<div class="trainer-target-bar ' + kcalStatusClass + '">' +
                 '<span>' + kcalStatusIcon + ' ' + kcalStatusText + '</span>' +
                 '<span class="trainer-target-range">Objetivo: ' + targetMin + '–' + targetMax + ' kcal</span>' +
             '</div>' +
-            '<div style="margin-top: 8px; font-size: 0.85rem; padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; ' + balanceStyle + '">' +
+            '<div style="margin-top: 8px; font-size: 0.85rem; padding: 8px 12px; border-radius: 8px; display: flex; justify-content: flex-start; align-items: center; font-weight: 600; ' + balanceStyle + '">' +
                 '<span>' + balanceText + '</span>' +
-                '<span style="opacity: 0.8; font-size: 0.75rem; font-weight: 500;">Gasto de hoy: ' + tdee + ' kcal</span>' +
             '</div>' +
             warningHtml +
             '<div class="nutrition-stacked-bar">' +
