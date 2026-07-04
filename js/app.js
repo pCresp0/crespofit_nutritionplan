@@ -3212,11 +3212,12 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
             items.push(prot.name + ': <strong>' + pg + (prot.unit || 'g') + '</strong>' + label);
         }
         var vegG = isTrainer ? 200 : scaleAmount(200, cR);
-        var oilMl = isTrainer ? trainerRatios.oilMl : scaleAmount(EXTRAS_OIL_ML, cR);
+        var oilMl = isTrainer ? (mealKey === 'lunch' ? trainerRatios.lunchOilMl : trainerRatios.dinnerOilMl) : scaleAmount(EXTRAS_OIL_ML, cR);
         items.push('Verduras/ensalada: <strong>~' + vegG + 'g</strong>');
         
         var oilLabel = '';
-        if (isTrainer && Math.abs(trainerRatios.oilMl - EXTRAS_OIL_ML) > 0.01) {
+        var targetOil = isTrainer ? (mealKey === 'lunch' ? trainerRatios.lunchOilMl : trainerRatios.dinnerOilMl) : EXTRAS_OIL_ML;
+        if (isTrainer && Math.abs(targetOil - EXTRAS_OIL_ML) > 0.01) {
             oilLabel = ' <span class="badge-adjusted" style="background:rgba(245,158,11,0.12); color:var(--accent); border:1px solid rgba(245,158,11,0.25); font-size:0.65rem; font-weight:700; border-radius:4px; padding:1px 5px; margin-left:6px; text-transform:uppercase; letter-spacing:0.04em; vertical-align:middle;">ajustado</span>';
         }
         items.push('Aceite de oliva: <strong>' + oilMl + 'ml</strong>' + oilLabel);
@@ -3292,7 +3293,7 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
             kcal += prot.n[0] * pg / 100;
         }
         var vegG = isTrainer ? 200 : scaleAmount(200, cR);
-        var oilMl = isTrainer ? trainerRatios.oilMl : scaleAmount(EXTRAS_OIL_ML, cR);
+        var oilMl = isTrainer ? (mealKey === 'lunch' ? trainerRatios.lunchOilMl : trainerRatios.dinnerOilMl) : scaleAmount(EXTRAS_OIL_ML, cR);
         kcal += extrasNutr.verduras[0] * vegG / 100;
         kcal += extrasNutr.aceite[0] * oilMl / 100;
         if (isTrainer) {
@@ -3955,7 +3956,7 @@ function getTrainerMealScaledRatios(selObj) {
 
     // Si no hay comida y cena seleccionada por completo (o reemplazada), usamos ratio 1 y aceite base
     if (!lunchCarbSelected || !lunchProteinSelected || !dinnerCarbSelected || !dinnerProteinSelected) {
-        return { lunchCarb: 1, lunchProtein: 1, dinnerCarb: 1, dinnerProtein: 1, oilMl: EXTRAS_OIL_ML };
+        return { lunchCarb: 1, lunchProtein: 1, dinnerCarb: 1, dinnerProtein: 1, lunchOilMl: EXTRAS_OIL_ML, dinnerOilMl: EXTRAS_OIL_ML };
     }
 
     // 3. Obtener macros de bases de Comida y Cena
@@ -4019,7 +4020,7 @@ function getTrainerMealScaledRatios(selObj) {
 
     // Si ninguna es ajustable, devolvemos 1.0
     if (!trainerAdjustableMeals.lunch && !trainerAdjustableMeals.dinner) {
-        return { lunchCarb: 1, lunchProtein: 1, dinnerCarb: 1, dinnerProtein: 1, oilMl: EXTRAS_OIL_ML };
+        return { lunchCarb: 1, lunchProtein: 1, dinnerCarb: 1, dinnerProtein: 1, lunchOilMl: EXTRAS_OIL_ML, dinnerOilMl: EXTRAS_OIL_ML };
     }
 
     // Sistema de ecuaciones que incluye aceite dinámico para clavar grasas
@@ -4031,7 +4032,7 @@ function getTrainerMealScaledRatios(selObj) {
 
     var totalBaseKcalPrime = carbKcalPrime + protKcalPrime;
     if (totalBaseKcalPrime <= 0) {
-        return { lunchCarb: 1, lunchProtein: 1, dinnerCarb: 1, dinnerProtein: 1, oilMl: EXTRAS_OIL_ML };
+        return { lunchCarb: 1, lunchProtein: 1, dinnerCarb: 1, dinnerProtein: 1, lunchOilMl: EXTRAS_OIL_ML, dinnerOilMl: EXTRAS_OIL_ML };
     }
 
     var uniformRatio = availKcalPrime / totalBaseKcalPrime;
@@ -4064,15 +4065,30 @@ function getTrainerMealScaledRatios(selObj) {
     if (totalOilFat < 0) totalOilFat = 0;
 
     // Distribuimos el aceite en las dos comidas principales (ml = gramos)
-    var oilMlPerMeal = Math.round((totalOilFat / 2) * 10) / 10;
-    oilMlPerMeal = Math.max(3.0, Math.min(30.0, oilMlPerMeal));
+    var lunchOilMl = EXTRAS_OIL_ML;
+    var dinnerOilMl = EXTRAS_OIL_ML;
+
+    if (trainerAdjustableMeals.lunch && trainerAdjustableMeals.dinner) {
+        var half = Math.round((totalOilFat / 2) * 10) / 10;
+        lunchOilMl = Math.max(3.0, Math.min(30.0, half));
+        dinnerOilMl = Math.max(3.0, Math.min(30.0, half));
+    } else if (trainerAdjustableMeals.lunch) {
+        var remain = Math.round((totalOilFat - EXTRAS_OIL_ML) * 10) / 10;
+        lunchOilMl = Math.max(3.0, Math.min(30.0, remain));
+        dinnerOilMl = EXTRAS_OIL_ML;
+    } else if (trainerAdjustableMeals.dinner) {
+        var remain = Math.round((totalOilFat - EXTRAS_OIL_ML) * 10) / 10;
+        dinnerOilMl = Math.max(3.0, Math.min(30.0, remain));
+        lunchOilMl = EXTRAS_OIL_ML;
+    }
 
     return {
         lunchCarb: trainerAdjustableMeals.lunch ? cRatio : 1.0,
         lunchProtein: trainerAdjustableMeals.lunch ? pRatio : 1.0,
         dinnerCarb: trainerAdjustableMeals.dinner ? cRatio : 1.0,
         dinnerProtein: trainerAdjustableMeals.dinner ? pRatio : 1.0,
-        oilMl: oilMlPerMeal
+        lunchOilMl: lunchOilMl,
+        dinnerOilMl: dinnerOilMl
     };
 }
 
@@ -4430,7 +4446,7 @@ function calculateTrainerMacros() {
         addFoodByGrams(lp, lp.base * ratios.lunchProtein);
     }
     if (hasLunch) {
-        addVegOil(ratios.oilMl);
+        addVegOil(ratios.lunchOilMl);
         var lunchFruitM = getTrainerFruitMacros(trainerFruitSelections.lunch);
         t.kcal += lunchFruitM.kcal; t.protein += lunchFruitM.protein; t.carbs += lunchFruitM.carbs; t.fat += lunchFruitM.fat;
     }
@@ -4459,7 +4475,7 @@ function calculateTrainerMacros() {
         addFoodByGrams(dp, dp.base * ratios.dinnerProtein);
     }
     if (hasDinner) {
-        addVegOil(ratios.oilMl);
+        addVegOil(ratios.dinnerOilMl);
         var dinnerFruitM = getTrainerFruitMacros(trainerFruitSelections.dinner);
         t.kcal += dinnerFruitM.kcal; t.protein += dinnerFruitM.protein; t.carbs += dinnerFruitM.carbs; t.fat += dinnerFruitM.fat;
     }
@@ -4892,15 +4908,15 @@ function renderTrainerContent() {
     var lunchActive = currentTrainerTab === 'lunch' ? ' active' : '';
     html += '<div class="trainer-tab-panel' + lunchActive + '" data-trainer-panel="lunch">';
 
-    var oilDisplay = isComplete ? '<strong style="color:var(--gold-accent)">' + ratios.oilMl + 'ml</strong>' : EXTRAS_OIL_ML + 'ml';
+    var lunchOilDisplay = isComplete ? '<strong style="color:var(--accent)">' + ratios.lunchOilMl + 'ml</strong>' : EXTRAS_OIL_ML + 'ml';
 
     html += '<div class="meal-card">';
     html += '<div class="tab-subtitle">Elige un hidrato y una proteína.</div>';
     if (isComplete) {
-        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + oilDisplay + ' aceite oliva</span>' +
+        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + lunchOilDisplay + ' aceite oliva</span>' +
             '<span class="dinner-kcal-hint">Cantidades ajustadas automáticamente a los macros objetivo</span></div>';
     } else {
-        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + oilDisplay + ' aceite oliva</span></div>';
+        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + lunchOilDisplay + ' aceite oliva</span></div>';
     }
     html += '<div class="meal-tables">';
     // Carbs
@@ -4952,11 +4968,13 @@ function renderTrainerContent() {
 
     html += '<div class="meal-card">';
     html += '<div class="tab-subtitle">Elige un hidrato y una proteína.</div>';
+    var dinnerOilDisplay = isComplete ? '<strong style="color:var(--accent)">' + ratios.dinnerOilMl + 'ml</strong>' : EXTRAS_OIL_ML + 'ml';
+
     if (isComplete) {
-        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + oilDisplay + ' aceite oliva</span>' +
+        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + dinnerOilDisplay + ' aceite oliva</span>' +
             '<span class="dinner-kcal-hint">Cantidades ajustadas automáticamente a los macros objetivo</span></div>';
     } else {
-        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + oilDisplay + ' aceite oliva &nbsp;&mdash; Selecciona comida para ajustar</span></div>';
+        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + dinnerOilDisplay + ' aceite oliva &nbsp;&mdash; Selecciona comida para ajustar</span></div>';
     }
     html += '<div class="meal-tables">';
     // Carbs
