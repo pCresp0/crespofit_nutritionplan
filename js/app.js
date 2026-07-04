@@ -4539,12 +4539,18 @@ function renderTrainerNutrition() {
         var kcalPerStep = 0.045 * (bodyWeight / 70);
         var missingKcal = 300 - deficit;
         var extraSteps = Math.ceil(missingKcal / kcalPerStep);
+        var currentSteps = 0;
+        var stepsInput = document.getElementById('calc-steps');
+        if (stepsInput && stepsInput.value) {
+            currentSteps = parseInt(stepsInput.value) || 0;
+        }
+        var totalSteps = currentSteps + extraSteps;
         warningHtml = '<div style="margin-top: 8px; font-size: 0.8rem; padding: 10px 12px; border-radius: 8px; background: rgba(239, 68, 68, 0.08); color: #f87171; border: 1px dashed rgba(239, 68, 68, 0.25); display: flex; flex-direction: column; gap: 4px; line-height: 1.35; text-align: left;">' +
             '<div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #ef4444;">' +
                 '<span>⚠️ Alerta: Déficit insuficiente</span>' +
             '</div>' +
             '<span>Hoy vas a gastar <strong>' + tdee + ' kcal</strong> y tu déficit actual es de solo <strong>' + Math.max(0, Math.round(deficit)) + ' kcal</strong> (no llega a 300 kcal).</span>' +
-            '<span style="opacity: 0.9; font-size: 0.76rem;">💡 Sugerencia: Quizás deberías bajar las kcal objetivo del día o compensarlo haciendo <strong>+' + extraSteps.toLocaleString('es-ES') + ' pasos</strong> adicionales hoy.</span>' +
+            '<span style="opacity: 0.9; font-size: 0.76rem;">💡 Sugerencia: Quizás deberías bajar las kcal objetivo del día o compensarlo haciendo <strong>+' + extraSteps.toLocaleString('es-ES') + ' pasos</strong> adicionales hoy (<strong>' + totalSteps.toLocaleString('es-ES') + ' pasos en total</strong>).</span>' +
         '</div>';
     }
 
