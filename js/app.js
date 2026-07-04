@@ -3873,13 +3873,16 @@ function getTrainerEnergySummary() {
 function getTrainerMacroTargetsGrams(weight, kcal) {
     weight = weight || TRAINER_PROFILE.weight;
     kcal = kcal || TRAINER_FIXED_KCAL;
-    var protG = Math.round(weight * 2.0);
+    var protGmin = Math.round(weight * 2.0);
+    var protGmax = Math.round(weight * 2.2);
     var fatG  = Math.round(weight * 0.8);
-    var protKcal = protG * 4;
+    var protKcalMin = protGmin * 4;
+    var protKcalMax = protGmax * 4;
     var fatKcal  = fatG * 9;
-    var carbKcal = kcal - protKcal - fatKcal;
-    var carbG    = Math.round(carbKcal / 4);
-    return { protG: protG, fatG: fatG, carbG: carbG, protKcal: protKcal, fatKcal: fatKcal, carbKcal: carbKcal };
+    var carbKcalMin = kcal - protKcalMax - fatKcal;
+    var carbKcalMax = kcal - protKcalMin - fatKcal;
+    var carbG    = Math.round((carbKcalMin + carbKcalMax) / 2 / 4);
+    return { protGmin: protGmin, protGmax: protGmax, fatG: fatG, carbG: carbG, protKcalMin: protKcalMin, protKcalMax: protKcalMax, fatKcal: fatKcal, carbKcalMin: carbKcalMin, carbKcalMax: carbKcalMax };
 }
 
 // ---- Calcula macros de fruta seleccionada ----
@@ -4563,12 +4566,14 @@ function renderTrainerNutrition() {
     var kcalStatusIcon = inRange ? '✅' : '⚠️';
     var kcalStatusText = inRange ? 'En rango objetivo' : (kcal < targetMin ? 'Faltan ' + Math.abs(Math.round(targetMin - kcal)) + ' kcal mín.' : 'Exceso de ' + Math.round(kcal - targetMax) + ' kcal');
 
-    // Macro targets dinámicos: 2g/kg P, 0.9g/kg G, resto C
+    // Macro targets dinámicos: 2-2.2g/kg P, 0.8g/kg G, resto C (priorizando proteína)
     var mt = getTrainerMacroTargetsGrams(bodyWeight, trainerTargetKcal);
-    var targetPg = mt.protG;
+    var targetPgMin = mt.protGmin;
+    var targetPgMax = mt.protGmax;
     var targetCg = mt.carbG;
     var targetFg = mt.fatG;
-    var remainP = targetPg - p;
+    var proteinInRange = p >= targetPgMin && p <= targetPgMax;
+    var remainP = proteinInRange ? 0 : (p < targetPgMin ? targetPgMin - p : p - targetPgMax);
     var remainC = targetCg - c;
     var remainF = targetFg - f;
 
@@ -4603,25 +4608,27 @@ function renderTrainerNutrition() {
             '</div>' +
             '<div class="trainer-macro-targets">' +
                 '<h4>Objetivo de macros <span class="trainer-macro-targets-sub">(' + bodyWeight + ' kg \xB7 ' + trainerTargetKcal + ' kcal)</span></h4>' +
-                '<small class="trainer-macro-range-hint">P: 2\u20132.2 g/kg &nbsp;&middot;&nbsp; G: 0.8\u20131.0 g/kg &nbsp;&middot;&nbsp; HC: resto cal\xF3rico</small>' +
+                '<small class="trainer-macro-range-hint">P: 2\u20132.2 g/kg &nbsp;&middot;&nbsp; G: 0.8 g/kg &nbsp;&middot;&nbsp; HC: resto cal\xF3rico</small>' +
                 '<div class="trainer-macro-target-row">' +
-                    renderMacroTargetItem('Prote\u00ednas', 'protein', p, targetPg, remainP) +
-                    renderMacroTargetItem('Carbos', 'carbs', c, targetCg, remainC) +
-                    renderMacroTargetItem('Grasas', 'fat', f, targetFg, remainF) +
+                    renderMacroTargetItem('Prote\u00ednas', 'protein', p, targetPgMin, targetPgMax, remainP, proteinInRange) +
+                    renderMacroTargetItem('Carbos', 'carbs', c, targetCg, null, remainC) +
+                    renderMacroTargetItem('Grasas', 'fat', f, targetFg, null, remainF) +
                 '</div>' +
             '</div>' +
         '</div>';
 }
 
-function renderMacroTargetItem(label, cls, current, target, remain) {
-    var pct = target > 0 ? Math.min(100, Math.round(current / target * 100)) : 100;
-    var statusCls = remain <= 0 ? 'target-reached' : 'target-pending';
-    var remainText = remain > 0 ? 'Faltan ' + Math.round(remain) + 'g' : '\u2713 Alcanzado';
+function renderMacroTargetItem(label, cls, current, target, targetMax, remain, isRange) {
+    // Si es proteína con rango
+    var targetDisplay = targetMax ? target + '\u2013' + targetMax : target;
+    var pct = targetMax ? Math.min(100, Math.round(current / ((target + targetMax) / 2) * 100)) : (target > 0 ? Math.min(100, Math.round(current / target * 100)) : 100);
+    var statusCls = remain === 0 || (isRange && remain <= 0) ? 'target-reached' : (remain < 0 ? 'target-reached' : 'target-pending');
+    var remainText = remain > 0 ? 'Faltan ' + Math.round(remain) + 'g' : (remain < 0 ? 'Exceso de ' + Math.round(Math.abs(remain)) + 'g' : '✓ En rango');
     var fixBtn = remain > 0 ? ' <button class="tmti-fix-btn" data-macro="' + cls + '" title="Ver cómo cuadrarlo">💡</button>' : '';
     return '<div class="trainer-macro-target-item ' + statusCls + '">' +
         '<div class="tmti-label">' + label + '</div>' +
         '<div class="tmti-bar-wrap"><div class="tmti-bar tmti-bar-' + cls + '" style="width:' + pct + '%"></div></div>' +
-        '<div class="tmti-values"><span>' + Math.round(current) + 'g</span><span class="tmti-target">/ ' + target + 'g</span></div>' +
+        '<div class="tmti-values"><span>' + Math.round(current) + 'g</span><span class="tmti-target">/ ' + targetDisplay + 'g</span></div>' +
         '<div class="tmti-remain ' + statusCls + '">' + remainText + fixBtn + '</div>' +
     '</div>';
 }
@@ -4728,7 +4735,7 @@ function generateMacroSuggestions(macro) {
     var targetMacros = calculateTrainerMacros();
     var trainerTargetKcal = TRAINER_FIXED_KCAL;
     var mt2 = getTrainerMacroTargetsGrams(TRAINER_PROFILE.weight, trainerTargetKcal);
-    var targetPg = mt2.protG;
+    var targetPg = mt2.protGmax; // Usar el máximo para recomendaciones ambiciosas en proteína
     var targetCg = mt2.carbG;
     var targetFg = mt2.fatG;
     var targetG = macro === 'protein' ? targetPg : (macro === 'carbs' ? targetCg : targetFg);
@@ -5137,9 +5144,9 @@ function updateTrainerPlanMacroPreview() {
     if (!el) return;
     var mt = getTrainerMacroTargetsGrams(TRAINER_PROFILE.weight, TRAINER_FIXED_KCAL);
     el.innerHTML =
-        '<span class="tpmp-item tpmp-protein">\uD83E\uDD69 P: <strong>' + mt.protG + 'g</strong> (2 g/kg)</span>' +
+        '<span class="tpmp-item tpmp-protein">\uD83E\uDD69 P: <strong>' + mt.protGmin + '\u2013' + mt.protGmax + 'g</strong> (2\u20132.2 g/kg)</span>' +
         '<span class="tpmp-item tpmp-carbs">\uD83C\uDF3E HC: <strong>' + mt.carbG + 'g</strong> (resto cal\xF3rico)</span>' +
-        '<span class="tpmp-item tpmp-fat">\uD83E\uDED2 G: <strong>' + mt.fatG + 'g</strong> (0.9 g/kg)</span>';
+        '<span class="tpmp-item tpmp-fat">\uD83E\uDED2 G: <strong>' + mt.fatG + 'g</strong> (0.8 g/kg)</span>';
 }
 
 function renderTrainerValidator() {
