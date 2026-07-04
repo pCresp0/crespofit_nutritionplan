@@ -3401,7 +3401,16 @@ var trainerSelections = {
     dinnerProtein: null
 };
 var trainerExtraFoods = []; // [{catalogIdx, grams}]
-var trainerAdjustableMeals = { lunch: true, dinner: true };
+function getDefaultAdjustableMeals() {
+    var now = new Date();
+    var mins = now.getHours() * 60 + now.getMinutes();
+    if (mins >= 180 && mins <= 990) { // 3:00 to 16:30
+        return { lunch: true, dinner: true };
+    } else { // 16:31 to 2:59
+        return { lunch: false, dinner: true };
+    }
+}
+var trainerAdjustableMeals = getDefaultAdjustableMeals();
 
 // ---- Trainer Plan Fixed Target ----
 var TRAINER_FIXED_KCAL = 2400; // kcal objetivo del plan (editable por el usuario)
