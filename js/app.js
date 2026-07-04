@@ -3464,7 +3464,8 @@ var trainerFoodCatalog = [
     {name:'Leche semidesnatada',cat:'Otros',n:[46,3,5,1.5],unit:'ml'},
     {name:'Queso fresco batido',cat:'Otros',n:[63,10,4,0.8],unit:'g'},
     {name:'Frutos secos',cat:'Otros',n:[600,20,15,52],unit:'g'},
-    {name:'Crema de cacahuete',cat:'Otros',n:[600,25,12,50],unit:'g'}
+    {name:'Crema de cacahuete',cat:'Otros',n:[600,25,12,50],unit:'g'},
+    {name:'Vaso de café con leche (60ml café + 150ml leche)',cat:'Otros',n:[72,5,7,2.3],unit:'ud'}
 ];
 
 // Sort trainerFoodCatalog alphabetically within each category group
@@ -3569,7 +3570,7 @@ var TRAINER_WORKOUTS = [
 
 var trainerDailyLog = {
     date: '',
-    steps: null,
+    steps: 10000,
     plannedWorkoutId: null,
     workoutStatus: null, // done | skipped | rest | other
     workoutId: null
@@ -3757,7 +3758,7 @@ function ensureTrainerDailyLog() {
         var gymDay = isDefaultTrainerGymDay();
         trainerDailyLog = {
             date: today,
-            steps: null,
+            steps: 10000,
             plannedWorkoutId: planned,
             workoutStatus: gymDay ? 'done' : 'rest',
             workoutId: gymDay ? planned : null
@@ -4247,7 +4248,7 @@ function renderTrainerActivityPanel() {
     if (!container) return;
 
     ensureTrainerDailyLog();
-    var stepsVal = trainerDailyLog.steps !== null ? trainerDailyLog.steps : '';
+    var stepsVal = trainerDailyLog.steps !== null ? trainerDailyLog.steps : 10000;
 
     container.innerHTML =
         // ---- PLAN TARGET CARD (kcal + peso editable) ----
