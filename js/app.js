@@ -3308,6 +3308,65 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
     var lunchKcal = calcMealKcal(lunchCarbs, lunchProteins, selObj.lunchCarb, selObj.lunchProtein, 'lunch');
     var dinnerKcal = calcMealKcal(dinnerCarbs, dinnerProteins, selObj.dinnerCarb, selObj.dinnerProtein, 'dinner');
 
+    // Calculate macros per meal
+    function calcBreakfastMacros() {
+        if (selObj.breakfast === null) return { p: 0, c: 0, f: 0 };
+        var m = breakfastOptions[selObj.breakfast].macros;
+        var p = m[1] * (isTrainer ? 1 : ratios.carb);
+        var c = m[2] * (isTrainer ? 1 : ratios.carb);
+        var f = m[3] * (isTrainer ? 1 : ratios.carb);
+        if (isTrainer) {
+            var fm = getTrainerFruitMacros(0); // Banana
+            p += fm.protein;
+            c += fm.carbs;
+            f += fm.fat;
+        }
+        return { p: Math.round(p), c: Math.round(c), f: Math.round(f) };
+    }
+    
+    function calcMealMacros(carbsData, protsData, carbIdx, protIdx, mealKey) {
+        var p = 0, c = 0, f = 0;
+        var cR = isTrainer ? (mealKey === 'lunch' ? trainerRatios.lunchCarb : trainerRatios.dinnerCarb) : ratios.carb;
+        var pR = isTrainer ? (mealKey === 'lunch' ? trainerRatios.lunchProtein : trainerRatios.dinnerProtein) : ratios.protein;
+
+        if (carbIdx !== null) {
+            var carb = carbsData[carbIdx];
+            var cg = isTrainer ? Math.round(carb.base * cR) : scaleAmount(carb.base, cR);
+            p += carb.n[1] * cg / 100;
+            c += carb.n[2] * cg / 100;
+            f += carb.n[3] * cg / 100;
+        }
+        if (protIdx !== null) {
+            var prot = protsData[protIdx];
+            var pg = isTrainer ? Math.round(prot.base * pR) : scaleAmount(prot.base, pR);
+            p += prot.n[1] * pg / 100;
+            c += prot.n[2] * pg / 100;
+            f += prot.n[3] * pg / 100;
+        }
+        var vegG = isTrainer ? 200 : scaleAmount(200, cR);
+        var oilMl = isTrainer ? (mealKey === 'lunch' ? trainerRatios.lunchOilMl : trainerRatios.dinnerOilMl) : scaleAmount(EXTRAS_OIL_ML, cR);
+        p += extrasNutr.verduras[1] * vegG / 100;
+        c += extrasNutr.verduras[2] * vegG / 100;
+        f += extrasNutr.verduras[3] * vegG / 100;
+        p += extrasNutr.aceite[1] * oilMl / 100;
+        c += extrasNutr.aceite[2] * oilMl / 100;
+        f += extrasNutr.aceite[3] * oilMl / 100;
+        if (isTrainer) {
+            var fm = getTrainerFruitMacros(trainerFruitSelections[mealKey]);
+            p += fm.protein;
+            c += fm.carbs;
+            f += fm.fat;
+        } else {
+            c += extrasNutr.fruta[2];
+            f += extrasNutr.fruta[3];
+        }
+        return { p: Math.round(p), c: Math.round(c), f: Math.round(f) };
+    }
+
+    var bkMacros = calcBreakfastMacros();
+    var lunchMacros = calcMealMacros(lunchCarbs, lunchProteins, selObj.lunchCarb, selObj.lunchProtein, 'lunch');
+    var dinnerMacros = calcMealMacros(dinnerCarbs, dinnerProteins, selObj.dinnerCarb, selObj.dinnerProtein, 'dinner');
+
     function suppHTML(mealKey) {
         var supps = mealSupplements[mealKey] || [];
         if (!supps.length) return '';
@@ -3322,7 +3381,7 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
 
     // Breakfast
     html += '<div class="summary-meal">' +
-        '<div class="summary-meal-header">☀️ Desayuno <span class="summary-meal-kcal">' + bkKcal + ' kcal</span></div>' +
+        '<div class="summary-meal-header">☀️ Desayuno <span class="summary-meal-kcal">' + bkKcal + ' kcal · <span style="font-size: 0.75em; opacity: 0.8;">' + bkMacros.p + 'p / ' + bkMacros.c + 'c / ' + bkMacros.f + 'f</span></span></div>' +
         '<div class="summary-meal-name">' + bk.name + '</div>' +
         '<ul class="summary-meal-items">' + bk.items.map(function(i){ return '<li>'+i+'</li>'; }).join('') + '</ul>' +
         suppHTML('breakfast') +
@@ -3330,7 +3389,7 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
 
     // Lunch
     html += '<div class="summary-meal">' +
-        '<div class="summary-meal-header">🍲 Comida <span class="summary-meal-kcal">' + lunchKcal + ' kcal</span></div>' +
+        '<div class="summary-meal-header">🍲 Comida <span class="summary-meal-kcal">' + lunchKcal + ' kcal · <span style="font-size: 0.75em; opacity: 0.8;">' + lunchMacros.p + 'p / ' + lunchMacros.c + 'c / ' + lunchMacros.f + 'f</span></span></div>' +
         '<ul class="summary-meal-items">' + lunchItems.map(function(i){ return '<li>'+i+'</li>'; }).join('') + '</ul>' +
         suppHTML('lunch') +
         '</div>';
@@ -3339,6 +3398,9 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
     if (isTrainer) {
         var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
         var snackKcal = Math.round(126 + snackFruitM.kcal);
+        var snackProtein = Math.round(26.6 + snackFruitM.protein);
+        var snackCarbs = Math.round(5.9 + snackFruitM.carbs);
+        var snackFat = Math.round(3.6 + snackFruitM.fat);
         var snackItems = ['Batido Whey protein HSN (35g): <strong>26.6g prot</strong>', 'Agua: <strong>250ml</strong>'];
         var fruitIdx = trainerFruitSelections.snack;
         if (fruitIdx !== null && fruitIdx !== undefined) {
@@ -3346,14 +3408,14 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
             snackItems.push(fr.emoji + ' ' + fr.name + ': <strong>' + TRAINER_FRUIT_GRAMS + 'g</strong>');
         }
         html += '<div class="summary-meal">' +
-            '<div class="summary-meal-header">🥤 Merienda <span class="summary-meal-kcal">' + snackKcal + ' kcal</span></div>' +
+            '<div class="summary-meal-header">🥤 Merienda <span class="summary-meal-kcal">' + snackKcal + ' kcal · <span style="font-size: 0.75em; opacity: 0.8;">' + snackProtein + 'p / ' + snackCarbs + 'c / ' + snackFat + 'f</span></span></div>' +
             '<ul class="summary-meal-items">' + snackItems.map(function(i){ return '<li>'+i+'</li>'; }).join('') + '</ul>' +
             '</div>';
     }
 
     // Dinner
     html += '<div class="summary-meal">' +
-        '<div class="summary-meal-header">🌙 Cena <span class="summary-meal-kcal">' + dinnerKcal + ' kcal</span></div>' +
+        '<div class="summary-meal-header">🌙 Cena <span class="summary-meal-kcal">' + dinnerKcal + ' kcal · <span style="font-size: 0.75em; opacity: 0.8;">' + dinnerMacros.p + 'p / ' + dinnerMacros.c + 'c / ' + dinnerMacros.f + 'f</span></span></div>' +
         '<ul class="summary-meal-items">' + dinnerItems.map(function(i){ return '<li>'+i+'</li>'; }).join('') + '</ul>' +
         '</div>';
 
