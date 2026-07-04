@@ -5446,116 +5446,117 @@ function closeSearchModal() {
 
 function renderSearchModalContent(backdrop, query) {
     query = query || '';
-    var html = '<div class="search-modal-card" style="background:var(--card-bg); width:92%; max-width:460px; border-radius:12px; border:1px solid var(--border); box-shadow:0 10px 25px rgba(0,0,0,0.5); overflow:hidden; display:flex; flex-direction:column; max-height:80vh; min-height:300px; transform:scale(0.95); transition:transform 0.2s ease; font-family:inherit; color:var(--text-primary);">';
+    
+    // If card already exists (query update), only update results to avoid jumping
+    var existingCard = backdrop.querySelector('.search-modal-card');
+    if (existingCard && activeSearchFoodIdx === null && document.getElementById('search-modal-results')) {
+        updateSearchResults(query);
+        return;
+    }
+    
+    var html = '<div class="search-modal-card">';
     
     // Header (sticky)
-    html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid var(--border); background:var(--bg); flex-shrink:0;">';
-    html += '<h4 style="margin:0; font-size:1.05rem; font-weight:700;">Añadir alimento adicional</h4>';
-    html += '<button id="search-modal-close" style="background:none; border:none; color:var(--text-secondary); font-size:1.25rem; cursor:pointer; padding:4px; flex-shrink:0;">✕</button>';
+    html += '<div class="smc-header">';
+    html += '<h4>🔍 Añadir alimento</h4>';
+    html += '<button id="search-modal-close" class="smc-close">✕</button>';
     html += '</div>';
     
-    // Body with fixed layout
-    html += '<div style="padding:0; display:flex; flex-direction:column; overflow:hidden; flex:1;">';
-    
     if (activeSearchFoodIdx === null) {
-        // STEP 1: Search food
-        // Search input container (sticky)
-        html += '<div style="padding:16px; border-bottom:1px solid var(--border); background:var(--card-bg); flex-shrink:0;">';
-        html += '<input type="text" id="search-modal-input" placeholder="Escribe para buscar... (ej: arroz, pavo, café)" value="' + query + '" style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text-primary); font-size:0.9rem; box-sizing:border-box;" autocomplete="off">';
+        // STEP 1: Search
+        html += '<div class="smc-search-bar">';
+        html += '<input type="text" id="search-modal-input" placeholder="Buscar alimento... (ej: arroz, pavo, café)" value="' + query + '" autocomplete="off">';
         html += '</div>';
-        
-        // Results list (scrollable)
-        html += '<div id="search-modal-results" style="display:flex; flex-direction:column; gap:6px; overflow-y:auto; padding:12px 16px 16px 16px; flex:1;">';
-        
-        var normalizedQuery = query.toLowerCase().trim();
-        var matches = [];
-        if (normalizedQuery !== '') {
-            trainerFoodCatalog.forEach(function(f, idx) {
-                if (f.name.toLowerCase().includes(normalizedQuery) || f.cat.toLowerCase().includes(normalizedQuery)) {
-                    matches.push({ food: f, idx: idx });
-                }
-            });
-        }
-        
-        if (normalizedQuery === '') {
-            html += '<div style="text-align:center; padding:48px 16px; color:var(--text-secondary); font-size:0.88rem;">Escribe en el buscador superior para encontrar un alimento...</div>';
-        } else if (matches.length === 0) {
-            html += '<div style="text-align:center; padding:32px 16px; color:var(--text-secondary); font-size:0.9rem;">No se encontraron resultados</div>';
-        } else {
-            var lastCat = '';
-            matches.forEach(function(m) {
-                var f = m.food;
-                if (f.cat !== lastCat) {
-                    html += '<div style="font-size:0.75rem; font-weight:700; color:var(--accent); text-transform:uppercase; margin-top:8px; margin-bottom:4px; padding-left:4px;">' + f.cat + '</div>';
-                    lastCat = f.cat;
-                }
-                var unitLabel = f.unit === 'ud' ? 'unidad' : ('100' + f.unit);
-                html += '<button class="search-result-row" data-food-idx="' + m.idx + '" style="width:100%; text-align:left; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 12px; cursor:pointer; color:var(--text-primary); transition:all 0.15s ease; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">';
-                html += '<span style="font-weight:600; font-size:0.88rem;">' + f.name + '</span>';
-                html += '<span style="font-size:0.78rem; color:var(--text-secondary);">' + f.n[0] + ' kcal/' + f.unit + '</span>';
-                html += '</button>';
-            });
-        }
+        html += '<div id="search-modal-results" class="smc-results">';
+        html += getSearchResultsHtml(query);
         html += '</div>';
     } else {
-        // STEP 2: Configure quantity
+        // STEP 2: Configure quantity + replace
         var food = trainerFoodCatalog[activeSearchFoodIdx];
         var defaultQty = food.unit === 'ud' ? 1 : 100;
         
-        // Scrollable content area
-        html += '<div style="padding:16px; display:flex; flex-direction:column; overflow-y:auto; flex:1;">';
+        html += '<div class="smc-configure">';
+        html += '<button id="search-modal-back" class="smc-back">← Volver</button>';
         
-        html += '<button id="search-modal-back" style="background:none; border:none; color:var(--accent); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:600; font-size:0.85rem; padding:0; margin-bottom:14px;">← Volver al buscador</button>';
-        
-        html += '<div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">';
-        html += '<div style="min-width:0;">';
-        html += '<div style="font-size:0.75rem; color:var(--accent); font-weight:700; text-transform:uppercase;">' + food.cat + '</div>';
-        html += '<strong style="font-size:1.05rem;">' + food.name + '</strong>';
-        html += '</div>';
-        html += '<span style="font-size:0.85rem; background:var(--card-bg); border:1px solid var(--border); padding:4px 8px; border-radius:6px; color:var(--text-secondary); flex-shrink:0; margin-left:8px;">' + food.n[0] + ' kcal / ' + (food.unit === 'ud' ? 'unidad' : ('100' + food.unit)) + '</span>';
+        // Food info card
+        html += '<div class="smc-food-card">';
+        html += '<div class="smc-food-cat">' + food.cat + '</div>';
+        html += '<div class="smc-food-name">' + food.name + '</div>';
+        html += '<div class="smc-food-meta">' + food.n[0] + ' kcal · ' + food.n[1] + 'g prot · ' + food.n[2] + 'g CH · ' + food.n[3] + 'g grasa' + (food.unit !== 'g' ? ' / ' + food.unit : ' / 100g') + '</div>';
         html += '</div>';
         
-        html += '<div style="margin-bottom:14px; flex-shrink:0;">';
-        html += '<label style="display:block; font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">Cantidad a añadir:</label>';
-        html += '<div style="position:relative; display:flex; align-items:center;">';
-        html += '<input type="number" id="search-qty-input" min="1" max="2000" value="' + defaultQty + '" style="width:100%; padding:10px 32px 10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text-primary); font-size:0.95rem; box-sizing:border-box; font-weight:700;">';
-        html += '<span style="position:absolute; right:12px; font-size:0.88rem; color:var(--text-secondary); font-weight:700; pointer-events:none;">' + food.unit + '</span>';
+        // Quantity
+        html += '<div class="smc-field">';
+        html += '<label>Cantidad</label>';
+        html += '<div class="smc-qty-wrap"><input type="number" id="search-qty-input" min="1" max="2000" value="' + defaultQty + '"><span class="smc-unit">' + food.unit + '</span></div>';
+        html += '</div>';
+        
+        // Replace selector - chip style
+        html += '<div class="smc-field">';
+        html += '<label>¿Reemplaza alguna comida?</label>';
+        html += '<div class="smc-replace-chips">';
+        var replaceOpts = [
+            { val: 'none', label: 'No reemplaza', icon: '➕' },
+            { val: 'lunchCarb', label: 'Comida — Hidratos', icon: '🍲' },
+            { val: 'lunchProtein', label: 'Comida — Proteínas', icon: '🍲' },
+            { val: 'dinnerCarb', label: 'Cena — Hidratos', icon: '🌙' },
+            { val: 'dinnerProtein', label: 'Cena — Proteínas', icon: '🌙' }
+        ];
+        replaceOpts.forEach(function(opt) {
+            var sel = opt.val === 'none' ? ' smc-chip-sel' : '';
+            html += '<button type="button" class="smc-chip' + sel + '" data-replace-val="' + opt.val + '">' + opt.icon + ' ' + opt.label + '</button>';
+        });
         html += '</div>';
         html += '</div>';
         
-        html += '<div style="margin-bottom:20px; flex-shrink:0;">';
-        html += '<label style="display:block; font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">¿Reemplaza alguna comida?</label>';
-        html += '<select id="search-replace-select" style="width:100%; padding:10px; border-radius:6px; background:var(--bg); border:1px solid var(--border); color:var(--text-primary); font-size:0.88rem; box-sizing:border-box;">';
-        html += '<option value="none">Alimento extra (no reemplaza)</option>';
-        html += '<option value="lunchCarb">Comida: Reemplaza Hidratos</option>';
-        html += '<option value="lunchProtein">Comida: Reemplaza Proteínas</option>';
-        html += '<option value="dinnerCarb">Cena: Reemplaza Hidratos</option>';
-        html += '<option value="dinnerProtein">Cena: Reemplaza Proteínas</option>';
-        html += '</select>';
-        html += '</div>';
-        
-        html += '<button id="search-modal-add-btn" style="width:100%; padding:12px; border-radius:6px; border:none; background:var(--accent); color:#1e1e1e; font-weight:700; font-size:0.95rem; cursor:pointer; transition:opacity 0.15s ease; flex-shrink:0;">Añadir al plan</button>';
-        
+        html += '<button id="search-modal-add-btn" class="smc-add-btn">Añadir al plan</button>';
         html += '</div>';
     }
     
-    html += '</div></div>';
+    html += '</div>';
     backdrop.innerHTML = html;
     
     setTimeout(function() {
         var card = backdrop.querySelector('.search-modal-card');
         if (card) card.style.transform = 'scale(1)';
-    }, 10);
-    
-    if (activeSearchFoodIdx === null) {
         var input = document.getElementById('search-modal-input');
-        if (input) {
-            input.focus();
-            var val = input.value;
-            input.value = '';
-            input.value = val;
-        }
+        if (input) { input.focus(); var v = input.value; input.value = ''; input.value = v; }
+    }, 10);
+}
+
+function getSearchResultsHtml(query) {
+    var normalizedQuery = (query || '').toLowerCase().trim();
+    if (normalizedQuery === '') {
+        return '<div class="smc-empty">Escribe para buscar un alimento...</div>';
     }
+    var matches = [];
+    trainerFoodCatalog.forEach(function(f, idx) {
+        if (f.name.toLowerCase().includes(normalizedQuery) || f.cat.toLowerCase().includes(normalizedQuery)) {
+            matches.push({ food: f, idx: idx });
+        }
+    });
+    if (matches.length === 0) {
+        return '<div class="smc-empty">Sin resultados para «' + query + '»</div>';
+    }
+    var html = '';
+    var lastCat = '';
+    matches.forEach(function(m) {
+        var f = m.food;
+        if (f.cat !== lastCat) {
+            html += '<div class="smc-cat-label">' + f.cat + '</div>';
+            lastCat = f.cat;
+        }
+        html += '<button class="smc-result-row" data-food-idx="' + m.idx + '">';
+        html += '<span class="smc-result-name">' + f.name + '</span>';
+        html += '<span class="smc-result-kcal">' + f.n[0] + ' kcal/' + f.unit + '</span>';
+        html += '</button>';
+    });
+    return html;
+}
+
+function updateSearchResults(query) {
+    var el = document.getElementById('search-modal-results');
+    if (el) el.innerHTML = getSearchResultsHtml(query);
 }
 
 document.addEventListener('input', function(e) {
@@ -5772,7 +5773,7 @@ document.addEventListener('click', function(e) {
     }
     
     // Click result item -> Step 2
-    var row = e.target.closest('.search-result-row');
+    var row = e.target.closest('.smc-result-row, .search-result-row');
     if (row) {
         var idx = parseInt(row.dataset.foodIdx);
         if (!isNaN(idx)) {
@@ -5787,13 +5788,21 @@ document.addEventListener('click', function(e) {
         return;
     }
     
+    // Replace chip toggle
+    var replaceChip = e.target.closest('[data-replace-val]');
+    if (replaceChip) {
+        document.querySelectorAll('.smc-chip').forEach(function(c) { c.classList.remove('smc-chip-sel'); });
+        replaceChip.classList.add('smc-chip-sel');
+        return;
+    }
+
     // Confirm and add food
     if (e.target.id === 'search-modal-add-btn') {
         var qtyInput = document.getElementById('search-qty-input');
-        var replaceSelect = document.getElementById('search-replace-select');
-        if (qtyInput && replaceSelect && activeSearchFoodIdx !== null) {
+        var selChip = document.querySelector('.smc-chip.smc-chip-sel');
+        if (qtyInput && activeSearchFoodIdx !== null) {
             var grams = parseInt(qtyInput.value, 10);
-            var replaceVal = replaceSelect.value;
+            var replaceVal = selChip ? selChip.dataset.replaceVal : 'none';
             if (!isNaN(grams) && grams > 0) {
                 trainerExtraFoods.push({
                     catalogIdx: activeSearchFoodIdx,
