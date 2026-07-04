@@ -3200,17 +3200,26 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
         if (carbIdx !== null) {
             var carb = carbsData[carbIdx];
             var cg = isTrainer ? Math.round(carb.base * cR) : scaleAmount(carb.base, cR);
-            items.push(carb.name + ': <strong>' + cg + (carb.unit || 'g') + '</strong>');
+            var isScaled = isTrainer && Math.abs(cR - 1.0) > 0.01;
+            var label = isScaled ? ' <span class="badge-adjusted" style="color:var(--gold-accent); font-size:0.72rem; font-weight:600; margin-left:4px;">(ajustado)</span>' : '';
+            items.push(carb.name + ': <strong>' + cg + (carb.unit || 'g') + '</strong>' + label);
         }
         if (protIdx !== null) {
             var prot = protsData[protIdx];
             var pg = isTrainer ? Math.round(prot.base * pR) : scaleAmount(prot.base, pR);
-            items.push(prot.name + ': <strong>' + pg + (prot.unit || 'g') + '</strong>');
+            var isScaled = isTrainer && Math.abs(pR - 1.0) > 0.01;
+            var label = isScaled ? ' <span class="badge-adjusted" style="color:var(--gold-accent); font-size:0.72rem; font-weight:600; margin-left:4px;">(ajustado)</span>' : '';
+            items.push(prot.name + ': <strong>' + pg + (prot.unit || 'g') + '</strong>' + label);
         }
         var vegG = isTrainer ? 200 : scaleAmount(200, cR);
         var oilMl = isTrainer ? trainerRatios.oilMl : scaleAmount(EXTRAS_OIL_ML, cR);
         items.push('Verduras/ensalada: <strong>~' + vegG + 'g</strong>');
-        items.push('Aceite de oliva: <strong>' + oilMl + 'ml</strong>');
+        
+        var oilLabel = '';
+        if (isTrainer && Math.abs(trainerRatios.oilMl - EXTRAS_OIL_ML) > 0.01) {
+            oilLabel = ' <span class="badge-adjusted" style="color:var(--gold-accent); font-size:0.72rem; font-weight:600; margin-left:4px;">(ajustado)</span>';
+        }
+        items.push('Aceite de oliva: <strong>' + oilMl + 'ml</strong>' + oilLabel);
         
         if (isTrainer) {
             var fruitIdx = trainerFruitSelections[mealKey];
@@ -3328,8 +3337,8 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
     // Merienda (Snack)
     if (isTrainer) {
         var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
-        var snackKcal = Math.round(120 + snackFruitM.kcal);
-        var snackItems = ['Batido Whey protein (30g): <strong>24g prot</strong>', 'Agua: <strong>250ml</strong>'];
+        var snackKcal = Math.round(140 + snackFruitM.kcal);
+        var snackItems = ['Batido Whey protein (35g): <strong>28g prot</strong>', 'Agua: <strong>250ml</strong>'];
         var fruitIdx = trainerFruitSelections.snack;
         if (fruitIdx !== null && fruitIdx !== undefined) {
             var fr = TRAINER_FRUIT_OPTIONS[fruitIdx];
@@ -3421,7 +3430,7 @@ var TRAINER_FRUIT_OPTIONS = [
     { name: 'Naranja', emoji: '🍊', n: [47, 0.9, 11.8, 0.1] }   // por 100g
 ];
 var TRAINER_FRUIT_GRAMS = 225; // gramos por pieza
-var trainerFruitSelections = { lunch: null, snack: null, dinner: null }; // 0=banana, 1=naranja, null=ninguna (máximo una fruta entre comida, merienda y cena)
+var trainerFruitSelections = { lunch: null, snack: 0, dinner: null }; // 0=banana, 1=naranja, null=ninguna (máximo una fruta entre comida, merienda y cena)
 
 // Consolidated food catalog for extra foods picker
 var trainerFoodCatalog = [
