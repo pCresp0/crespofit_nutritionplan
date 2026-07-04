@@ -5737,3 +5737,43 @@ body.site-gate-active {
     color: var(--text-secondary);
     transform: none;
 }
+
+/* Trainer adjustable meals selector */
+.trainer-plan-adjust-selector {
+    margin-top: 4px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.trainer-adjust-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.trainer-adjust-chips {
+    display: flex;
+    gap: 8px;
+}
+.trainer-adjust-chip {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+}
+.trainer-adjust-chip:hover {
+    border-color: var(--accent, #fbbf24);
+    color: var(--text-primary);
+}
+.trainer-adjust-chip.active {
+    background: rgba(var(--accent-rgb,251,191,36), 0.12);
+    border-color: var(--accent, #fbbf24);
+    color: var(--accent, #fbbf24);
+}

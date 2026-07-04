@@ -3354,6 +3354,7 @@ var trainerSelections = {
     dinnerProtein: null
 };
 var trainerExtraFoods = []; // [{catalogIdx, grams}]
+var trainerAdjustableMeals = { lunch: true, dinner: true };
 
 // ---- Trainer Plan Fixed Target ----
 var TRAINER_FIXED_KCAL = 2400; // kcal objetivo del plan (editable por el usuario)
@@ -3832,10 +3833,9 @@ function getTrainerMealScaledRatios() {
     });
 
     // Si no hay comida y cena seleccionada por completo, usamos ratio 1 y aceite base
-
     if (trainerSelections.lunchCarb === null || trainerSelections.lunchProtein === null ||
         trainerSelections.dinnerCarb === null || trainerSelections.dinnerProtein === null) {
-        return { carb: 1, protein: 1, oilMl: EXTRAS_OIL_ML };
+        return { lunchCarb: 1, lunchProtein: 1, dinnerCarb: 1, dinnerProtein: 1, oilMl: EXTRAS_OIL_ML };
     }
 
     // 3. Obtener macros de bases de Comida y Cena
@@ -3844,13 +3844,43 @@ function getTrainerMealScaledRatios() {
     var dc = dinnerCarbs[trainerSelections.dinnerCarb];
     var dp = dinnerProteins[trainerSelections.dinnerProtein];
 
-    var baseCarbKcal = (lc.n[0] * lc.base / 100) + (dc.n[0] * dc.base / 100);
-    var baseCarbProt = (lc.n[1] * lc.base / 100) + (dc.n[1] * dc.base / 100);
-    var baseCarbFat  = (lc.n[3] * lc.base / 100) + (dc.n[3] * dc.base / 100);
-    
-    var baseProtKcal = (lp.n[0] * lp.base / 100) + (dp.n[0] * dp.base / 100);
-    var baseProtProt = (lp.n[1] * lp.base / 100) + (dp.n[1] * dp.base / 100);
-    var baseProtFat  = (lp.n[3] * lp.base / 100) + (dp.n[3] * dp.base / 100);
+    var baseCarbKcal = 0, baseCarbProt = 0, baseCarbFat = 0;
+    var baseProtKcal = 0, baseProtProt = 0, baseProtFat = 0;
+
+    // Comida
+    if (trainerAdjustableMeals.lunch) {
+        baseCarbKcal += (lc.n[0] * lc.base / 100);
+        baseCarbProt += (lc.n[1] * lc.base / 100);
+        baseCarbFat  += (lc.n[3] * lc.base / 100);
+        
+        baseProtKcal += (lp.n[0] * lp.base / 100);
+        baseProtProt += (lp.n[1] * lp.base / 100);
+        baseProtFat  += (lp.n[3] * lp.base / 100);
+    } else {
+        fixedKcal += (lc.n[0] * lc.base / 100) + (lp.n[0] * lp.base / 100);
+        fixedProt += (lc.n[1] * lc.base / 100) + (lp.n[1] * lp.base / 100);
+        fixedFat  += (lc.n[3] * lc.base / 100) + (lp.n[3] * lp.base / 100);
+    }
+
+    // Cena
+    if (trainerAdjustableMeals.dinner) {
+        baseCarbKcal += (dc.n[0] * dc.base / 100);
+        baseCarbProt += (dc.n[1] * dc.base / 100);
+        baseCarbFat  += (dc.n[3] * dc.base / 100);
+        
+        baseProtKcal += (dp.n[0] * dp.base / 100);
+        baseProtProt += (dp.n[1] * dp.base / 100);
+        baseProtFat  += (dp.n[3] * dp.base / 100);
+    } else {
+        fixedKcal += (dc.n[0] * dc.base / 100) + (dp.n[0] * dp.base / 100);
+        fixedProt += (dc.n[1] * dc.base / 100) + (dp.n[1] * dp.base / 100);
+        fixedFat  += (dc.n[3] * dc.base / 100) + (dp.n[3] * dp.base / 100);
+    }
+
+    // Si ninguna es ajustable, devolvemos 1.0
+    if (!trainerAdjustableMeals.lunch && !trainerAdjustableMeals.dinner) {
+        return { lunchCarb: 1, lunchProtein: 1, dinnerCarb: 1, dinnerProtein: 1, oilMl: EXTRAS_OIL_ML };
+    }
 
     // Sistema de ecuaciones que incluye aceite dinámico para clavar grasas
     var availKcalPrime = targetKcal - fixedKcal - 9 * (targetFat - fixedFat);
@@ -3860,7 +3890,9 @@ function getTrainerMealScaledRatios() {
     var protKcalPrime = baseProtKcal - 9 * baseProtFat;
 
     var totalBaseKcalPrime = carbKcalPrime + protKcalPrime;
-    if (totalBaseKcalPrime <= 0) return { carb: 1, protein: 1, oilMl: EXTRAS_OIL_ML };
+    if (totalBaseKcalPrime <= 0) {
+        return { lunchCarb: 1, lunchProtein: 1, dinnerCarb: 1, dinnerProtein: 1, oilMl: EXTRAS_OIL_ML };
+    }
 
     var uniformRatio = availKcalPrime / totalBaseKcalPrime;
 
@@ -3895,7 +3927,13 @@ function getTrainerMealScaledRatios() {
     var oilMlPerMeal = Math.round((totalOilFat / 2) * 10) / 10;
     oilMlPerMeal = Math.max(3.0, Math.min(30.0, oilMlPerMeal));
 
-    return { carb: cRatio, protein: pRatio, oilMl: oilMlPerMeal };
+    return {
+        lunchCarb: trainerAdjustableMeals.lunch ? cRatio : 1.0,
+        lunchProtein: trainerAdjustableMeals.lunch ? pRatio : 1.0,
+        dinnerCarb: trainerAdjustableMeals.dinner ? cRatio : 1.0,
+        dinnerProtein: trainerAdjustableMeals.dinner ? pRatio : 1.0,
+        oilMl: oilMlPerMeal
+    };
 }
 
 function buildTrainerWorkoutPickerHtml() {
@@ -4109,6 +4147,13 @@ function renderTrainerActivityPanel() {
                         '<input type="number" id="trainer-body-weight" class="trainer-plan-input" value="' + TRAINER_PROFILE.weight + '" min="40" max="200" step="0.5">' +
                         '<span class="trainer-plan-input-unit">kg</span>' +
                     '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="trainer-plan-adjust-selector">' +
+                '<span class="trainer-adjust-label">Ajustar comida/cena para cuadrar:</span>' +
+                '<div class="trainer-adjust-chips">' +
+                    '<button type="button" class="trainer-adjust-chip' + (trainerAdjustableMeals.lunch ? ' active' : '') + '" data-adjust-meal="lunch">🍲 Comida</button>' +
+                    '<button type="button" class="trainer-adjust-chip' + (trainerAdjustableMeals.dinner ? ' active' : '') + '" data-adjust-meal="dinner">🌙 Cena</button>' +
                 '</div>' +
             '</div>' +
             '<div class="trainer-plan-macro-preview" id="trainer-plan-macro-preview"></div>' +
@@ -4939,6 +4984,15 @@ document.addEventListener('change', function(e) {
 
 document.getElementById('trainer-activity-panel').addEventListener('click', function(e) {
     if (!trainerModeActive) return;
+
+    var adjustChip = e.target.closest('[data-adjust-meal]');
+    if (adjustChip) {
+        var meal = adjustChip.dataset.adjustMeal;
+        trainerAdjustableMeals[meal] = !trainerAdjustableMeals[meal];
+        renderTrainerActivityPanel();
+        renderTrainerContent();
+        return;
+    }
 
     var statusBtn = e.target.closest('[data-workout-status]');
     if (statusBtn) {
