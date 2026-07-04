@@ -4857,22 +4857,19 @@ function renderTrainerContent() {
         var tempSel = Object.assign({}, trainerSelections);
         tempSel[mealKey + (typeKey === 'carb' ? 'Carb' : 'Protein')] = itemIdx;
         
-        var solvable = (tempSel.breakfast !== null) &&
-                       (tempSel.lunchCarb !== null || hasExtra('lunchCarb')) &&
-                       (tempSel.lunchProtein !== null || hasExtra('lunchProtein')) &&
-                       (tempSel.dinnerCarb !== null || hasExtra('dinnerCarb')) &&
-                       (tempSel.dinnerProtein !== null || hasExtra('dinnerProtein'));
+        // If other slots are still null, temporarily assume default index 0 to resolve
+        if (tempSel.breakfast === null) tempSel.breakfast = 0;
+        if (tempSel.lunchCarb === null && !hasExtra('lunchCarb')) tempSel.lunchCarb = 0;
+        if (tempSel.lunchProtein === null && !hasExtra('lunchProtein')) tempSel.lunchProtein = 0;
+        if (tempSel.dinnerCarb === null && !hasExtra('dinnerCarb')) tempSel.dinnerCarb = 0;
+        if (tempSel.dinnerProtein === null && !hasExtra('dinnerProtein')) tempSel.dinnerProtein = 0;
 
-        if (solvable) {
-            var tempRatios = getTrainerMealScaledRatios(tempSel);
-            var r = (mealKey === 'lunch') 
-                ? (typeKey === 'carb' ? tempRatios.lunchCarb : tempRatios.lunchProtein)
-                : (typeKey === 'carb' ? tempRatios.dinnerCarb : tempRatios.dinnerProtein);
-            var amt = Math.round(itemBase * r);
-            return scaledAmountHtml(itemBase, amt) + ' ' + u;
-        }
-
-        return itemBase + ' ' + u;
+        var tempRatios = getTrainerMealScaledRatios(tempSel);
+        var r = (mealKey === 'lunch') 
+            ? (typeKey === 'carb' ? tempRatios.lunchCarb : tempRatios.lunchProtein)
+            : (typeKey === 'carb' ? tempRatios.dinnerCarb : tempRatios.dinnerProtein);
+        var amt = Math.round(itemBase * r);
+        return scaledAmountHtml(itemBase, amt) + ' ' + u;
     }
 
     // ===== TAB: Desayuno =====
