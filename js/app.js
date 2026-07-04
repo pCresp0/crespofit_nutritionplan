@@ -3822,7 +3822,17 @@ function getTrainerMealScaledRatios() {
     fixedProt += lunchFruit.protein + dinnerFruit.protein;
     fixedFat += lunchFruit.fat + dinnerFruit.fat;
 
+    // 2.2 Alimentos adicionales (restan de los macros disponibles para Comida/Cena)
+    trainerExtraFoods.forEach(function(extra) {
+        var food = trainerFoodCatalog[extra.catalogIdx];
+        var factor = food.unit === 'ud' ? extra.grams : extra.grams / 100;
+        fixedKcal += food.n[0] * factor;
+        fixedProt += food.n[1] * factor;
+        fixedFat  += food.n[3] * factor;
+    });
+
     // Si no hay comida y cena seleccionada por completo, usamos ratio 1 y aceite base
+
     if (trainerSelections.lunchCarb === null || trainerSelections.lunchProtein === null ||
         trainerSelections.dinnerCarb === null || trainerSelections.dinnerProtein === null) {
         return { carb: 1, protein: 1, oilMl: EXTRAS_OIL_ML };
