@@ -3427,9 +3427,10 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
     if (isTrainer) {
         var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
         var snackKcal = Math.round(126 + snackFruitM.kcal);
+        // 35g Evowhey: prot=26.6g, carbs=2.07g, fat=1.26g (35*76/100, 35*5.9/100, 35*3.6/100)
         var snackProtein = Math.round(26.6 + snackFruitM.protein);
-        var snackCarbs = Math.round(5.9 + snackFruitM.carbs);
-        var snackFat = Math.round(3.6 + snackFruitM.fat);
+        var snackCarbs = Math.round(2.07 + snackFruitM.carbs);
+        var snackFat = Math.round(1.26 + snackFruitM.fat);
         var snackItems = ['Batido Whey protein HSN (35g): <strong>26.6g prot</strong>', 'Agua: <strong>250ml</strong>'];
         var fruitIdx = trainerFruitSelections.snack;
         if (fruitIdx !== null && fruitIdx !== undefined) {
@@ -3996,7 +3997,7 @@ function getTrainerMealScaledRatios(selObj) {
     var sel = selObj || trainerSelections;
     var targetKcal = TRAINER_FIXED_KCAL;
     var targets = getTrainerMacroTargetsGrams(TRAINER_PROFILE.weight, targetKcal);
-    var targetProt = targets.protG;
+    var targetProt = targets.protGmin; // Usar mínimo (2.0 g/kg) como objetivo de cálculo base
     var targetFat = targets.fatG;
 
     // 1. Desayuno fijo (incluye banana)
@@ -4132,26 +4133,32 @@ function getTrainerMealScaledRatios(selObj) {
 
     var uniformRatio = availKcalPrime / totalBaseKcalPrime;
 
-    // Resolvemos el sistema de 2 variables:
-    var a = baseProtProt - baseCarbProt * protKcalPrime / carbKcalPrime;
-    var b = availProt - baseCarbProt * availKcalPrime / carbKcalPrime;
-
     var pRatio = 1, cRatio = 1;
-    if (Math.abs(a) < 0.01) {
-        cRatio = uniformRatio;
-        pRatio = uniformRatio;
+    // Guard: if no carb base (all carb slots replaced by extras), only solve for protein ratio
+    if (carbKcalPrime <= 0) {
+        pRatio = protKcalPrime > 0 ? Math.max(0.7, Math.min(2.5, availKcalPrime / protKcalPrime)) : 1;
+        cRatio = 1;
     } else {
-        pRatio = b / a;
-        pRatio = Math.max(0.7, Math.min(2.5, pRatio));
+        // Resolvemos el sistema de 2 variables:
+        var a = baseProtProt - baseCarbProt * protKcalPrime / carbKcalPrime;
+        var b = availProt - baseCarbProt * availKcalPrime / carbKcalPrime;
 
-        cRatio = (availKcalPrime - protKcalPrime * pRatio) / carbKcalPrime;
-        if (cRatio < 0.4) {
-            cRatio = 0.4;
-            pRatio = (availKcalPrime - carbKcalPrime * cRatio) / protKcalPrime;
-        }
-        if (cRatio > 2.5) {
-            cRatio = 2.5;
-            pRatio = (availKcalPrime - carbKcalPrime * cRatio) / protKcalPrime;
+        if (Math.abs(a) < 0.01) {
+            cRatio = uniformRatio;
+            pRatio = uniformRatio;
+        } else {
+            pRatio = b / a;
+            pRatio = Math.max(0.7, Math.min(2.5, pRatio));
+
+            cRatio = (availKcalPrime - protKcalPrime * pRatio) / carbKcalPrime;
+            if (cRatio < 0.4) {
+                cRatio = 0.4;
+                pRatio = (availKcalPrime - carbKcalPrime * cRatio) / protKcalPrime;
+            }
+            if (cRatio > 2.5) {
+                cRatio = 2.5;
+                pRatio = (availKcalPrime - carbKcalPrime * cRatio) / protKcalPrime;
+            }
         }
     }
 
@@ -4978,10 +4985,13 @@ function renderTrainerContent() {
 
     // Helper: scaled amount display
     function scaledAmountHtml(baseGrams, scaledGrams) {
-        if (scaledGrams !== null && scaledGrams !== baseGrams) {
+        if (scaledGrams === null || isNaN(scaledGrams)) {
+            return '<strong>' + baseGrams + '</strong>';
+        }
+        if (scaledGrams !== baseGrams) {
             return '<strong class="dinner-scaled-g">' + scaledGrams + '</strong><span class="dinner-base-g"> (base: ' + baseGrams + ')</span>';
         }
-        return '<strong>' + (scaledGrams !== null ? scaledGrams : baseGrams) + '</strong>';
+        return '<strong>' + scaledGrams + '</strong>';
     }
 
     var hasExtra = function(replaceKey) {
