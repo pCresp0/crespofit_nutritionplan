@@ -4484,6 +4484,22 @@ function renderTrainerNutrition() {
     if (trainerSelections.dinnerCarb !== null || trainerSelections.dinnerProtein !== null) meals.push('Cena');
     var complete = trainerSelections.breakfast !== null && trainerSelections.lunchCarb !== null && trainerSelections.lunchProtein !== null && trainerSelections.dinnerCarb !== null && trainerSelections.dinnerProtein !== null;
 
+    var energy = getTrainerEnergySummary();
+    var tdee = Math.round(energy.result.tdee);
+    var balance = kcal - tdee;
+    var balanceText = '';
+    var balanceStyle = '';
+    if (balance > 0) {
+        balanceText = '🔥 Superávit de +' + balance + ' kcal';
+        balanceStyle = 'background:rgba(249,115,22,0.1); color:#f97316; border:1px solid rgba(249,115,22,0.2);';
+    } else if (balance < 0) {
+        balanceText = '💧 Déficit de -' + Math.abs(balance) + ' kcal';
+        balanceStyle = 'background:rgba(59,130,246,0.1); color:#3b82f6; border:1px solid rgba(59,130,246,0.2);';
+    } else {
+        balanceText = '⚖️ Balance neutro';
+        balanceStyle = 'background:rgba(156,163,175,0.1); color:#9ca3af; border:1px solid rgba(156,163,175,0.2);';
+    }
+
     // Target fijo del plan (editable)
     var trainerTargetKcal = TRAINER_FIXED_KCAL;
     var targetMin = trainerTargetKcal - TRAINER_KCAL_TOLERANCE;
@@ -4509,6 +4525,10 @@ function renderTrainerNutrition() {
             '<div class="trainer-target-bar ' + kcalStatusClass + '">' +
                 '<span>' + kcalStatusIcon + ' ' + kcalStatusText + '</span>' +
                 '<span class="trainer-target-range">Objetivo: ' + targetMin + '–' + targetMax + ' kcal</span>' +
+            '</div>' +
+            '<div style="margin-top: 8px; font-size: 0.85rem; padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; ' + balanceStyle + '">' +
+                '<span>' + balanceText + '</span>' +
+                '<span style="opacity: 0.8; font-size: 0.75rem; font-weight: 500;">Gasto de hoy: ' + tdee + ' kcal</span>' +
             '</div>' +
             '<div class="nutrition-stacked-bar">' +
                 '<div class="stacked-seg stacked-protein" style="width:'+pKp+'%"></div>' +
