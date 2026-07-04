@@ -3955,6 +3955,23 @@ function getTrainerMealScaledRatios() {
     var oilMlPerMeal = Math.round((totalOilFat / 2) * 10) / 10;
     oilMlPerMeal = Math.max(3.0, Math.min(30.0, oilMlPerMeal));
 
+    var debugText = "availKcalPrime: " + Math.round(availKcalPrime) + 
+                    ", availProt: " + Math.round(availProt) + 
+                    ", baseCarbKcal: " + Math.round(baseCarbKcal) + 
+                    ", baseProtKcal: " + Math.round(baseProtKcal) + 
+                    ", a: " + Math.round(a) + 
+                    ", b: " + Math.round(b) + 
+                    ", cRatio: " + cRatio.toFixed(3) + 
+                    ", pRatio: " + pRatio.toFixed(3) + 
+                    ", targetFat: " + targetFat + 
+                    ", fixedFat: " + Math.round(fixedFat) +
+                    ", fixedKcal: " + Math.round(fixedKcal) +
+                    ", fixedProt: " + Math.round(fixedProt);
+    setTimeout(function() {
+        var el = document.getElementById("trainer-debug");
+        if (el) el.textContent = debugText;
+    }, 50);
+
     return {
         lunchCarb: trainerAdjustableMeals.lunch ? cRatio : 1.0,
         lunchProtein: trainerAdjustableMeals.lunch ? pRatio : 1.0,
@@ -4201,7 +4218,8 @@ function renderTrainerActivityPanel() {
             '</div>' +
             '<div class="trainer-tdee-breakdown" id="trainer-tdee-breakdown"></div>' +
             '<p class="trainer-activity-note" id="trainer-activity-note"></p>' +
-        '</div>';
+        '</div>' +
+        '<div id="trainer-debug" style="color:#ef4444; font-family:monospace; font-size:11px; padding:10px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); margin-top:14px; border-radius:var(--radius); word-break:break-all;"></div>';
 
     updateTrainerWorkoutDayUI();
     updateTrainerEnergyUI();
