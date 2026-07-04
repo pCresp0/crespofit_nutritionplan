@@ -58,13 +58,13 @@ var BASE_KCAL = 2500;
 
 var breakfastOptions = [
     { id:'batido-proteinas', name:'Batido de avena y proteínas', macros:[540,37,50,21],
-      items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:45,unit:'g'},{text:'Leche semidesnatada',amount:200,unit:'ml',glassHint:true},{text:'Whey protein',amount:35,unit:'g'},{text:'Aceite de oliva',amount:15,unit:'ml',spoonHint:true}]},
+      items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:45,unit:'g'},{text:'Leche desnatada',amount:200,unit:'ml',glassHint:true},{text:'Whey protein',amount:35,unit:'g'},{text:'Aceite de oliva',amount:15,unit:'ml',spoonHint:true}]},
     { id:'yogur-qfb', name:'Yogur de proteínas / QFB con cereales', macros:[550,42,62,14],
       items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:55,unit:'g'},{text:'Queso fresco batido / Yogur 2% + proteína',amount:500,unit:'g',extra:'ó {200}g yogur',extraBase:200,isAlt:true},{text:'Frutos secos / crema de cacahuete',amount:25,unit:'g'}]},
     { id:'tostadas', name:'Tostadas', macros:[470,28,52,17],
       items:[{text:'Pan integral trigo/espelta/centeno',amount:120,unit:'g'},{text:'Lomo',amount:50,unit:'g',extra:'+ {30}g queso semi/havarti light',extraBase:30},{text:'Guacamole o aguacate',amount:40,unit:'g'}]},
     { id:'cereales-leche', name:'Cereales con leche y proteína', macros:[500,33,52,17],
-      items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:45,unit:'g'},{text:'Leche semidesnatada (un vaso)',amount:200,unit:'ml'},{text:'Whey protein',amount:25,unit:'g'},{text:'Frutos secos / crema de cacahuete',amount:25,unit:'g'}]},
+      items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:45,unit:'g'},{text:'Leche desnatada (un vaso)',amount:200,unit:'ml'},{text:'Whey protein',amount:25,unit:'g'},{text:'Frutos secos / crema de cacahuete',amount:25,unit:'g'}]},
     { id:'tortitas', name:'Tortitas de avena', macros:[340,22,30,16],
       items:[{text:'Harina de avena / copos de avena',amount:45,unit:'g'},{text:'2 Huevos + claras',amount:100,unit:'g'},{text:'Frutos secos / crema de cacahuete',amount:10,unit:'g'}]},
     { id:'yogures-proteicos', name:'Yogures proteicos', macros:[420,25,60,8],
@@ -3471,7 +3471,7 @@ var trainerFoodCatalog = [
     {name:'Corn flakes / cereales',cat:'Otros',n:[378,7,84,1],unit:'g'},
     {name:'Copos de avena',cat:'Otros',n:[372,13,60,7],unit:'g'},
     {name:'Whey protein (HSN Evowhey)',cat:'Otros',n:[361,76,5.9,3.6],unit:'g'},
-    {name:'Leche semidesnatada',cat:'Otros',n:[46,3,5,1.5],unit:'ml'},
+    {name:'Leche desnatada',cat:'Otros',n:[40,3.9,5.3,0.3],unit:'ml'},
     {name:'Queso fresco batido',cat:'Otros',n:[63,10,4,0.8],unit:'g'},
     {name:'Frutos secos',cat:'Otros',n:[600,20,15,52],unit:'g'},
     {name:'Crema de cacahuete',cat:'Otros',n:[600,25,12,50],unit:'g'},
@@ -4212,13 +4212,11 @@ function getTrainerTabByTime() {
     var m = now.getMinutes();
     var totalMin = h * 60 + m;
 
-    // Desayuno: 1:00 (60 min) a 12:00 (720 min)
-    if (totalMin >= 60 && totalMin <= 720) return 'breakfast';
-    // Comida: 12:01 (721 min) a 15:45 (945 min)
-    if (totalMin >= 721 && totalMin <= 945) return 'lunch';
-    // Merienda: 15:46 (946 min) a 19:30 (1170 min)
-    if (totalMin >= 946 && totalMin <= 1170) return 'snack';
-    // Cena: 19:31 (1171 min) a 0:59 (59 min del día siguiente)
+    // Desayuno: 2:00 (120 min) a 12:15 (735 min)
+    if (totalMin >= 120 && totalMin <= 735) return 'breakfast';
+    // Comida: 12:16 (736 min) a 17:00 (1020 min)
+    if (totalMin >= 736 && totalMin <= 1020) return 'lunch';
+    // Cena: 17:01 (1021 min) a 1:59 (119 min del día siguiente)
     return 'dinner';
 }
 
@@ -5019,14 +5017,14 @@ function renderTrainerContent() {
 
     // Alimentos adicionales (siempre visible, no colapsable)
     html += '<div class="trainer-section trainer-extras-section">';
-    html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">';
+    html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--card-bg); border:1.5px solid var(--border); border-left:3px solid var(--accent); border-radius:var(--radius-sm); flex-shrink:0;">';
     html += '<h3 style="margin:0; font-size:1.15rem; font-weight:700; color:var(--text-primary);">🍽️ Alimentos adicionales</h3>';
     if (trainerExtraFoods.length > 0) {
         html += '<span class="trainer-extras-badge" style="background:var(--accent); color:#1e1e1e; font-weight:700; font-size:0.8rem; padding:2px 8px; border-radius:12px;">' + trainerExtraFoods.length + '</span>';
     }
     html += '</div>';
     
-    html += '<div class="trainer-extras-body open" id="trainer-extras-body" style="padding-top:0;">';
+    html += '<div class="trainer-extras-body open" id="trainer-extras-body" style="border:1.5px solid var(--border); border-top:none; border-left:3px solid var(--accent); border-radius:0 0 var(--radius-sm) var(--radius-sm); padding:14px 14px 12px; max-height:400px; overflow-y:auto;">';
     html += '<button id="trainer-open-search" class="trainer-extra-search-trigger" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px; border:1px dashed var(--border); background:var(--bg-secondary); color:var(--text-secondary); cursor:pointer; font-weight:600; font-size:0.9rem; transition:all 0.2s ease; margin-bottom:12px;">';
     html += '<span>🔍 Buscar y añadir alimento...</span>';
     html += '</button>';
@@ -5243,23 +5241,26 @@ function closeSearchModal() {
 
 function renderSearchModalContent(backdrop, query) {
     query = query || '';
-    var html = '<div class="search-modal-card" style="background:var(--card-bg); width:92%; max-width:440px; border-radius:12px; border:1px solid var(--border); box-shadow:0 10px 25px rgba(0,0,0,0.5); overflow:hidden; display:flex; flex-direction:column; max-height:85vh; transform:scale(0.95); transition:transform 0.2s ease; font-family:inherit; color:var(--text-primary);">';
+    var html = '<div class="search-modal-card" style="background:var(--card-bg); width:92%; max-width:460px; border-radius:12px; border:1px solid var(--border); box-shadow:0 10px 25px rgba(0,0,0,0.5); overflow:hidden; display:flex; flex-direction:column; max-height:80vh; min-height:300px; transform:scale(0.95); transition:transform 0.2s ease; font-family:inherit; color:var(--text-primary);">';
     
-    // Header
-    html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid var(--border); background:var(--bg);">';
+    // Header (sticky)
+    html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid var(--border); background:var(--bg); flex-shrink:0;">';
     html += '<h4 style="margin:0; font-size:1.05rem; font-weight:700;">Añadir alimento adicional</h4>';
-    html += '<button id="search-modal-close" style="background:none; border:none; color:var(--text-secondary); font-size:1.25rem; cursor:pointer; padding:4px;">✕</button>';
+    html += '<button id="search-modal-close" style="background:none; border:none; color:var(--text-secondary); font-size:1.25rem; cursor:pointer; padding:4px; flex-shrink:0;">✕</button>';
     html += '</div>';
     
-    // Body
-    html += '<div style="padding:16px; display:flex; flex-direction:column; overflow-y:auto; flex:1;">';
+    // Body with fixed layout
+    html += '<div style="padding:0; display:flex; flex-direction:column; overflow:hidden; flex:1;">';
     
     if (activeSearchFoodIdx === null) {
         // STEP 1: Search food
-        html += '<input type="text" id="search-modal-input" placeholder="Escribe para buscar... (ej: arroz, pavo, café)" value="' + query + '" style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text-primary); font-size:0.9rem; box-sizing:border-box; margin-bottom:12px;" autocomplete="off">';
+        // Search input container (sticky)
+        html += '<div style="padding:16px; border-bottom:1px solid var(--border); background:var(--card-bg); flex-shrink:0;">';
+        html += '<input type="text" id="search-modal-input" placeholder="Escribe para buscar... (ej: arroz, pavo, café)" value="' + query + '" style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text-primary); font-size:0.9rem; box-sizing:border-box;" autocomplete="off">';
+        html += '</div>';
         
-        // Results list
-        html += '<div id="search-modal-results" style="display:flex; flex-direction:column; gap:6px; max-height:300px; overflow-y:auto; padding-right:4px;">';
+        // Results list (scrollable)
+        html += '<div id="search-modal-results" style="display:flex; flex-direction:column; gap:6px; overflow-y:auto; padding:12px 16px 16px 16px; flex:1;">';
         
         var normalizedQuery = query.toLowerCase().trim();
         var matches = [];
@@ -5272,9 +5273,9 @@ function renderSearchModalContent(backdrop, query) {
         }
         
         if (normalizedQuery === '') {
-            html += '<div style="text-align:center; padding:32px 16px; color:var(--text-secondary); font-size:0.88rem;">Escribe en el buscador superior para encontrar un alimento...</div>';
+            html += '<div style="text-align:center; padding:48px 16px; color:var(--text-secondary); font-size:0.88rem;">Escribe en el buscador superior para encontrar un alimento...</div>';
         } else if (matches.length === 0) {
-            html += '<div style="text-align:center; padding:24px; color:var(--text-secondary); font-size:0.9rem;">No se encontraron resultados</div>';
+            html += '<div style="text-align:center; padding:32px 16px; color:var(--text-secondary); font-size:0.9rem;">No se encontraron resultados</div>';
         } else {
             var lastCat = '';
             matches.forEach(function(m) {
@@ -5284,7 +5285,7 @@ function renderSearchModalContent(backdrop, query) {
                     lastCat = f.cat;
                 }
                 var unitLabel = f.unit === 'ud' ? 'unidad' : ('100' + f.unit);
-                html += '<button class="search-result-row" data-food-idx="' + m.idx + '" style="width:100%; text-align:left; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 12px; cursor:pointer; color:var(--text-primary); transition:all 0.15s ease; display:flex; justify-content:space-between; align-items:center;">';
+                html += '<button class="search-result-row" data-food-idx="' + m.idx + '" style="width:100%; text-align:left; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 12px; cursor:pointer; color:var(--text-primary); transition:all 0.15s ease; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">';
                 html += '<span style="font-weight:600; font-size:0.88rem;">' + f.name + '</span>';
                 html += '<span style="font-size:0.78rem; color:var(--text-secondary);">' + f.n[0] + ' kcal/' + f.unit + '</span>';
                 html += '</button>';
@@ -5296,17 +5297,20 @@ function renderSearchModalContent(backdrop, query) {
         var food = trainerFoodCatalog[activeSearchFoodIdx];
         var defaultQty = food.unit === 'ud' ? 1 : 100;
         
+        // Scrollable content area
+        html += '<div style="padding:16px; display:flex; flex-direction:column; overflow-y:auto; flex:1;">';
+        
         html += '<button id="search-modal-back" style="background:none; border:none; color:var(--accent); cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:600; font-size:0.85rem; padding:0; margin-bottom:14px;">← Volver al buscador</button>';
         
-        html += '<div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">';
-        html += '<div>';
+        html += '<div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">';
+        html += '<div style="min-width:0;">';
         html += '<div style="font-size:0.75rem; color:var(--accent); font-weight:700; text-transform:uppercase;">' + food.cat + '</div>';
         html += '<strong style="font-size:1.05rem;">' + food.name + '</strong>';
         html += '</div>';
-        html += '<span style="font-size:0.85rem; background:var(--card-bg); border:1px solid var(--border); padding:4px 8px; border-radius:6px; color:var(--text-secondary);">' + food.n[0] + ' kcal / ' + (food.unit === 'ud' ? 'unidad' : ('100' + food.unit)) + '</span>';
+        html += '<span style="font-size:0.85rem; background:var(--card-bg); border:1px solid var(--border); padding:4px 8px; border-radius:6px; color:var(--text-secondary); flex-shrink:0; margin-left:8px;">' + food.n[0] + ' kcal / ' + (food.unit === 'ud' ? 'unidad' : ('100' + food.unit)) + '</span>';
         html += '</div>';
         
-        html += '<div style="margin-bottom:14px;">';
+        html += '<div style="margin-bottom:14px; flex-shrink:0;">';
         html += '<label style="display:block; font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">Cantidad a añadir:</label>';
         html += '<div style="position:relative; display:flex; align-items:center;">';
         html += '<input type="number" id="search-qty-input" min="1" max="2000" value="' + defaultQty + '" style="width:100%; padding:10px 32px 10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text-primary); font-size:0.95rem; box-sizing:border-box; font-weight:700;">';
@@ -5314,7 +5318,7 @@ function renderSearchModalContent(backdrop, query) {
         html += '</div>';
         html += '</div>';
         
-        html += '<div style="margin-bottom:20px;">';
+        html += '<div style="margin-bottom:20px; flex-shrink:0;">';
         html += '<label style="display:block; font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">¿Reemplaza alguna comida?</label>';
         html += '<select id="search-replace-select" style="width:100%; padding:10px; border-radius:6px; background:var(--bg); border:1px solid var(--border); color:var(--text-primary); font-size:0.88rem; box-sizing:border-box;">';
         html += '<option value="none">Alimento extra (no reemplaza)</option>';
@@ -5325,7 +5329,9 @@ function renderSearchModalContent(backdrop, query) {
         html += '</select>';
         html += '</div>';
         
-        html += '<button id="search-modal-add-btn" style="width:100%; padding:12px; border-radius:6px; border:none; background:var(--accent); color:#1e1e1e; font-weight:700; font-size:0.95rem; cursor:pointer; transition:opacity 0.15s ease;">Añadir al plan</button>';
+        html += '<button id="search-modal-add-btn" style="width:100%; padding:12px; border-radius:6px; border:none; background:var(--accent); color:#1e1e1e; font-weight:700; font-size:0.95rem; cursor:pointer; transition:opacity 0.15s ease; flex-shrink:0;">Añadir al plan</button>';
+        
+        html += '</div>';
     }
     
     html += '</div></div>';

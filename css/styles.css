@@ -4871,6 +4871,9 @@ body.site-gate-active {
 
 .trainer-extras-section {
     margin-top: 24px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .trainer-extras-toggle {
@@ -4886,6 +4889,7 @@ body.site-gate-active {
     user-select: none;
     transition: background var(--transition), border-radius var(--transition);
     margin-bottom: 0;
+    width: 100%;
 }
 
 .trainer-extras-section.extras-open .trainer-extras-toggle {
@@ -4943,12 +4947,13 @@ body.site-gate-active {
 }
 
 .trainer-extras-body.open {
-    max-height: 800px;
+    max-height: 1200px;
     padding: 14px 14px 12px;
     border-color: var(--border);
     border-left-color: var(--accent);
     border-top: none;
     background: var(--card-bg);
+    overflow-y: auto;
 }
 
 .trainer-extras-desc {
@@ -5013,17 +5018,21 @@ body.site-gate-active {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    width: 100%;
 }
 
 .trainer-extra-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 10px 14px;
     gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    flex-wrap: wrap;
 }
 
 .trainer-extra-item-info {
@@ -5033,15 +5042,20 @@ body.site-gate-active {
     font-size: 0.82rem;
     color: var(--text-secondary);
     min-width: 0;
+    flex: 1;
+    word-break: break-word;
 }
 
 .trainer-extra-item-info strong {
     color: var(--text-primary);
+    word-break: break-word;
 }
 
 .trainer-extra-item-macros {
     font-size: 0.72rem;
     color: var(--text-muted);
+    width: 100%;
+    margin-top: 4px;
 }
 
 .trainer-extra-remove {
@@ -5784,4 +5798,66 @@ body.site-gate-active {
     border-color: var(--gold-accent) !important;
     transform: translateY(-1px);
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* Mobile and Tablet responsive improvements */
+@media (max-width: 768px) {
+    /* Trainer extras section - better spacing on mobile */
+    .trainer-extras-section {
+        margin-top: 20px;
+        margin-bottom: 16px;
+    }
+
+    /* Make extras body scrollable on mobile */
+    .trainer-extras-body {
+        max-height: 350px !important;
+    }
+
+    .trainer-extra-item {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px 10px;
+    }
+
+    .trainer-extra-item-info {
+        font-size: 0.8rem;
+        width: 100%;
+        order: 1;
+        flex: 1;
+    }
+
+    .trainer-extra-item-macros {
+        font-size: 0.7rem;
+        width: 100%;
+        margin-top: 6px;
+        order: 3;
+    }
+
+    .trainer-extra-remove {
+        order: 2;
+        flex-shrink: 0;
+        align-self: flex-start;
+        padding: 4px 8px;
+        font-size: 1rem;
+    }
+
+    /* Search modal improvements for mobile */
+    .search-modal-card {
+        width: 95% !important;
+        max-width: 100% !important;
+        max-height: 85vh !important;
+    }
+
+    .search-result-row {
+        padding: 12px 10px !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Button trigger better tap target on mobile */
+    .trainer-extra-search-trigger {
+        padding: 14px 12px !important;
+        font-size: 0.88rem !important;
+        min-height: 44px;
+    }
 }
