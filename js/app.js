@@ -3328,12 +3328,13 @@ var TRAINER_FRUIT_OPTIONS = [
 var TRAINER_FRUIT_GRAMS = 225; // gramos por pieza
 var trainerFruitSelections = { lunch: null, dinner: null }; // 0=banana, 1=naranja, null=ninguna (máximo una fruta entre comida y cena)
 
-// Consolidated food catalog for extra foods picker (per 100g/100ml)
+// Consolidated food catalog for extra foods picker
 var trainerFoodCatalog = [
     // Hidratos
     {name:'Arroz blanco',cat:'Hidratos',n:[350,7,78,0.6],unit:'g'},
     {name:'Pasta',cat:'Hidratos',n:[350,12,72,1.5],unit:'g'},
     {name:'Patata cocida',cat:'Hidratos',n:[77,1.8,17,0.1],unit:'g'},
+    {name:'Pan de burger (unidad)',cat:'Hidratos',n:[206,6.4,37.5,3],unit:'ud'},
     {name:'Tortitas de arroz',cat:'Hidratos',n:[385,7,83,3],unit:'g'},
     {name:'Pan',cat:'Hidratos',n:[265,9,49,3.2],unit:'g'},
     {name:'Quinoa',cat:'Hidratos',n:[368,14,64,6],unit:'g'},
@@ -3345,6 +3346,8 @@ var trainerFoodCatalog = [
     {name:'Pollo',cat:'Proteínas',n:[110,23,0,1.5],unit:'g'},
     {name:'Pavo',cat:'Proteínas',n:[105,24,0,1],unit:'g'},
     {name:'Hamburguesa de pollo',cat:'Proteínas',n:[150,17,4,7],unit:'g'},
+    {name:'Huevo entero (unidad)',cat:'Proteínas',n:[80,7.5,0.4,5.5],unit:'ud'},
+    {name:'1/2 Huevo relleno (atún y tomate)',cat:'Proteínas',n:[80,7.5,0.7,5.1],unit:'ud'},
     {name:'Huevo + claras',cat:'Proteínas',n:[196,24,1.5,10],unit:'g'},
     {name:'Lomo adobado',cat:'Proteínas',n:[150,20,1,7],unit:'g'},
     {name:'Ternera',cat:'Proteínas',n:[155,22,0,7],unit:'g'},
@@ -3352,6 +3355,9 @@ var trainerFoodCatalog = [
     {name:'Lenguado',cat:'Proteínas',n:[78,16,0,1.2],unit:'g'},
     {name:'Salmón',cat:'Proteínas',n:[208,20,0,13],unit:'g'},
     {name:'Atún claro al natural',cat:'Proteínas',n:[100,23,0,1],unit:'g'},
+    // Salsas
+    {name:'Ketchup',cat:'Salsas',n:[97,1,24,0.1],unit:'g'},
+    {name:'Mayonesa',cat:'Salsas',n:[680,1,1,75],unit:'g'},
     // Otros
     {name:'Verduras',cat:'Otros',n:[25,2,4,0.3],unit:'g'},
     {name:'Fruta',cat:'Otros',n:[80,0.5,20,0.2],unit:'g'},
@@ -4212,10 +4218,11 @@ function calculateTrainerMacros() {
     trainerExtraFoods.forEach(function(extra) {
         has = true;
         var food = trainerFoodCatalog[extra.catalogIdx];
-        t.kcal    += food.n[0] * extra.grams / 100;
-        t.protein += food.n[1] * extra.grams / 100;
-        t.carbs   += food.n[2] * extra.grams / 100;
-        t.fat     += food.n[3] * extra.grams / 100;
+        var factor = food.unit === 'ud' ? extra.grams : extra.grams / 100;
+        t.kcal    += food.n[0] * factor;
+        t.protein += food.n[1] * factor;
+        t.carbs   += food.n[2] * factor;
+        t.fat     += food.n[3] * factor;
     });
 
     return has ? t : null;
@@ -4677,7 +4684,8 @@ function renderTrainerContent() {
             html += '<optgroup label="' + f.cat + '">';
             lastCat = f.cat;
         }
-        html += '<option value="' + i + '">' + f.name + ' (' + f.n[0] + ' kcal/100' + f.unit + ')</option>';
+        var unitLabel = f.unit === 'ud' ? 'unidad' : ('100' + f.unit);
+        html += '<option value="' + i + '">' + f.name + ' (' + f.n[0] + ' kcal/' + unitLabel + ')</option>';
     });
     html += '</optgroup>';
     html += '</select>';
@@ -4689,13 +4697,15 @@ function renderTrainerContent() {
         html += '<div class="trainer-extra-list">';
         trainerExtraFoods.forEach(function(extra, i) {
             var food = trainerFoodCatalog[extra.catalogIdx];
-            var ek = Math.round(food.n[0]*extra.grams/100);
-            var ep = Math.round(food.n[1]*extra.grams/100);
-            var ec = Math.round(food.n[2]*extra.grams/100);
-            var ef = Math.round(food.n[3]*extra.grams/100);
+            var factor = food.unit === 'ud' ? extra.grams : extra.grams / 100;
+            var ek = Math.round(food.n[0]*factor);
+            var ep = Math.round(food.n[1]*factor);
+            var ec = Math.round(food.n[2]*factor);
+            var ef = Math.round(food.n[3]*factor);
+            var displayUnit = food.unit === 'ud' ? (extra.grams === 1 ? ' unidad' : ' unidades') : food.unit;
             html += '<div class="trainer-extra-item" data-extra-idx="' + i + '">';
             html += '<div class="trainer-extra-item-info">';
-            html += '<strong>' + food.name + '</strong> — ' + extra.grams + food.unit;
+            html += '<strong>' + food.name + '</strong> — ' + extra.grams + displayUnit;
             html += '<span class="trainer-extra-item-macros">' + ek + ' kcal · P:' + ep + ' C:' + ec + ' G:' + ef + '</span>';
             html += '</div>';
             html += '<button class="trainer-extra-remove" data-extra-remove="' + i + '">✕</button>';
@@ -4850,6 +4860,30 @@ document.getElementById('trainer-activity-panel').addEventListener('input', func
             updateTrainerPlanMacroPreview();
             renderTrainerNutrition(); // update macro targets with new weight
             renderTrainerContent();  // update scaled dinner amounts
+        }
+    }
+});
+
+document.getElementById('trainer-activity-panel').addEventListener('change', function(e) {
+    if (!trainerModeActive) return;
+    if (e.target.id === 'trainer-extra-food') {
+        var foodSelect = e.target;
+        var gramsInput = document.getElementById('trainer-extra-grams');
+        if (foodSelect && gramsInput) {
+            var catalogIdx = parseInt(foodSelect.value);
+            if (!isNaN(catalogIdx) && catalogIdx >= 0 && catalogIdx < trainerFoodCatalog.length) {
+                var food = trainerFoodCatalog[catalogIdx];
+                if (food.unit === 'ud') {
+                    gramsInput.placeholder = 'Unidades';
+                    gramsInput.value = '1';
+                } else if (food.unit === 'ml') {
+                    gramsInput.placeholder = 'Mililitros';
+                    gramsInput.value = '100';
+                } else {
+                    gramsInput.placeholder = 'Gramos';
+                    gramsInput.value = '100';
+                }
+            }
         }
     }
 });
