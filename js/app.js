@@ -4726,7 +4726,13 @@ function showMacroFixTooltip(macro) {
         if (data.swaps.length > 0) {
             // Group swaps by meal
             var meals = ['Desayuno', 'Comida', 'Cena'];
+            var now = new Date();
+            var mins = now.getHours() * 60 + now.getMinutes();
+
             meals.forEach(function(mealName) {
+                if (mealName === 'Desayuno' && mins > 720) return; // 12:00
+                if (mealName === 'Comida' && mins > 945) return; // 15:45
+
                 var mealSwaps = data.swaps.filter(function(s) { return s.meal === mealName; });
                 if (mealSwaps.length === 0) return;
                 var emoji = mealName === 'Desayuno' ? '\u2600\ufe0f' : (mealName === 'Comida' ? '\ud83c\udf5d' : '\ud83c\udf19');
