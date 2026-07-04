@@ -3338,8 +3338,8 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
     // Merienda (Snack)
     if (isTrainer) {
         var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
-        var snackKcal = Math.round(140 + snackFruitM.kcal);
-        var snackItems = ['Batido Whey protein (35g): <strong>28g prot</strong>', 'Agua: <strong>250ml</strong>'];
+        var snackKcal = Math.round(126 + snackFruitM.kcal);
+        var snackItems = ['Batido Whey protein HSN (35g): <strong>26.6g prot</strong>', 'Agua: <strong>250ml</strong>'];
         var fruitIdx = trainerFruitSelections.snack;
         if (fruitIdx !== null && fruitIdx !== undefined) {
             var fr = TRAINER_FRUIT_OPTIONS[fruitIdx];
@@ -3470,7 +3470,7 @@ var trainerFoodCatalog = [
     {name:'Aceite de oliva',cat:'Otros',n:[900,0,0,100],unit:'ml'},
     {name:'Corn flakes / cereales',cat:'Otros',n:[378,7,84,1],unit:'g'},
     {name:'Copos de avena',cat:'Otros',n:[372,13,60,7],unit:'g'},
-    {name:'Whey protein',cat:'Otros',n:[400,80,7,5],unit:'g'},
+    {name:'Whey protein (HSN Evowhey)',cat:'Otros',n:[361,76,5.9,3.6],unit:'g'},
     {name:'Leche semidesnatada',cat:'Otros',n:[46,3,5,1.5],unit:'ml'},
     {name:'Queso fresco batido',cat:'Otros',n:[63,10,4,0.8],unit:'g'},
     {name:'Frutos secos',cat:'Otros',n:[600,20,15,52],unit:'g'},
@@ -3931,10 +3931,10 @@ function getTrainerMealScaledRatios(selObj) {
     fixedProt += lunchFruit.protein + dinnerFruit.protein + snackFruit.protein;
     fixedFat += lunchFruit.fat + dinnerFruit.fat + snackFruit.fat;
 
-    // 2.1 Merienda fija (Whey Protein 35g)
-    fixedKcal += 140;
-    fixedProt += 28;
-    fixedFat += 1.75;
+    // 2.1 Merienda fija (Whey Protein 35g - HSN Evowhey)
+    fixedKcal += 126;
+    fixedProt += 26.6;
+    fixedFat += 1.26;
 
     // 2.2 Alimentos adicionales (restan de los macros disponibles para Comida/Cena)
     trainerExtraFoods.forEach(function(extra) {
@@ -4454,10 +4454,10 @@ function calculateTrainerMacros() {
     // 2.5 MERIENDA — fija (siempre incluida si hay desayuno)
     if (trainerSelections.breakfast !== null) {
         has = true;
-        t.kcal += 140;
-        t.protein += 28;
-        t.carbs += 2.45;
-        t.fat += 1.75;
+        t.kcal += 126;
+        t.protein += 26.6;
+        t.carbs += 2.07;
+        t.fat += 1.26;
         var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
         t.kcal += snackFruitM.kcal; t.protein += snackFruitM.protein; t.carbs += snackFruitM.carbs; t.fat += snackFruitM.fat;
     }
@@ -4969,7 +4969,7 @@ function renderTrainerContent() {
     html += fruitSelectorHtml('snack');
     html += '<div class="meal-tables">';
     html += '<div class="meal-table-wrapper" style="width:100%; max-width:600px; margin:0 auto;"><div class="meal-table-header protein">🥤 Batido Fijo</div><table class="meal-table"><tbody>';
-    html += '<tr class="selected"><td>Batido de Whey Protein</td><td><strong>35g</strong> (28g proteína)</td></tr>';
+    html += '<tr class="selected"><td>Batido de Whey Protein (HSN)</td><td><strong>35g</strong> (26.6g proteína)</td></tr>';
     html += '<tr class="selected"><td>Agua</td><td><strong>250ml</strong> (0 kcal)</td></tr>';
     html += '</tbody></table></div>';
     html += '</div></div>';
