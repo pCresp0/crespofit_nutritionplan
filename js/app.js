@@ -4948,6 +4948,55 @@ function showMacroFixTooltip(macro) {
 function renderTrainerContent() {
     var html = '';
 
+    // ---- Find best dinner combo when breakfast+lunch are selected ----
+    function findBestDinnerCombo() {
+        // Only recommend when breakfast and lunch are fully selected
+        if (trainerSelections.breakfast === null) return null;
+        if (trainerSelections.lunchCarb === null || trainerSelections.lunchProtein === null) return null;
+
+        var mt = getTrainerMacroTargetsGrams(TRAINER_PROFILE.weight, TRAINER_FIXED_KCAL);
+        var targetKcal = TRAINER_FIXED_KCAL;
+        var targetProtMin = mt.protGmin;
+        var targetProtMax = mt.protGmax;
+
+        var bestScore = -Infinity;
+        var bestCarbIdx = 0;
+        var bestProtIdx = 0;
+
+        var savedCarb = trainerSelections.dinnerCarb;
+        var savedProt = trainerSelections.dinnerProtein;
+
+        dinnerCarbs.forEach(function(dc, ci) {
+            dinnerProteins.forEach(function(dp, pi) {
+                trainerSelections.dinnerCarb = ci;
+                trainerSelections.dinnerProtein = pi;
+                var macros = calculateTrainerMacros();
+                if (!macros) return;
+
+                var kcalDev = Math.abs(macros.kcal - targetKcal);
+                // Penalize protein shortfall heavily, slight penalty for excess
+                var protDev = macros.protein < targetProtMin
+                    ? (targetProtMin - macros.protein) * 5
+                    : (macros.protein > targetProtMax ? (macros.protein - targetProtMax) * 2 : 0);
+
+                var score = -(kcalDev + protDev);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestCarbIdx = ci;
+                    bestProtIdx = pi;
+                }
+            });
+        });
+
+        // Restore
+        trainerSelections.dinnerCarb = savedCarb;
+        trainerSelections.dinnerProtein = savedProt;
+
+        return { carbIdx: bestCarbIdx, protIdx: bestProtIdx };
+    }
+
+    var bestDinner = findBestDinnerCombo();
+
     // Helper: fruit selector chips for a meal (max 1 fruit total between lunch and dinner)
     function fruitSelectorHtml(meal) {
         var selIdx = trainerFruitSelections[meal];
@@ -5144,10 +5193,12 @@ function renderTrainerContent() {
     html += '<div class="meal-table-wrapper"><div class="meal-table-header carbs">🌾 Hidratos de Carbono</div><table class="meal-table"><tbody>';
     dinnerCarbs.forEach(function(item, idx) {
         var s = trainerSelections.dinnerCarb === idx;
+        var isRec = bestDinner && bestDinner.carbIdx === idx && trainerSelections.dinnerCarb === null;
         var u = item.unit || 'g';
         var tagHtml = item.tag ? ' <span class="food-tag food-tag-' + item.tag + '">' + item.tag + '</span>' : '';
+        var recBadge = isRec ? ' <span class="food-tag dinner-rec-badge">⭐ ideal</span>' : '';
         var amtHtml = getDisplayAmount('dinner', 'carb', idx, item.base, u, s) + tagHtml;
-        html += '<tr class="' + (s ? 'selected' : '') + '" data-trainer-meal="dinner" data-trainer-type="carb" data-trainer-index="' + idx + '"><td>' + item.name + '</td><td>' + amtHtml + '</td></tr>';
+        html += '<tr class="' + (s ? 'selected' : '') + (isRec ? ' dinner-rec-row' : '') + '" data-trainer-meal="dinner" data-trainer-type="carb" data-trainer-index="' + idx + '"><td>' + item.name + recBadge + '</td><td>' + amtHtml + '</td></tr>';
         if (item.altName) {
             var altAmtHtml = getDisplayAmount('dinner', 'carb', idx, item.altBase, u, s) + tagHtml;
             html += '<tr class="sub-row ' + (s ? 'selected' : '') + '" data-trainer-meal="dinner" data-trainer-type="carb" data-trainer-index="' + idx + '"><td>' + item.altName + '</td><td>' + altAmtHtml + '</td></tr>';
@@ -5158,9 +5209,11 @@ function renderTrainerContent() {
     html += '<div class="meal-table-wrapper"><div class="meal-table-header protein">🥩 Proteínas</div><table class="meal-table"><tbody>';
     dinnerProteins.forEach(function(item, idx) {
         var s = trainerSelections.dinnerProtein === idx;
+        var isRec = bestDinner && bestDinner.protIdx === idx && trainerSelections.dinnerProtein === null;
         var u = item.unit || 'g';
+        var recBadge = isRec ? ' <span class="food-tag dinner-rec-badge">⭐ ideal</span>' : '';
         var amtHtml = getDisplayAmount('dinner', 'protein', idx, item.base, u, s);
-        html += '<tr class="' + (s ? 'selected' : '') + '" data-trainer-meal="dinner" data-trainer-type="protein" data-trainer-index="' + idx + '"><td>' + item.name + '</td><td>' + amtHtml + '</td></tr>';
+        html += '<tr class="' + (s ? 'selected' : '') + (isRec ? ' dinner-rec-row' : '') + '" data-trainer-meal="dinner" data-trainer-type="protein" data-trainer-index="' + idx + '"><td>' + item.name + recBadge + '</td><td>' + amtHtml + '</td></tr>';
     });
     html += '</tbody></table></div>';
     html += '</div></div>'; // end meal-tables + meal-card

@@ -1252,6 +1252,25 @@ body {
     border: 1px solid rgba(176, 112, 64, 0.25);
 }
 
+.dinner-rec-badge {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    font-size: 0.6rem;
+}
+
+.dinner-rec-row {
+    background: rgba(245, 158, 11, 0.06) !important;
+}
+
+.dinner-rec-row td {
+    color: var(--text-primary);
+}
+
+.meal-table tbody tr.dinner-rec-row:hover {
+    background: rgba(245, 158, 11, 0.12) !important;
+}
+
 /* ========== NUTRITION SUMMARY ========== */
 .nutrition-summary {
     background: var(--card-bg);
