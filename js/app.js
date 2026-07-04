@@ -3158,10 +3158,10 @@ var mealSupplements = {
 
 function buildMealSummaryHTML(selObj, ratio, isTrainer) {
     var r = ratio || 1;
-    // For public view: use split ratios; for trainer: ratio=1 passed in
+    var trainerRatios = isTrainer ? getTrainerMealScaledRatios() : null;
     var ratios = isTrainer ? null : getScalingRatios(selObj);
-    var carbR = isTrainer ? r : ratios.carb;
-    var protR = isTrainer ? r : ratios.protein;
+    var carbR = isTrainer ? trainerRatios.carb : ratios.carb;
+    var protR = isTrainer ? trainerRatios.protein : ratios.protein;
 
     function getBreakfastItems() {
         if (selObj.breakfast === null) return null;
@@ -3187,34 +3187,46 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
             }
             return line;
         });
+        if (isTrainer) {
+            items.push('🍌 Banana: <strong>225g</strong>');
+        }
         return { name: opt.name, items: items };
     }
 
-    function getMealItems(carbsData, protsData, carbIdx, protIdx) {
+    function getMealItems(carbsData, protsData, carbIdx, protIdx, mealKey) {
         var items = [];
         if (carbIdx !== null) {
             var carb = carbsData[carbIdx];
-            var cg = isTrainer ? carb.base : scaleAmount(carb.base, carbR);
+            var cg = isTrainer ? Math.round(carb.base * carbR) : scaleAmount(carb.base, carbR);
             items.push(carb.name + ': <strong>' + cg + (carb.unit || 'g') + '</strong>');
         }
         if (protIdx !== null) {
             var prot = protsData[protIdx];
-            var pg = isTrainer ? prot.base : scaleAmount(prot.base, protR);
+            var pg = isTrainer ? Math.round(prot.base * protR) : scaleAmount(prot.base, protR);
             items.push(prot.name + ': <strong>' + pg + (prot.unit || 'g') + '</strong>');
         }
         var vegG = isTrainer ? 200 : scaleAmount(200, carbR);
-        var oilMl = isTrainer ? EXTRAS_OIL_ML : scaleAmount(EXTRAS_OIL_ML, carbR);
+        var oilMl = isTrainer ? trainerRatios.oilMl : scaleAmount(EXTRAS_OIL_ML, carbR);
         items.push('Verduras/ensalada: <strong>~' + vegG + 'g</strong>');
         items.push('Aceite de oliva: <strong>' + oilMl + 'ml</strong>');
-        items.push('1 pieza de fruta');
+        
+        if (isTrainer) {
+            var fruitIdx = trainerFruitSelections[mealKey];
+            if (fruitIdx !== null && fruitIdx !== undefined) {
+                var fr = TRAINER_FRUIT_OPTIONS[fruitIdx];
+                items.push(fr.emoji + ' ' + fr.name + ': <strong>' + TRAINER_FRUIT_GRAMS + 'g</strong>');
+            }
+        } else {
+            items.push('1 pieza de fruta');
+        }
         return items;
     }
 
     var bk = getBreakfastItems();
     var lunchItems = (selObj.lunchCarb !== null || selObj.lunchProtein !== null)
-        ? getMealItems(lunchCarbs, lunchProteins, selObj.lunchCarb, selObj.lunchProtein) : null;
+        ? getMealItems(lunchCarbs, lunchProteins, selObj.lunchCarb, selObj.lunchProtein, 'lunch') : null;
     var dinnerItems = (selObj.dinnerCarb !== null || selObj.dinnerProtein !== null)
-        ? getMealItems(dinnerCarbs, dinnerProteins, selObj.dinnerCarb, selObj.dinnerProtein) : null;
+        ? getMealItems(dinnerCarbs, dinnerProteins, selObj.dinnerCarb, selObj.dinnerProtein, 'dinner') : null;
 
     var complete = bk && lunchItems && dinnerItems;
     if (!complete) return '';
@@ -3223,31 +3235,39 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
     function calcBreakfastKcal() {
         if (selObj.breakfast === null) return 0;
         var m = breakfastOptions[selObj.breakfast].macros;
-        return Math.round(m[0] * carbR);
+        var kcal = m[0] * (isTrainer ? 1 : carbR);
+        if (isTrainer) {
+            kcal += getTrainerFruitMacros(0).kcal; // Banana
+        }
+        return Math.round(kcal);
     }
-    function calcMealKcal(carbsData, protsData, carbIdx, protIdx) {
+    function calcMealKcal(carbsData, protsData, carbIdx, protIdx, mealKey) {
         var kcal = 0;
         if (carbIdx !== null) {
             var carb = carbsData[carbIdx];
-            var cg = isTrainer ? carb.base : scaleAmount(carb.base, carbR);
+            var cg = isTrainer ? Math.round(carb.base * carbR) : scaleAmount(carb.base, carbR);
             kcal += carb.n[0] * cg / 100;
         }
         if (protIdx !== null) {
             var prot = protsData[protIdx];
-            var pg = isTrainer ? prot.base : scaleAmount(prot.base, protR);
+            var pg = isTrainer ? Math.round(prot.base * protR) : scaleAmount(prot.base, protR);
             kcal += prot.n[0] * pg / 100;
         }
         var vegG = isTrainer ? 200 : scaleAmount(200, carbR);
-        var oilMl = isTrainer ? EXTRAS_OIL_ML : scaleAmount(EXTRAS_OIL_ML, carbR);
+        var oilMl = isTrainer ? trainerRatios.oilMl : scaleAmount(EXTRAS_OIL_ML, carbR);
         kcal += extrasNutr.verduras[0] * vegG / 100;
         kcal += extrasNutr.aceite[0] * oilMl / 100;
-        kcal += extrasNutr.fruta[0];
+        if (isTrainer) {
+            kcal += getTrainerFruitMacros(trainerFruitSelections[mealKey]).kcal;
+        } else {
+            kcal += extrasNutr.fruta[0];
+        }
         return Math.round(kcal);
     }
 
     var bkKcal = calcBreakfastKcal();
-    var lunchKcal = calcMealKcal(lunchCarbs, lunchProteins, selObj.lunchCarb, selObj.lunchProtein);
-    var dinnerKcal = calcMealKcal(dinnerCarbs, dinnerProteins, selObj.dinnerCarb, selObj.dinnerProtein);
+    var lunchKcal = calcMealKcal(lunchCarbs, lunchProteins, selObj.lunchCarb, selObj.lunchProtein, 'lunch');
+    var dinnerKcal = calcMealKcal(dinnerCarbs, dinnerProteins, selObj.dinnerCarb, selObj.dinnerProtein, 'dinner');
 
     function suppHTML(mealKey) {
         var supps = mealSupplements[mealKey] || [];
@@ -3287,6 +3307,24 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
         '<div class="summary-meal-header">😴 Antes de dormir</div>' +
         suppHTML('sleep') +
         '</div>';
+
+    // Extra foods in trainer mode
+    if (isTrainer && trainerExtraFoods.length > 0) {
+        var extraKcalTotal = 0;
+        var extraItems = trainerExtraFoods.map(function(extra) {
+            var food = trainerFoodCatalog[extra.catalogIdx];
+            var factor = food.unit === 'ud' ? extra.grams : extra.grams / 100;
+            var ek = Math.round(food.n[0] * factor);
+            extraKcalTotal += ek;
+            var displayUnit = food.unit === 'ud' ? (extra.grams === 1 ? ' unidad' : ' unidades') : food.unit;
+            return '<li>' + food.name + ': <strong>' + extra.grams + displayUnit + '</strong> <span style="color:#999">(' + ek + ' kcal)</span></li>';
+        }).join('');
+
+        html += '<div class="summary-meal summary-meal-extras" style="border-top:1px dashed var(--border);margin-top:12px;padding-top:12px">' +
+            '<div class="summary-meal-header">🍎 Alimentos adicionales <span class="summary-meal-kcal">' + Math.round(extraKcalTotal) + ' kcal</span></div>' +
+            '<ul class="summary-meal-items">' + extraItems + '</ul>' +
+            '</div>';
+    }
 
     html += '</div>';
     return html;
