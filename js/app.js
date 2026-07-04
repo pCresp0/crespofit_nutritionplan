@@ -5017,19 +5017,16 @@ function renderTrainerContent() {
 
     html += '</div>'; // end dinner panel
 
-    // Alimentos adicionales (siempre visible, fuera de tabs)
-    var extrasOpen = trainerExtraFoods.length > 0 ? ' open' : '';
-    var extrasOpenClass = trainerExtraFoods.length > 0 ? ' extras-open' : '';
-    html += '<div class="trainer-section trainer-extras-section' + extrasOpenClass + '">';
-    html += '<div class="trainer-extras-toggle" id="trainer-extras-toggle">';
-    html += '<span class="trainer-extras-toggle-icon">🍽️</span>';
-    html += '<span class="trainer-extras-toggle-text">¿Has comido algún alimento adicional?</span>';
+    // Alimentos adicionales (siempre visible, no colapsable)
+    html += '<div class="trainer-section trainer-extras-section">';
+    html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">';
+    html += '<h3 style="margin:0; font-size:1.15rem; font-weight:700; color:var(--text-primary);">🍽️ Alimentos adicionales</h3>';
     if (trainerExtraFoods.length > 0) {
-        html += '<span class="trainer-extras-badge">' + trainerExtraFoods.length + '</span>';
+        html += '<span class="trainer-extras-badge" style="background:var(--accent); color:#1e1e1e; font-weight:700; font-size:0.8rem; padding:2px 8px; border-radius:12px;">' + trainerExtraFoods.length + '</span>';
     }
-    html += '<span class="trainer-extras-chevron">▾</span>';
     html += '</div>';
-    html += '<div class="trainer-extras-body' + extrasOpen + '" id="trainer-extras-body">';
+    
+    html += '<div class="trainer-extras-body open" id="trainer-extras-body" style="padding-top:0;">';
     html += '<button id="trainer-open-search" class="trainer-extra-search-trigger" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px; border:1px dashed var(--border); background:var(--bg-secondary); color:var(--text-secondary); cursor:pointer; font-weight:600; font-size:0.9rem; transition:all 0.2s ease; margin-bottom:12px;">';
     html += '<span>🔍 Buscar y añadir alimento...</span>';
     html += '</button>';
@@ -5266,13 +5263,17 @@ function renderSearchModalContent(backdrop, query) {
         
         var normalizedQuery = query.toLowerCase().trim();
         var matches = [];
-        trainerFoodCatalog.forEach(function(f, idx) {
-            if (normalizedQuery === '' || f.name.toLowerCase().includes(normalizedQuery) || f.cat.toLowerCase().includes(normalizedQuery)) {
-                matches.push({ food: f, idx: idx });
-            }
-        });
+        if (normalizedQuery !== '') {
+            trainerFoodCatalog.forEach(function(f, idx) {
+                if (f.name.toLowerCase().includes(normalizedQuery) || f.cat.toLowerCase().includes(normalizedQuery)) {
+                    matches.push({ food: f, idx: idx });
+                }
+            });
+        }
         
-        if (matches.length === 0) {
+        if (normalizedQuery === '') {
+            html += '<div style="text-align:center; padding:32px 16px; color:var(--text-secondary); font-size:0.88rem;">Escribe en el buscador superior para encontrar un alimento...</div>';
+        } else if (matches.length === 0) {
             html += '<div style="text-align:center; padding:24px; color:var(--text-secondary); font-size:0.9rem;">No se encontraron resultados</div>';
         } else {
             var lastCat = '';
