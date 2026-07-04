@@ -3201,14 +3201,14 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
             var carb = carbsData[carbIdx];
             var cg = isTrainer ? Math.round(carb.base * cR) : scaleAmount(carb.base, cR);
             var isScaled = isTrainer && Math.abs(cR - 1.0) > 0.01;
-            var label = isScaled ? ' <span class="badge-adjusted" style="color:var(--gold-accent); font-size:0.72rem; font-weight:600; margin-left:4px;">(ajustado)</span>' : '';
+            var label = isScaled ? ' <span class="badge-adjusted" style="background:rgba(245,158,11,0.12); color:var(--accent); border:1px solid rgba(245,158,11,0.25); font-size:0.65rem; font-weight:700; border-radius:4px; padding:1px 5px; margin-left:6px; text-transform:uppercase; letter-spacing:0.04em; vertical-align:middle;">ajustado</span>' : '';
             items.push(carb.name + ': <strong>' + cg + (carb.unit || 'g') + '</strong>' + label);
         }
         if (protIdx !== null) {
             var prot = protsData[protIdx];
             var pg = isTrainer ? Math.round(prot.base * pR) : scaleAmount(prot.base, pR);
             var isScaled = isTrainer && Math.abs(pR - 1.0) > 0.01;
-            var label = isScaled ? ' <span class="badge-adjusted" style="color:var(--gold-accent); font-size:0.72rem; font-weight:600; margin-left:4px;">(ajustado)</span>' : '';
+            var label = isScaled ? ' <span class="badge-adjusted" style="background:rgba(245,158,11,0.12); color:var(--accent); border:1px solid rgba(245,158,11,0.25); font-size:0.65rem; font-weight:700; border-radius:4px; padding:1px 5px; margin-left:6px; text-transform:uppercase; letter-spacing:0.04em; vertical-align:middle;">ajustado</span>' : '';
             items.push(prot.name + ': <strong>' + pg + (prot.unit || 'g') + '</strong>' + label);
         }
         var vegG = isTrainer ? 200 : scaleAmount(200, cR);
@@ -3217,7 +3217,7 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
         
         var oilLabel = '';
         if (isTrainer && Math.abs(trainerRatios.oilMl - EXTRAS_OIL_ML) > 0.01) {
-            oilLabel = ' <span class="badge-adjusted" style="color:var(--gold-accent); font-size:0.72rem; font-weight:600; margin-left:4px;">(ajustado)</span>';
+            oilLabel = ' <span class="badge-adjusted" style="background:rgba(245,158,11,0.12); color:var(--accent); border:1px solid rgba(245,158,11,0.25); font-size:0.65rem; font-weight:700; border-radius:4px; padding:1px 5px; margin-left:6px; text-transform:uppercase; letter-spacing:0.04em; vertical-align:middle;">ajustado</span>';
         }
         items.push('Aceite de oliva: <strong>' + oilMl + 'ml</strong>' + oilLabel);
         
