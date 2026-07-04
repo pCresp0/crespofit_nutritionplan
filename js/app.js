@@ -4902,7 +4902,7 @@ document.getElementById('trainer-activity-panel').addEventListener('input', func
     }
 });
 
-document.getElementById('trainer-activity-panel').addEventListener('change', function(e) {
+document.addEventListener('change', function(e) {
     if (!trainerModeActive) return;
     if (e.target.id === 'trainer-extra-food') {
         var foodSelect = e.target;
