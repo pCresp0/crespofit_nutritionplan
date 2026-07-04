@@ -5218,6 +5218,13 @@ body.site-gate-active {
     margin-bottom: 12px;
 }
 
+.macro-fix-section {
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
 .macro-fix-item {
     display: flex;
     flex-wrap: wrap;
@@ -5238,6 +5245,18 @@ body.site-gate-active {
     transform: scale(1.01);
 }
 .macro-fix-selectable:active {
+    transform: scale(0.98);
+}
+
+.macro-fix-addable {
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+.macro-fix-addable:hover {
+    background: rgba(46, 204, 113, 0.15);
+    transform: scale(1.01);
+}
+.macro-fix-addable:active {
     transform: scale(0.98);
 }
 

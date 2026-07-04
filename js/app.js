@@ -2918,13 +2918,42 @@ document.addEventListener('click', function(e) {
     }
     if (e.target.id==='tooltip-overlay'){document.getElementById('tooltip-overlay').style.display='none';return;}
     if (e.target.id==='tooltip-close'||e.target.closest('#tooltip-close')){document.getElementById('tooltip-overlay').style.display='none';return;}
-    // Apply macro fix suggestion
+    
+    // Apply macro fix suggestion - swap
     var fixItem = e.target.closest('.macro-fix-selectable');
     if (fixItem) {
         var key = fixItem.dataset.fixKey;
         var idx = parseInt(fixItem.dataset.fixIdx);
         if (key && !isNaN(idx)) {
             trainerSelections[key] = idx;
+            document.getElementById('tooltip-overlay').style.display = 'none';
+            renderTrainerContent();
+        }
+        return;
+    }
+    
+    // Apply macro fix suggestion - add extra food
+    var addItem = e.target.closest('.macro-fix-addable');
+    if (addItem) {
+        var foodName = decodeURIComponent(addItem.dataset.addFood);
+        var grams = parseInt(addItem.dataset.addGrams);
+        
+        // Find the food in catalog
+        var foodIdx = -1;
+        for (var i = 0; i < trainerFoodCatalog.length; i++) {
+            if (trainerFoodCatalog[i].name === foodName) {
+                foodIdx = i;
+                break;
+            }
+        }
+        
+        if (foodIdx >= 0) {
+            // Add to trainerExtraFoods
+            trainerExtraFoods.push({
+                catalogIdx: foodIdx,
+                grams: grams,
+                replace: 'none'
+            });
             document.getElementById('tooltip-overlay').style.display = 'none';
             renderTrainerContent();
         }
@@ -4806,11 +4835,29 @@ function generateMacroSuggestions(macro) {
 
     var addSuggestions = [];
     if (deficit > 0) {
+        var currentKcal = Math.round(targetMacros.kcal);
+        var maxKcal = trainerTargetKcal + TRAINER_KCAL_TOLERANCE;
+        var kcalAvailable = Math.max(0, maxKcal - currentKcal);
+        
         trainerFoodCatalog.forEach(function(food) {
             var macroPerG = food.n[mi];
             if (macroPerG > 5) {
                 var gramsNeeded = Math.round(deficit / macroPerG * 100);
                 var extraKcal = Math.round(food.n[0] * gramsNeeded / 100);
+                
+                // Check if adding this food would not exceed kcal limit
+                if (extraKcal > kcalAvailable) {
+                    // Reduce grams to fit within available kcal
+                    var kcalPerG = food.n[0];
+                    gramsNeeded = Math.round(kcalAvailable / kcalPerG * 100);
+                    extraKcal = Math.round(food.n[0] * gramsNeeded / 100);
+                    // Recalculate macro gain with reduced grams
+                    var macroPortion = Math.round(food.n[mi] * gramsNeeded / 100);
+                    if (macroPortion < 5) return; // Too little macro benefit, skip
+                } else if (gramsNeeded > 0 && gramsNeeded <= 500) {
+                    var macroPortion = Math.round(food.n[mi] * gramsNeeded / 100);
+                }
+                
                 if (gramsNeeded > 0 && gramsNeeded <= 500) {
                     addSuggestions.push({ type: 'add', food: food.name, grams: gramsNeeded, diff: Math.round(deficit), kcalAdd: extraKcal });
                 }
@@ -4843,7 +4890,9 @@ function showMacroFixTooltip(macro) {
     if (data.swaps.length === 0 && data.adds.length === 0) {
         html = '<p>No hay sugerencias disponibles con la selecci\u00f3n actual.</p>';
     } else {
+        // Swaps section
         if (data.swaps.length > 0) {
+            html += '<div class="macro-fix-section">';
             // Group swaps by meal
             var meals = ['Desayuno', 'Comida', 'Cena'];
             var now = new Date();
@@ -4867,15 +4916,19 @@ function showMacroFixTooltip(macro) {
                 });
                 html += '</div>';
             });
+            html += '</div>';
         }
 
+        // Adds section
         if (data.adds.length > 0) {
-            html += '<h4 style="margin-top:12px">\u2795 A\u00f1adir alimento extra</h4><div class="macro-fix-list">';
+            html += '<div class="macro-fix-section" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">';
+            html += '<h4 style="margin-top:0">\u2795 A\u00f1adir alimento extra</h4><div class="macro-fix-list">';
             data.adds.forEach(function(s) {
-                html += '<div class="macro-fix-item"><span class="macro-fix-add">A\u00f1adir <strong>' + s.grams + 'g ' + s.food + '</strong></span>' +
+                html += '<div class="macro-fix-item macro-fix-addable" data-add-food="' + encodeURIComponent(s.food) + '" data-add-grams="' + s.grams + '">' +
+                    '<span class="macro-fix-add">A\u00f1adir <strong>' + s.grams + 'g ' + s.food + '</strong></span>' +
                     '<span class="macro-fix-stats"><span class="macro-fix-diff">+' + s.diff + 'g</span><span class="macro-fix-kcal">' + (s.kcalAdd > 0 ? '+' : '') + s.kcalAdd + ' kcal</span></span></div>';
             });
-            html += '</div>';
+            html += '</div></div>';
         }
     }
 
