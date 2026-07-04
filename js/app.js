@@ -3371,6 +3371,7 @@ var trainerSelections = {
     breakfast: null,
     lunchCarb: null,
     lunchProtein: null,
+    snackVisited: false,
     dinnerCarb: null,
     dinnerProtein: null
 };
@@ -4735,13 +4736,11 @@ function renderTrainerContent() {
     html += '<div class="meal-card">';
     html += '<div class="tab-subtitle">Elige un hidrato y una proteína.</div>';
     if (isComplete) {
-        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + oilDisplay + ' aceite oliva &nbsp;|&nbsp; fruta (225g)</span>' +
+        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + oilDisplay + ' aceite oliva</span>' +
             '<span class="dinner-kcal-hint">Cantidades ajustadas automáticamente a los macros objetivo</span></div>';
     } else {
-        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + oilDisplay + ' aceite oliva &nbsp;|&nbsp; fruta (225g)</span></div>';
+        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + oilDisplay + ' aceite oliva</span></div>';
     }
-    // Fruit selector for lunch
-    html += fruitSelectorHtml('lunch');
     html += '<div class="meal-tables">';
     // Carbs
     html += '<div class="meal-table-wrapper"><div class="meal-table-header carbs">🌾 Hidratos de Carbono</div><table class="meal-table"><tbody>';
@@ -4793,13 +4792,11 @@ function renderTrainerContent() {
     html += '<div class="meal-card">';
     html += '<div class="tab-subtitle">Elige un hidrato y una proteína.</div>';
     if (isComplete) {
-        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + oilDisplay + ' aceite oliva &nbsp;|&nbsp; fruta (225g)</span>' +
+        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + oilDisplay + ' aceite oliva</span>' +
             '<span class="dinner-kcal-hint">Cantidades ajustadas automáticamente a los macros objetivo</span></div>';
     } else {
-        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + oilDisplay + ' aceite oliva &nbsp;|&nbsp; fruta (225g) &nbsp;&mdash; Selecciona comida para ajustar</span></div>';
+        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + oilDisplay + ' aceite oliva &nbsp;&mdash; Selecciona comida para ajustar</span></div>';
     }
-    // Fruit selector for dinner
-    html += fruitSelectorHtml('dinner');
     html += '<div class="meal-tables">';
     // Carbs
     html += '<div class="meal-table-wrapper"><div class="meal-table-header carbs">🌾 Hidratos de Carbono</div><table class="meal-table"><tbody>';
@@ -5107,16 +5104,21 @@ document.getElementById('trainer-activity-panel').addEventListener('click', func
 document.addEventListener('click', function(e) {
     var tabBtn = e.target.closest('[data-trainer-tab]');
     if (tabBtn && tabBtn.dataset.trainerTab) {
-        switchTrainerTab(tabBtn.dataset.trainerTab);
+        var nextTab = tabBtn.dataset.trainerTab;
+        if (nextTab === 'dinner') {
+            trainerSelections.snackVisited = true;
+        }
+        switchTrainerTab(nextTab);
     }
 });
 
 function checkAutoAdvanceTrainer() {
-    // Ordered sequence of steps: breakfast → lunchCarb → lunchProtein → dinnerCarb → dinnerProtein
+    // Ordered sequence of steps: breakfast → lunchCarb → lunchProtein → snackVisited → dinnerCarb → dinnerProtein
     var steps = [
         { key:'breakfast', tab:'breakfast', label:'Desayuno' },
         { key:'lunchCarb', tab:'lunch', label:'Comida HC', section:'carbs' },
         { key:'lunchProtein', tab:'lunch', label:'Comida Prot', section:'protein' },
+        { key:'snackVisited', tab:'snack', label:'Merienda' },
         { key:'dinnerCarb', tab:'dinner', label:'Cena HC', section:'carbs' },
         { key:'dinnerProtein', tab:'dinner', label:'Cena Prot', section:'protein' }
     ];
@@ -5124,7 +5126,8 @@ function checkAutoAdvanceTrainer() {
     // Find the first unfilled step
     var nextStep = null;
     for (var i = 0; i < steps.length; i++) {
-        if (trainerSelections[steps[i].key] === null) { nextStep = steps[i]; break; }
+        var val = trainerSelections[steps[i].key];
+        if (val === null || val === false) { nextStep = steps[i]; break; }
     }
 
     // All 5 complete → scroll to summary
@@ -5156,6 +5159,7 @@ function checkAutoAdvanceTrainer() {
         var msgs = {
             'breakfast': 'Falta el desayuno',
             'lunch': nextStep.key === 'lunchCarb' ? 'Vamos con la comida' : 'Falta la proteína de la comida',
+            'snack': 'Vamos con la merienda',
             'dinner': nextStep.key === 'dinnerCarb' ? 'Vamos con la cena' : 'Falta la proteína de la cena'
         };
         setTimeout(function() {
@@ -5264,7 +5268,12 @@ document.addEventListener('click', function(e) {
                 });
             }
         }
+        
+        if (fruitMeal === 'snack') {
+            trainerSelections.snackVisited = true;
+        }
         renderTrainerContent(); // re-render to update scaled dinner amounts
+        checkAutoAdvanceTrainer();
         return;
     }
 
