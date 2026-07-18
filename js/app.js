@@ -74,13 +74,13 @@ var breakfastOptions = [
 ];
 
 var lunchCarbs = [
-    {name:'Arroz blanco',base:130,tag:'seco',n:[350,7,78,0.6]},
-    {name:'Pasta',base:130,tag:'seco',n:[350,12,72,1.5]},
-    {name:'Patata cocida',base:660,tag:'cocido',n:[77,1.8,17,0.1]},
-    {name:'Tortitas de arroz',base:130,n:[385,7,83,3]},{name:'Pan',base:180,n:[265,9,49,3.2]},
-    {name:'Quinoa',base:130,tag:'seco',n:[368,14,64,6]},{name:'Cus-cus',base:130,tag:'seco',n:[376,12.8,77,0.6]},{name:'Gnocchis de patata',base:260,n:[165,4,34,1]},
-    {name:'Garbanzos cocidos',base:300,tag:'cocido',n:[164,9,27,2.6]},
-    {name:'Lentejas cocidas',base:400,tag:'cocido',n:[116,9,20,0.4]}
+    {name:'Arroz blanco',base:100,tag:'seco',n:[350,7,78,0.6]},
+    {name:'Pasta',base:100,tag:'seco',n:[350,12,72,1.5]},
+    {name:'Patata cocida',base:510,tag:'cocido',n:[77,1.8,17,0.1]},
+    {name:'Tortitas de arroz',base:100,n:[385,7,83,3]},{name:'Pan',base:140,n:[265,9,49,3.2]},
+    {name:'Quinoa',base:100,tag:'seco',n:[368,14,64,6]},{name:'Cus-cus',base:100,tag:'seco',n:[376,12.8,77,0.6]},{name:'Gnocchis de patata',base:200,n:[165,4,34,1]},
+    {name:'Garbanzos cocidos',base:230,tag:'cocido',n:[164,9,27,2.6]},
+    {name:'Lentejas cocidas',base:310,tag:'cocido',n:[116,9,20,0.4]}
 ];
 var lunchProteins = [
     {name:'Pollo',base:200,n:[110,23,0,1.5]},{name:'Pavo',base:220,n:[105,24,0,1]},{name:'Hamburguesa de pollo',base:180,n:[150,17,4,7]},
@@ -3099,7 +3099,7 @@ function init() {
     if (!hasState) {
         currentKcal = 2400;
         recommendedKcal = 2400;
-        selections = { breakfast: null, lunchCarb: null, lunchProtein: null, dinnerCarb: null, dinnerProtein: null };
+        selections = { breakfast: 0, lunchCarb: null, lunchProtein: null, dinnerCarb: null, dinnerProtein: null };
     }
     
     enterTrainerMode();
@@ -3492,7 +3492,7 @@ function renderTrainerDietSummary() {
 // ============================================================
 var trainerModeActive = false;
 var trainerSelections = {
-    breakfast: null,
+    breakfast: 0,
     lunchCarb: null,
     lunchProtein: null,
     snackVisited: false,
@@ -4024,12 +4024,12 @@ function getTrainerMealScaledRatios(selObj) {
     fixedProt += lunchFruit.protein + dinnerFruit.protein + snackFruit.protein;
     fixedFat += lunchFruit.fat + dinnerFruit.fat + snackFruit.fat;
 
-    // 2.1 Merienda fija (250ml leche desnatada + 40g avena)
-    // Leche desnatada 250ml: 100 kcal, 9.75g P, 13.25g C, 0.75g F
-    // Avena 40g: 148.8 kcal, 5.2g P, 24g C, 2.8g F
-    fixedKcal += 248.8;
-    fixedProt += 14.95;
-    fixedFat  += 3.55;
+    // 2.1 Merienda fija (Plátano 120g + 45g Whey Protein)
+    // Plátano 120g: 106.8 kcal, 1.32g P, 27.36g C, 0.36g F
+    // Whey 45g: 162.45 kcal, 34.2g P, 2.65g C, 1.62g F
+    fixedKcal += 269.25;
+    fixedProt += 35.52;
+    fixedFat  += 1.98;
 
     // 2.2 Alimentos adicionales (restan de los macros disponibles para Comida/Cena)
     trainerExtraFoods.forEach(function(extra) {
@@ -4546,14 +4546,14 @@ function calculateTrainerMacros() {
         t.kcal += lunchFruitM.kcal; t.protein += lunchFruitM.protein; t.carbs += lunchFruitM.carbs; t.fat += lunchFruitM.fat;
     }
 
-    // 2.5 MERIENDA — fija (250ml leche desnatada + 40g avena)
+    // 2.5 MERIENDA — fija (Plátano 120g + 45g Whey Protein)
     // Siempre incluida si hay desayuno seleccionado
     if (trainerSelections.breakfast !== null) {
         has = true;
-        t.kcal    += 248.8;
-        t.protein += 14.95;
-        t.carbs   += 37.25;
-        t.fat     += 3.55;
+        t.kcal    += 269.25;
+        t.protein += 35.52;
+        t.carbs   += 30.01;
+        t.fat     += 1.98;
         var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
         t.kcal += snackFruitM.kcal; t.protein += snackFruitM.protein; t.carbs += snackFruitM.carbs; t.fat += snackFruitM.fat;
     }
@@ -5158,13 +5158,13 @@ function renderTrainerContent() {
     var snackActive = currentTrainerTab === 'snack' ? ' active' : '';
     html += '<div class="trainer-tab-panel' + snackActive + '" data-trainer-panel="snack">';
     html += '<div class="meal-card">';
-    html += '<div class="tab-subtitle">Merienda fija con hidratos de calidad y proteína láctea.</div>';
-    html += '<div class="extras-banner"><span>🥛 Leche desnatada + 🌾 Avena (fijos)</span></div>';
+    html += '<div class="tab-subtitle">Merienda de proteínas rápida.</div>';
+    html += '<div class="extras-banner"><span>🍌 Plátano + 🥤 Batido de proteínas (fijos)</span></div>';
     html += '<div class="meal-tables">';
-    html += '<div class="meal-table-wrapper" style="width:100%; max-width:600px; margin:0 auto;"><div class="meal-table-header carbs">🥛 Merienda Fija</div><table class="meal-table"><tbody>';
-    html += '<tr class="selected"><td>Leche desnatada</td><td><strong>250ml</strong> (~100 kcal · 9.8g P · 13.3g C)</td></tr>';
-    html += '<tr class="selected"><td>Copos de avena</td><td><strong>40g</strong> (~149 kcal · 5.2g P · 24g C)</td></tr>';
-    html += '<tr style="font-size:0.78rem;opacity:0.7;"><td colspan="2">Total merienda: ~249 kcal · 15g proteína · 37g carbos</td></tr>';
+    html += '<div class="meal-table-wrapper" style="width:100%; max-width:600px; margin:0 auto;"><div class="meal-table-header protein">🍌 Merienda Fija</div><table class="meal-table"><tbody>';
+    html += '<tr class="selected"><td>Plátano</td><td><strong>1 pieza (120g)</strong> (~107 kcal · 1.3g P · 27.4g C)</td></tr>';
+    html += '<tr class="selected"><td>Whey Protein con agua</td><td><strong>45g</strong> (~162 kcal · 34.2g P)</td></tr>';
+    html += '<tr style="font-size:0.78rem;opacity:0.7;"><td colspan="2">Total merienda: ~269 kcal · 35.5g proteína · 30g carbos</td></tr>';
     html += '</tbody></table></div>';
     html += '</div></div>';
     html += '</div>'; // end snack panel
