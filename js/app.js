@@ -4024,12 +4024,11 @@ function getTrainerMealScaledRatios(selObj) {
     fixedProt += lunchFruit.protein + dinnerFruit.protein + snackFruit.protein;
     fixedFat += lunchFruit.fat + dinnerFruit.fat + snackFruit.fat;
 
-    // 2.1 Merienda fija (Plátano 120g + 45g Whey Protein)
+    // 2.1 Merienda fija (Plátano 120g)
     // Plátano 120g: 106.8 kcal, 1.32g P, 27.36g C, 0.36g F
-    // Whey 45g: 162.45 kcal, 34.2g P, 2.65g C, 1.62g F
-    fixedKcal += 269.25;
-    fixedProt += 35.52;
-    fixedFat  += 1.98;
+    fixedKcal += 106.8;
+    fixedProt += 1.32;
+    fixedFat  += 0.36;
 
     // 2.2 Alimentos adicionales (restan de los macros disponibles para Comida/Cena)
     trainerExtraFoods.forEach(function(extra) {
@@ -4546,14 +4545,14 @@ function calculateTrainerMacros() {
         t.kcal += lunchFruitM.kcal; t.protein += lunchFruitM.protein; t.carbs += lunchFruitM.carbs; t.fat += lunchFruitM.fat;
     }
 
-    // 2.5 MERIENDA — fija (Plátano 120g + 45g Whey Protein)
+    // 2.5 MERIENDA — fija (Plátano 120g)
     // Siempre incluida si hay desayuno seleccionado
     if (trainerSelections.breakfast !== null) {
         has = true;
-        t.kcal    += 269.25;
-        t.protein += 35.52;
-        t.carbs   += 30.01;
-        t.fat     += 1.98;
+        t.kcal    += 106.8;
+        t.protein += 1.32;
+        t.carbs   += 27.36;
+        t.fat     += 0.36;
         var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
         t.kcal += snackFruitM.kcal; t.protein += snackFruitM.protein; t.carbs += snackFruitM.carbs; t.fat += snackFruitM.fat;
     }
@@ -5158,13 +5157,12 @@ function renderTrainerContent() {
     var snackActive = currentTrainerTab === 'snack' ? ' active' : '';
     html += '<div class="trainer-tab-panel' + snackActive + '" data-trainer-panel="snack">';
     html += '<div class="meal-card">';
-    html += '<div class="tab-subtitle">Merienda de proteínas rápida.</div>';
-    html += '<div class="extras-banner"><span>🍌 Plátano + 🥤 Batido de proteínas (fijos)</span></div>';
+    html += '<div class="tab-subtitle">Merienda de energía rápida.</div>';
+    html += '<div class="extras-banner"><span>🍌 Plátano (fijo)</span></div>';
     html += '<div class="meal-tables">';
-    html += '<div class="meal-table-wrapper" style="width:100%; max-width:600px; margin:0 auto;"><div class="meal-table-header protein">🍌 Merienda Fija</div><table class="meal-table"><tbody>';
+    html += '<div class="meal-table-wrapper" style="width:100%; max-width:600px; margin:0 auto;"><div class="meal-table-header carbs">🍌 Merienda Fija</div><table class="meal-table"><tbody>';
     html += '<tr class="selected"><td>Plátano</td><td><strong>1 pieza (120g)</strong> (~107 kcal · 1.3g P · 27.4g C)</td></tr>';
-    html += '<tr class="selected"><td>Whey Protein con agua</td><td><strong>45g</strong> (~162 kcal · 34.2g P)</td></tr>';
-    html += '<tr style="font-size:0.78rem;opacity:0.7;"><td colspan="2">Total merienda: ~269 kcal · 35.5g proteína · 30g carbos</td></tr>';
+    html += '<tr style="font-size:0.78rem;opacity:0.7;"><td colspan="2">Total merienda: ~107 kcal · 1.3g proteína · 27.4g carbos</td></tr>';
     html += '</tbody></table></div>';
     html += '</div></div>';
     html += '</div>'; // end snack panel
