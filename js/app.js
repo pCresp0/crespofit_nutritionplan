@@ -57,14 +57,14 @@ function showAppConfirm(message, onConfirm, onCancel) {
 var BASE_KCAL = 2500;
 
 var breakfastOptions = [
-    { id:'batido-proteinas', name:'Batido de avena y proteínas', macros:[540,37,50,21],
-      items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:45,unit:'g'},{text:'Leche desnatada',amount:200,unit:'ml',glassHint:true},{text:'Whey protein',amount:35,unit:'g'},{text:'Aceite de oliva',amount:15,unit:'ml',spoonHint:true}]},
+    { id:'batido-proteinas', name:'Batido de avena y proteínas', macros:[560,38.95,52.65,21.15],
+      items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:45,unit:'g'},{text:'Leche desnatada',amount:250,unit:'ml',glassHint:true},{text:'Whey protein',amount:35,unit:'g'},{text:'Aceite de oliva',amount:15,unit:'ml',spoonHint:true}]},
     { id:'yogur-qfb', name:'Yogur de proteínas / QFB con cereales', macros:[550,42,62,14],
       items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:55,unit:'g'},{text:'Queso fresco batido / Yogur 2% + proteína',amount:500,unit:'g',extra:'ó {200}g yogur',extraBase:200,isAlt:true},{text:'Frutos secos / crema de cacahuete',amount:25,unit:'g'}]},
     { id:'tostadas', name:'Tostadas', macros:[470,28,52,17],
       items:[{text:'Pan integral trigo/espelta/centeno',amount:120,unit:'g'},{text:'Lomo',amount:50,unit:'g',extra:'+ {30}g queso semi/havarti light',extraBase:30},{text:'Guacamole o aguacate',amount:40,unit:'g'}]},
-    { id:'cereales-leche', name:'Cereales con leche y proteína', macros:[500,33,52,17],
-      items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:45,unit:'g'},{text:'Leche desnatada (un vaso)',amount:200,unit:'ml'},{text:'Whey protein',amount:25,unit:'g'},{text:'Frutos secos / crema de cacahuete',amount:25,unit:'g'}]},
+    { id:'cereales-leche', name:'Cereales con leche y proteína', macros:[520,34.95,54.65,17.15],
+      items:[{text:'Corn flakes / copos de avena / cereales sin azúcar',amount:45,unit:'g'},{text:'Leche desnatada (un vaso)',amount:250,unit:'ml'},{text:'Whey protein',amount:25,unit:'g'},{text:'Frutos secos / crema de cacahuete',amount:25,unit:'g'}]},
     { id:'tortitas', name:'Tortitas de avena', macros:[340,22,30,16],
       items:[{text:'Harina de avena / copos de avena',amount:45,unit:'g'},{text:'2 Huevos + claras',amount:100,unit:'g'},{text:'Frutos secos / crema de cacahuete',amount:10,unit:'g'}]},
     { id:'yogures-proteicos', name:'Yogures proteicos', macros:[420,25,60,8],
@@ -4024,10 +4024,12 @@ function getTrainerMealScaledRatios(selObj) {
     fixedProt += lunchFruit.protein + dinnerFruit.protein + snackFruit.protein;
     fixedFat += lunchFruit.fat + dinnerFruit.fat + snackFruit.fat;
 
-    // 2.1 Merienda fija (Whey Protein 35g - HSN Evowhey)
-    fixedKcal += 126;
-    fixedProt += 26.6;
-    fixedFat += 1.26;
+    // 2.1 Merienda fija (250ml leche desnatada + 40g avena)
+    // Leche desnatada 250ml: 100 kcal, 9.75g P, 13.25g C, 0.75g F
+    // Avena 40g: 148.8 kcal, 5.2g P, 24g C, 2.8g F
+    fixedKcal += 248.8;
+    fixedProt += 14.95;
+    fixedFat  += 3.55;
 
     // 2.2 Alimentos adicionales (restan de los macros disponibles para Comida/Cena)
     trainerExtraFoods.forEach(function(extra) {
@@ -4544,13 +4546,14 @@ function calculateTrainerMacros() {
         t.kcal += lunchFruitM.kcal; t.protein += lunchFruitM.protein; t.carbs += lunchFruitM.carbs; t.fat += lunchFruitM.fat;
     }
 
-    // 2.5 MERIENDA — fija (siempre incluida si hay desayuno)
+    // 2.5 MERIENDA — fija (250ml leche desnatada + 40g avena)
+    // Siempre incluida si hay desayuno seleccionado
     if (trainerSelections.breakfast !== null) {
         has = true;
-        t.kcal += 126;
-        t.protein += 26.6;
-        t.carbs += 2.07;
-        t.fat += 1.26;
+        t.kcal    += 248.8;
+        t.protein += 14.95;
+        t.carbs   += 37.25;
+        t.fat     += 3.55;
         var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
         t.kcal += snackFruitM.kcal; t.protein += snackFruitM.protein; t.carbs += snackFruitM.carbs; t.fat += snackFruitM.fat;
     }
@@ -5155,14 +5158,13 @@ function renderTrainerContent() {
     var snackActive = currentTrainerTab === 'snack' ? ' active' : '';
     html += '<div class="trainer-tab-panel' + snackActive + '" data-trainer-panel="snack">';
     html += '<div class="meal-card">';
-    html += '<div class="tab-subtitle">Merienda de proteínas para optimizar la síntesis muscular.</div>';
-    html += '<div class="extras-banner"><span>🥤 Batido de proteínas (fijo) + Fruta (opcional)</span></div>';
-    // Fruit selector for snack
-    html += fruitSelectorHtml('snack');
+    html += '<div class="tab-subtitle">Merienda fija con hidratos de calidad y proteína láctea.</div>';
+    html += '<div class="extras-banner"><span>🥛 Leche desnatada + 🌾 Avena (fijos)</span></div>';
     html += '<div class="meal-tables">';
-    html += '<div class="meal-table-wrapper" style="width:100%; max-width:600px; margin:0 auto;"><div class="meal-table-header protein">🥤 Batido Fijo</div><table class="meal-table"><tbody>';
-    html += '<tr class="selected"><td>Batido de Whey Protein (HSN)</td><td><strong>35g</strong> (26.6g proteína)</td></tr>';
-    html += '<tr class="selected"><td>Agua</td><td><strong>250ml</strong> (0 kcal)</td></tr>';
+    html += '<div class="meal-table-wrapper" style="width:100%; max-width:600px; margin:0 auto;"><div class="meal-table-header carbs">🥛 Merienda Fija</div><table class="meal-table"><tbody>';
+    html += '<tr class="selected"><td>Leche desnatada</td><td><strong>250ml</strong> (~100 kcal · 9.8g P · 13.3g C)</td></tr>';
+    html += '<tr class="selected"><td>Copos de avena</td><td><strong>40g</strong> (~149 kcal · 5.2g P · 24g C)</td></tr>';
+    html += '<tr style="font-size:0.78rem;opacity:0.7;"><td colspan="2">Total merienda: ~249 kcal · 15g proteína · 37g carbos</td></tr>';
     html += '</tbody></table></div>';
     html += '</div></div>';
     html += '</div>'; // end snack panel
