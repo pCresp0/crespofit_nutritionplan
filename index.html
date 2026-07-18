@@ -29,7 +29,7 @@
 <body>
 
     <!-- SITE GATE (under construction) -->
-    <div class="site-gate" id="site-gate" aria-hidden="true">
+    <div class="site-gate" id="site-gate" aria-hidden="true" style="display:none;">
         <div class="site-gate-card" id="site-gate-card">
             <button type="button" class="site-gate-admin-btn" id="site-gate-admin-btn" aria-label="Acceso" title=""></button>
             <div class="site-gate-icon" aria-hidden="true">🚧</div>
@@ -40,7 +40,7 @@
     </div>
 
     <!-- ========== ONBOARDING ========== -->
-    <div class="onboarding" id="onboarding">
+    <div class="onboarding" id="onboarding" style="display:none;">
         <button class="theme-toggle" id="theme-toggle-onboarding" aria-label="Cambiar tema">🌙</button>
         <div class="onboarding-card">
             <h1 class="onboarding-title">🍽️ Mi Plan Nutricional</h1>
@@ -425,8 +425,8 @@
     </div>
 
     <!-- ========== APP ========== -->
-    <div class="app-wrapper" id="app-wrapper" style="display:none;">
-        <header class="header">
+    <div class="app-wrapper" id="app-wrapper">
+        <header class="header" style="display:none;">
             <div class="header-row">
                 <button class="trainer-toggle" id="trainer-toggle" aria-label="Ver plan del entrenador">📋 <span class="btn-label">Mi entrenador</span></button>
                 <button class="reconfigure-btn" id="reconfigure-btn" aria-label="Realizar nuevo plan">🔄 <span class="btn-label">Nuevo plan</span></button>
@@ -438,7 +438,7 @@
             </div>
         </header>
 
-        <main class="main">
+        <main class="main" style="display:none;">
             <!-- HOW IT WORKS -->
             <div class="how-it-works" id="how-it-works">
                 <div class="how-it-works-header" id="how-it-works-toggle">
@@ -622,9 +622,9 @@
         </main>
 
         <!-- TRAINER MODE (hidden) -->
-        <div class="trainer-mode" id="trainer-mode" style="display:none;">
+        <div class="trainer-mode" id="trainer-mode">
             <div class="trainer-header">
-                <button class="trainer-exit-btn" id="trainer-exit-btn">← Volver al modo público</button>
+                <button class="trainer-exit-btn" id="trainer-exit-btn" style="display:none;">← Volver al modo público</button>
                 <h2>🏋️ Plan del Entrenador</h2>
                 <p class="trainer-subtitle" id="trainer-subtitle">Cantidades fijas — panel personal</p>
             </div>

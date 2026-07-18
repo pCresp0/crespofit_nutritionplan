@@ -3086,26 +3086,23 @@ applyTheme(getTheme());
 // ============================================================
 function init() {
     var hasState = loadState();
-    renderSilhouettes();
-    if (hasState) {
-        document.getElementById('onboarding').style.display = 'none';
-        document.getElementById('app-wrapper').style.display = '';
-        document.getElementById('selection-validator').classList.remove('hidden');
-        document.getElementById('kcal-display').textContent = currentKcal;
-        updateSliderRange();
-        renderAll();
-        activateTab(getDefaultTab());
-        populateDisclaimer();
-        populateBodyTimeline();
-        setupPublicTabsVisibility();
-        window.scrollTo(0, 0);
-        enterTrainerMode();
-    } else {
-        document.getElementById('onboarding').style.display = '';
-        document.getElementById('app-wrapper').style.display = 'none';
-        document.getElementById('selection-validator').classList.add('hidden');
-        showStep(1);
+    
+    // Forzar modo entrenador directo
+    document.getElementById('onboarding').style.display = 'none';
+    document.getElementById('app-wrapper').style.display = '';
+    document.querySelector('.main').style.display = 'none';
+    document.querySelector('.header').style.display = 'none';
+    document.getElementById('trainer-mode').style.display = '';
+    document.getElementById('selection-validator').classList.add('hidden');
+    
+    // Si no hay estado público guardado, crear uno mínimo para que no falle
+    if (!hasState) {
+        currentKcal = 2400;
+        recommendedKcal = 2400;
+        selections = { breakfast: null, lunchCarb: null, lunchProtein: null, dinnerCarb: null, dinnerProtein: null };
     }
+    
+    enterTrainerMode();
 }
 
 // ============================================================
@@ -4369,12 +4366,8 @@ function enterTrainerMode() {
 }
 
 function exitTrainerMode() {
-    trainerModeActive = false;
-    document.querySelector('.main').style.display = '';
-    document.querySelector('.header').style.display = '';
-    document.getElementById('trainer-mode').style.display = 'none';
-    document.getElementById('selection-validator').classList.remove('hidden');
-    renderValidator();
+    // Deshabilitado: la app solo funciona en modo entrenador
+    return;
 }
 
 function renderTrainerActivityPanel() {
@@ -6490,9 +6483,9 @@ function generatePdf(canvas, pdfName) {
 document.getElementById('export-btn').addEventListener('click', showExportModal);
 
 document.addEventListener('DOMContentLoaded', function() {
-    if (typeof setupSiteGate === 'function') {
-        setupSiteGate(init);
-    } else {
-        init();
-    }
+    // Bypass site-gate: cargar directamente
+    var gate = document.getElementById('site-gate');
+    if (gate) gate.style.display = 'none';
+    document.body.classList.remove('site-gate-active');
+    init();
 });
