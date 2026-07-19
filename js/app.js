@@ -3288,6 +3288,7 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
                 dinnerItems.push(food.name + ': <strong>' + extra.grams + displayUnit + '</strong> (Reemplazo)');
             }
         });
+        dinnerItems.push('Nueces (fijas): <strong>15g</strong>');
     }
 
     var complete = bk && lunchItems && dinnerItems;
@@ -4041,6 +4042,14 @@ function getTrainerMealScaledRatios(selObj) {
     var dinnerCarbSelected = sel.dinnerCarb !== null || hasExtra('dinnerCarb');
     var dinnerProteinSelected = sel.dinnerProtein !== null || hasExtra('dinnerProtein');
 
+    // 2.3 Nueces fijas en cena (15g)
+    // Nueces 15g: 98.1 kcal, 2.25g P, 2.1g C, 9.75g F
+    if (dinnerCarbSelected || dinnerProteinSelected) {
+        fixedKcal += 98.1;
+        fixedProt += 2.25;
+        fixedFat  += 9.75;
+    }
+
     // Si no hay comida y cena seleccionada por completo (o reemplazada), usamos ratio 1 y aceite base
     if (!lunchCarbSelected || !lunchProteinSelected || !dinnerCarbSelected || !dinnerProteinSelected) {
         return { lunchCarb: 1, lunchProtein: 1, dinnerCarb: 1, dinnerProtein: 1, lunchOilMl: EXTRAS_OIL_ML, dinnerOilMl: EXTRAS_OIL_ML };
@@ -4588,6 +4597,9 @@ function calculateTrainerMacros() {
         addVegOil(ratios.dinnerOilMl);
         var dinnerFruitM = getTrainerFruitMacros(trainerFruitSelections.dinner);
         t.kcal += dinnerFruitM.kcal; t.protein += dinnerFruitM.protein; t.carbs += dinnerFruitM.carbs; t.fat += dinnerFruitM.fat;
+        
+        // Nueces fijas (15g)
+        t.kcal += 98.1; t.protein += 2.25; t.carbs += 2.1; t.fat += 9.75;
     }
 
     // 4. Alimentos adicionales
@@ -5191,10 +5203,10 @@ function renderTrainerContent() {
     var dinnerOilDisplay = isComplete ? '<strong style="color:var(--accent)">' + ratios.dinnerOilMl + 'ml</strong>' : EXTRAS_OIL_ML + 'ml';
 
     if (isComplete) {
-        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + dinnerOilDisplay + ' aceite oliva</span>' +
+        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + dinnerOilDisplay + ' aceite oliva &nbsp;|&nbsp; 🌰 15g nueces</span>' +
             '<span class="dinner-kcal-hint">Cantidades ajustadas automáticamente a los macros objetivo</span></div>';
     } else {
-        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + dinnerOilDisplay + ' aceite oliva &nbsp;&mdash; Selecciona comida para ajustar</span></div>';
+        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + dinnerOilDisplay + ' aceite oliva &nbsp;|&nbsp; 🌰 15g nueces &nbsp;&mdash; Selecciona para ajustar</span></div>';
     }
     html += '<div class="meal-tables">';
     // Carbs
