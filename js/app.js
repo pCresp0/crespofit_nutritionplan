@@ -5220,12 +5220,18 @@ function renderTrainerContent() {
     html += '<div class="meal-card">';
     html += '<div class="tab-subtitle">Elige un hidrato y una proteína.</div>';
     var dinnerOilDisplay = isComplete ? '<strong style="color:var(--accent)">' + ratios.dinnerOilMl + 'ml</strong>' : EXTRAS_OIL_ML + 'ml';
+    var walnutsGrams = isComplete ? (ratios.dinnerWalnutsGrams || 0) : 0;
+    var walnutsText = '';
+    if (walnutsGrams > 0) {
+        var halves = Math.round(walnutsGrams / 3.75);
+        walnutsText = ' &nbsp;|&nbsp; 🌰 <strong style="color:var(--accent)">' + walnutsGrams + 'g nueces</strong> (~' + halves + ' medias nueces)';
+    }
 
     if (isComplete) {
-        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + dinnerOilDisplay + ' aceite oliva &nbsp;|&nbsp; 🌰 15g nueces</span>' +
+        html += '<div class="extras-banner extras-banner-dinner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + dinnerOilDisplay + ' aceite oliva' + walnutsText + '</span>' +
             '<span class="dinner-kcal-hint">Cantidades ajustadas automáticamente a los macros objetivo</span></div>';
     } else {
-        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + dinnerOilDisplay + ' aceite oliva &nbsp;|&nbsp; 🌰 15g nueces &nbsp;&mdash; Selecciona para ajustar</span></div>';
+        html += '<div class="extras-banner"><span>🥗 + ~200g verduras &nbsp;|&nbsp; ' + dinnerOilDisplay + ' aceite oliva &nbsp;&mdash; Selecciona para ajustar</span></div>';
     }
     html += '<div class="meal-tables">';
     // Carbs
