@@ -3501,13 +3501,7 @@ var trainerSelections = {
 };
 var trainerExtraFoods = []; // [{catalogIdx, grams}]
 function getDefaultAdjustableMeals() {
-    var now = new Date();
-    var mins = now.getHours() * 60 + now.getMinutes();
-    if (mins >= 180 && mins <= 990) { // 3:00 to 16:30
-        return { lunch: true, dinner: true };
-    } else { // 16:31 to 2:59
-        return { lunch: false, dinner: true };
-    }
+    return { lunch: false, dinner: true };
 }
 var trainerAdjustableMeals = getDefaultAdjustableMeals();
 
@@ -3587,7 +3581,7 @@ var TRAINER_KCAL_TOLERANCE = 50; // ±50 kcal
 var TRAINER_PROFILE = {
     sex: 'male',
     age: 32,
-    weight: 81.5,
+    weight: 81,
     height: 174,
     activityFactor: 1.2, // oficina/casa sentado 9–19
     goal: 'recomp',
