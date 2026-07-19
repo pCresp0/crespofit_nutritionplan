@@ -3423,19 +3423,18 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
     // Merienda (Snack)
     if (isTrainer) {
         var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
-        var snackKcal = Math.round(126 + snackFruitM.kcal);
-        // 35g Evowhey: prot=26.6g, carbs=2.07g, fat=1.26g (35*76/100, 35*5.9/100, 35*3.6/100)
-        var snackProtein = Math.round(26.6 + snackFruitM.protein);
-        var snackCarbs = Math.round(2.07 + snackFruitM.carbs);
-        var snackFat = Math.round(1.26 + snackFruitM.fat);
-        var snackItems = ['Batido Whey protein HSN (35g): <strong>26.6g prot</strong>', 'Agua: <strong>250ml</strong>'];
+        var snackKcal = Math.round(106.8 + snackFruitM.kcal);
+        var snackProtein = Math.round(1.32 + snackFruitM.protein);
+        var snackCarbs = Math.round(27.36 + snackFruitM.carbs);
+        var snackFat = Math.round(0.36 + snackFruitM.fat);
+        var snackItems = ['Plátano (120g): <strong>27.4g carbs</strong>'];
         var fruitIdx = trainerFruitSelections.snack;
         if (fruitIdx !== null && fruitIdx !== undefined) {
             var fr = TRAINER_FRUIT_OPTIONS[fruitIdx];
             snackItems.push(fr.emoji + ' ' + fr.name + ': <strong>' + TRAINER_FRUIT_GRAMS + 'g</strong>');
         }
         html += '<div class="summary-meal">' +
-            '<div class="summary-meal-header">🥤 Merienda <span class="summary-meal-kcal">' + snackKcal + ' kcal · <span style="font-size: 0.75em; opacity: 0.8;">' + snackProtein + 'p / ' + snackCarbs + 'c / ' + snackFat + 'f</span></span></div>' +
+            '<div class="summary-meal-header">🍌 Merienda <span class="summary-meal-kcal">' + snackKcal + ' kcal · <span style="font-size: 0.75em; opacity: 0.8;">' + snackProtein + 'p / ' + snackCarbs + 'c / ' + snackFat + 'f</span></span></div>' +
             '<ul class="summary-meal-items">' + snackItems.map(function(i){ return '<li>'+i+'</li>'; }).join('') + '</ul>' +
             '</div>';
     }
