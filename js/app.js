@@ -3288,7 +3288,12 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
                 dinnerItems.push(food.name + ': <strong>' + extra.grams + displayUnit + '</strong> (Reemplazo)');
             }
         });
-        dinnerItems.push('Nueces (fijas): <strong>15g</strong>');
+        
+        var walnutsGrams = trainerRatios.dinnerWalnutsGrams || 0;
+        if (walnutsGrams > 0) {
+            var halves = Math.round(walnutsGrams / 3.75);
+            dinnerItems.push('Nueces: <strong>' + walnutsGrams + 'g</strong> (~' + halves + ' medias nueces)');
+        }
     }
 
     var complete = bk && lunchItems && dinnerItems;
@@ -4042,13 +4047,7 @@ function getTrainerMealScaledRatios(selObj) {
     var dinnerCarbSelected = sel.dinnerCarb !== null || hasExtra('dinnerCarb');
     var dinnerProteinSelected = sel.dinnerProtein !== null || hasExtra('dinnerProtein');
 
-    // 2.3 Nueces fijas en cena (15g)
-    // Nueces 15g: 98.1 kcal, 2.25g P, 2.1g C, 9.75g F
-    if (dinnerCarbSelected || dinnerProteinSelected) {
-        fixedKcal += 98.1;
-        fixedProt += 2.25;
-        fixedFat  += 9.75;
-    }
+
 
     // Si no hay comida y cena seleccionada por completo (o reemplazada), usamos ratio 1 y aceite base
     if (!lunchCarbSelected || !lunchProteinSelected || !dinnerCarbSelected || !dinnerProteinSelected) {
@@ -4135,35 +4134,36 @@ function getTrainerMealScaledRatios(selObj) {
 
     var pRatio = 1, cRatio = 1;
 
-    function solveRatios() {
+    function solveRatios(akp, ap) {
         if (carbKcalPrime <= 0) {
-            pRatio = protKcalPrime > 0 ? Math.max(0.7, Math.min(2.5, availKcalPrime / protKcalPrime)) : 1;
+            pRatio = protKcalPrime > 0 ? Math.max(0.7, Math.min(2.5, akp / protKcalPrime)) : 1;
             cRatio = 1;
         } else {
             var a = baseProtProt - baseCarbProt * protKcalPrime / carbKcalPrime;
-            var b = availProt - baseCarbProt * availKcalPrime / carbKcalPrime;
+            var b = ap - baseCarbProt * akp / carbKcalPrime;
 
             if (Math.abs(a) < 0.01) {
-                cRatio = uniformRatio;
-                pRatio = uniformRatio;
+                var uRatio = akp / totalBaseKcalPrime;
+                cRatio = uRatio;
+                pRatio = uRatio;
             } else {
                 pRatio = b / a;
                 pRatio = Math.max(0.7, Math.min(2.5, pRatio));
 
-                cRatio = (availKcalPrime - protKcalPrime * pRatio) / carbKcalPrime;
+                cRatio = (akp - protKcalPrime * pRatio) / carbKcalPrime;
                 if (cRatio < 0.4) {
                     cRatio = 0.4;
-                    pRatio = (availKcalPrime - carbKcalPrime * cRatio) / protKcalPrime;
+                    pRatio = (akp - carbKcalPrime * cRatio) / protKcalPrime;
                 }
                 if (cRatio > 2.5) {
                     cRatio = 2.5;
-                    pRatio = (availKcalPrime - carbKcalPrime * cRatio) / protKcalPrime;
+                    pRatio = (akp - carbKcalPrime * cRatio) / protKcalPrime;
                 }
             }
         }
     }
 
-    solveRatios();
+    solveRatios(availKcalPrime, availProt);
 
     // Calculamos el aceite total necesario en gramos
     var totalOilFat = targetFat - fixedFat - (cRatio * baseCarbFat) - (pRatio * baseProtFat);
@@ -4179,12 +4179,30 @@ function getTrainerMealScaledRatios(selObj) {
         maxOilFat = EXTRAS_OIL_ML * 2;
     }
 
-    // Si nos pasamos del tope de aceite, derivamos las kcal faltantes a hidratos/proteína
+    var dinnerWalnutsGrams = 0;
+
+    // Si nos pasamos del tope de aceite, usamos nueces para compensar
     if (totalOilFat > maxOilFat) {
-        var missingFatKcal = (totalOilFat - maxOilFat) * 9;
-        availKcalPrime += missingFatKcal;
-        uniformRatio = availKcalPrime / totalBaseKcalPrime;
-        solveRatios();
+        for (var i = 0; i < 3; i++) {
+            var akpLoop = availKcalPrime - (dinnerWalnutsGrams * 1.16); // 1.16 kcal / g (de prot y carb)
+            var apLoop = availProt - (dinnerWalnutsGrams * 0.15);
+            solveRatios(akpLoop, apLoop);
+            
+            var currentFoodFat = fixedFat + (cRatio * baseCarbFat) + (pRatio * baseProtFat) + (dinnerWalnutsGrams * 0.65);
+            var missingFat = targetFat - currentFoodFat;
+            
+            if (missingFat > maxOilFat) {
+                var needed = missingFat - maxOilFat;
+                dinnerWalnutsGrams += needed / 0.65;
+            } else {
+                break;
+            }
+        }
+        
+        var akpFinal = availKcalPrime - (dinnerWalnutsGrams * 1.16);
+        var apFinal = availProt - (dinnerWalnutsGrams * 0.15);
+        solveRatios(akpFinal, apFinal);
+        
         totalOilFat = maxOilFat;
     }
 
@@ -4212,7 +4230,8 @@ function getTrainerMealScaledRatios(selObj) {
         dinnerCarb: trainerAdjustableMeals.dinner ? cRatio : 1.0,
         dinnerProtein: trainerAdjustableMeals.dinner ? pRatio : 1.0,
         lunchOilMl: lunchOilMl,
-        dinnerOilMl: dinnerOilMl
+        dinnerOilMl: dinnerOilMl,
+        dinnerWalnutsGrams: Math.round(dinnerWalnutsGrams)
     };
 }
 
