@@ -4125,37 +4125,59 @@ function getTrainerMealScaledRatios(selObj) {
     var uniformRatio = availKcalPrime / totalBaseKcalPrime;
 
     var pRatio = 1, cRatio = 1;
-    // Guard: if no carb base (all carb slots replaced by extras), only solve for protein ratio
-    if (carbKcalPrime <= 0) {
-        pRatio = protKcalPrime > 0 ? Math.max(0.7, Math.min(2.5, availKcalPrime / protKcalPrime)) : 1;
-        cRatio = 1;
-    } else {
-        // Resolvemos el sistema de 2 variables:
-        var a = baseProtProt - baseCarbProt * protKcalPrime / carbKcalPrime;
-        var b = availProt - baseCarbProt * availKcalPrime / carbKcalPrime;
 
-        if (Math.abs(a) < 0.01) {
-            cRatio = uniformRatio;
-            pRatio = uniformRatio;
+    function solveRatios() {
+        if (carbKcalPrime <= 0) {
+            pRatio = protKcalPrime > 0 ? Math.max(0.7, Math.min(2.5, availKcalPrime / protKcalPrime)) : 1;
+            cRatio = 1;
         } else {
-            pRatio = b / a;
-            pRatio = Math.max(0.7, Math.min(2.5, pRatio));
+            var a = baseProtProt - baseCarbProt * protKcalPrime / carbKcalPrime;
+            var b = availProt - baseCarbProt * availKcalPrime / carbKcalPrime;
 
-            cRatio = (availKcalPrime - protKcalPrime * pRatio) / carbKcalPrime;
-            if (cRatio < 0.4) {
-                cRatio = 0.4;
-                pRatio = (availKcalPrime - carbKcalPrime * cRatio) / protKcalPrime;
-            }
-            if (cRatio > 2.5) {
-                cRatio = 2.5;
-                pRatio = (availKcalPrime - carbKcalPrime * cRatio) / protKcalPrime;
+            if (Math.abs(a) < 0.01) {
+                cRatio = uniformRatio;
+                pRatio = uniformRatio;
+            } else {
+                pRatio = b / a;
+                pRatio = Math.max(0.7, Math.min(2.5, pRatio));
+
+                cRatio = (availKcalPrime - protKcalPrime * pRatio) / carbKcalPrime;
+                if (cRatio < 0.4) {
+                    cRatio = 0.4;
+                    pRatio = (availKcalPrime - carbKcalPrime * cRatio) / protKcalPrime;
+                }
+                if (cRatio > 2.5) {
+                    cRatio = 2.5;
+                    pRatio = (availKcalPrime - carbKcalPrime * cRatio) / protKcalPrime;
+                }
             }
         }
     }
 
+    solveRatios();
+
     // Calculamos el aceite total necesario en gramos
     var totalOilFat = targetFat - fixedFat - (cRatio * baseCarbFat) - (pRatio * baseProtFat);
     if (totalOilFat < 0) totalOilFat = 0;
+
+    // Calculamos el máximo de aceite permitido (tope 15ml por comida)
+    var maxOilFat = 0;
+    if (trainerAdjustableMeals.lunch && trainerAdjustableMeals.dinner) {
+        maxOilFat = 30.0;
+    } else if (trainerAdjustableMeals.lunch || trainerAdjustableMeals.dinner) {
+        maxOilFat = 15.0 + EXTRAS_OIL_ML;
+    } else {
+        maxOilFat = EXTRAS_OIL_ML * 2;
+    }
+
+    // Si nos pasamos del tope de aceite, derivamos las kcal faltantes a hidratos/proteína
+    if (totalOilFat > maxOilFat) {
+        var missingFatKcal = (totalOilFat - maxOilFat) * 9;
+        availKcalPrime += missingFatKcal;
+        uniformRatio = availKcalPrime / totalBaseKcalPrime;
+        solveRatios();
+        totalOilFat = maxOilFat;
+    }
 
     // Distribuimos el aceite en las dos comidas principales (ml = gramos)
     var lunchOilMl = EXTRAS_OIL_ML;
@@ -4163,15 +4185,15 @@ function getTrainerMealScaledRatios(selObj) {
 
     if (trainerAdjustableMeals.lunch && trainerAdjustableMeals.dinner) {
         var half = Math.round((totalOilFat / 2) * 10) / 10;
-        lunchOilMl = Math.max(3.0, Math.min(30.0, half));
-        dinnerOilMl = Math.max(3.0, Math.min(30.0, half));
+        lunchOilMl = Math.max(3.0, Math.min(15.0, half));
+        dinnerOilMl = Math.max(3.0, Math.min(15.0, half));
     } else if (trainerAdjustableMeals.lunch) {
         var remain = Math.round((totalOilFat - EXTRAS_OIL_ML) * 10) / 10;
-        lunchOilMl = Math.max(3.0, Math.min(30.0, remain));
+        lunchOilMl = Math.max(3.0, Math.min(15.0, remain));
         dinnerOilMl = EXTRAS_OIL_ML;
     } else if (trainerAdjustableMeals.dinner) {
         var remain = Math.round((totalOilFat - EXTRAS_OIL_ML) * 10) / 10;
-        dinnerOilMl = Math.max(3.0, Math.min(30.0, remain));
+        dinnerOilMl = Math.max(3.0, Math.min(15.0, remain));
         lunchOilMl = EXTRAS_OIL_ML;
     }
 
