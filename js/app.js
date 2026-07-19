@@ -3429,11 +3429,11 @@ function buildMealSummaryHTML(selObj, ratio, isTrainer) {
     // Merienda (Snack)
     if (isTrainer) {
         var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
-        var snackKcal = Math.round(106.8 + snackFruitM.kcal);
-        var snackProtein = Math.round(1.32 + snackFruitM.protein);
-        var snackCarbs = Math.round(27.36 + snackFruitM.carbs);
-        var snackFat = Math.round(0.36 + snackFruitM.fat);
-        var snackItems = ['Plátano (120g): <strong>27.4g carbs</strong>'];
+        var snackKcal = Math.round(snackFruitM.kcal);
+        var snackProtein = Math.round(snackFruitM.protein);
+        var snackCarbs = Math.round(snackFruitM.carbs);
+        var snackFat = Math.round(snackFruitM.fat);
+        var snackItems = [];
         var fruitIdx = trainerFruitSelections.snack;
         if (fruitIdx !== null && fruitIdx !== undefined) {
             var fr = TRAINER_FRUIT_OPTIONS[fruitIdx];
@@ -4023,11 +4023,7 @@ function getTrainerMealScaledRatios(selObj) {
     fixedProt += lunchFruit.protein + dinnerFruit.protein + snackFruit.protein;
     fixedFat += lunchFruit.fat + dinnerFruit.fat + snackFruit.fat;
 
-    // 2.1 Merienda fija (Plátano 120g)
-    // Plátano 120g: 106.8 kcal, 1.32g P, 27.36g C, 0.36g F
-    fixedKcal += 106.8;
-    fixedProt += 1.32;
-    fixedFat  += 0.36;
+
 
     // 2.2 Alimentos adicionales (restan de los macros disponibles para Comida/Cena)
     trainerExtraFoods.forEach(function(extra) {
@@ -4588,14 +4584,10 @@ function calculateTrainerMacros() {
         t.kcal += lunchFruitM.kcal; t.protein += lunchFruitM.protein; t.carbs += lunchFruitM.carbs; t.fat += lunchFruitM.fat;
     }
 
-    // 2.5 MERIENDA — fija (Plátano 120g)
+    // 2.5 MERIENDA — fruta (Banana 225g por defecto)
     // Siempre incluida si hay desayuno seleccionado
     if (trainerSelections.breakfast !== null) {
         has = true;
-        t.kcal    += 106.8;
-        t.protein += 1.32;
-        t.carbs   += 27.36;
-        t.fat     += 0.36;
         var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
         t.kcal += snackFruitM.kcal; t.protein += snackFruitM.protein; t.carbs += snackFruitM.carbs; t.fat += snackFruitM.fat;
     }
@@ -5204,11 +5196,15 @@ function renderTrainerContent() {
     html += '<div class="trainer-tab-panel' + snackActive + '" data-trainer-panel="snack">';
     html += '<div class="meal-card">';
     html += '<div class="tab-subtitle">Merienda de energía rápida.</div>';
-    html += '<div class="extras-banner"><span>🍌 Plátano (fijo)</span></div>';
+    html += '<div class="extras-banner"><span>🍌 Fruta (fija)</span></div>';
     html += '<div class="meal-tables">';
-    html += '<div class="meal-table-wrapper" style="width:100%; max-width:600px; margin:0 auto;"><div class="meal-table-header carbs">🍌 Merienda Fija</div><table class="meal-table"><tbody>';
-    html += '<tr class="selected"><td>Plátano</td><td><strong>1 pieza (120g)</strong> (~107 kcal · 1.3g P · 27.4g C)</td></tr>';
-    html += '<tr style="font-size:0.78rem;opacity:0.7;"><td colspan="2">Total merienda: ~107 kcal · 1.3g proteína · 27.4g carbos</td></tr>';
+    html += '<div class="meal-table-wrapper" style="width:100%; max-width:600px; margin:0 auto;"><div class="meal-table-header carbs">🍌 Merienda</div><table class="meal-table"><tbody>';
+    
+    var snackFruitM = getTrainerFruitMacros(trainerFruitSelections.snack);
+    var frName = trainerFruitSelections.snack === 0 ? 'Banana' : 'Naranja';
+    
+    html += '<tr class="selected"><td>' + frName + '</td><td><strong>1 pieza (225g)</strong> (~' + Math.round(snackFruitM.kcal) + ' kcal · ' + Math.round(snackFruitM.protein*10)/10 + 'g P · ' + Math.round(snackFruitM.carbs*10)/10 + 'g C)</td></tr>';
+    html += '<tr style="font-size:0.78rem;opacity:0.7;"><td colspan="2">Total merienda: ~' + Math.round(snackFruitM.kcal) + ' kcal · ' + Math.round(snackFruitM.protein*10)/10 + 'g proteína · ' + Math.round(snackFruitM.carbs*10)/10 + 'g carbos</td></tr>';
     html += '</tbody></table></div>';
     html += '</div></div>';
     html += '</div>'; // end snack panel
